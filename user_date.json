@@ -1,0 +1,164 @@
+{
+    "837631984280666162": {
+        "gold": 11829,
+        "items": {
+            "ポーション": 3,
+            "星の欠片": 1,
+            "虹の欠片": 2510,
+            "ガチャチケ": 510
+        },
+        "party_indices": [
+            0,
+            1,
+            2
+        ],
+        "characters": [
+            {
+                "name": "アリエス",
+                "icon": "<:6001_aries:1526102127275937843>",
+                "rarity": "★4",
+                "count": 1,
+                "level": 3,
+                "exp": 270,
+                "hp": 50,
+                "atk": 14,
+                "spd": 12,
+                "rec": 5,
+                "skill_name": "星屑の一撃",
+                "skill_pow": 28,
+                "element": "赤",
+                "role": "アタッカー",
+                "gender": "？",
+                "best_equip": null,
+                "equip": null
+            },
+            {
+                "name": "レオ",
+                "icon": "<:6005_reo:1476541458797559849>",
+                "rarity": "★4",
+                "count": 1,
+                "level": 3,
+                "exp": 270,
+                "hp": 60,
+                "atk": 12,
+                "spd": 9,
+                "rec": 3,
+                "skill_name": "ブッ殺してやる!",
+                "skill_pow": 25,
+                "element": "赤",
+                "role": "アタッカー",
+                "gender": "？",
+                "best_equip": null,
+                "equip": null
+            },
+            {
+                "name": "折原和也",
+                "icon": "<:602602_orihara:1476550258627444747>",
+                "rarity": "★4",
+                "count": 1,
+                "level": 3,
+                "exp": 270,
+                "hp": 45,
+                "atk": 16,
+                "spd": 15,
+                "rec": 4,
+                "skill_name": "モルモットとの戯れ",
+                "skill_pow": 32,
+                "element": "赤",
+                "role": "アタッカー",
+                "gender": "？",
+                "best_equip": null,
+                "equip": null
+            }
+        ],
+        "mails": [
+            {
+                "id": "test",
+                "title": "test",
+                "message": "test",
+                "gold": 0,
+                "rainbow": 0,
+                "ticket": 500,
+                "claimed": true
+            }
+        ]
+    },
+    "1191286886023581697": {
+        "gold": 1000,
+        "items": {
+            "虹の欠片": 100,
+            "ガチャチケ": 100
+        },
+        "characters": [
+            {
+                "name": "茉鈴",
+                "icon": "<:6_marin:1476539399188648016>",
+                "level": 1,
+                "exp": 0,
+                "hp": 100,
+                "max_hp": 100,
+                "atk": 15,
+                "spd": 10,
+                "rec": 20,
+                "skill_name": "キラキラがたくさん！",
+                "skill_pow": 1.2,
+                "skill_type": "heal_all",
+                "rarity": "★3",
+                "count": 1,
+                "element": "光",
+                "role": "サポーター",
+                "gender": "女",
+                "best_equip": "子供用カメラ",
+                "equip": null
+            },
+            {
+                "name": "橘柊人",
+                "icon": "<:6_syuuto:1476538895968768000>",
+                "level": 1,
+                "exp": 0,
+                "hp": 120,
+                "max_hp": 120,
+                "atk": 25,
+                "spd": 12,
+                "rec": 5,
+                "skill_name": "ハリセン攻撃",
+                "skill_pow": 1.5,
+                "skill_type": "physical",
+                "rarity": "★3",
+                "count": 1,
+                "element": "赤",
+                "role": "アタッカー",
+                "gender": "男",
+                "best_equip": "ハリセン",
+                "equip": null
+            },
+            {
+                "name": "河野蜜柑",
+                "icon": "<:6_11_mikan:1539927243491385375>",
+                "level": 1,
+                "exp": 0,
+                "hp": 90,
+                "max_hp": 90,
+                "atk": 20,
+                "spd": 15,
+                "rec": 8,
+                "skill_name": "君たちにはこの虫が見えないの……？",
+                "skill_pow": 1.0,
+                "skill_type": "stun",
+                "rarity": "★3",
+                "count": 1,
+                "element": "紫",
+                "role": "サポーター",
+                "gender": "女",
+                "best_equip": "学校の箒",
+                "equip": null
+            }
+        ],
+        "party_indices": [
+            0,
+            1,
+            2
+        ],
+        "mails": []
+    }
+}
