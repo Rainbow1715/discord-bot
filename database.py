@@ -1,9 +1,41 @@
-import json
 import os
+import json
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
-DATA_FILE = "user_data.json"
+# --------------------------------------------------
+# 🌐 Google スプレッドシートの認証・接続設定
+# --------------------------------------------------
+def init_gspread():
+    creds_json = os.environ.get("GOOGLE_CREDENTIALS")
+    sheet_id = os.environ.get("SPREADSHEET_ID")
+    
+    if not creds_json or not sheet_id:
+        print("⚠️ Google Credentials または SPREADSHEET_ID が設定されていません。")
+        return None
 
-# 🔰 初期キャラクターデータ
+    try:
+        scope = [
+            "https://spreadsheets.google.com/feeds",
+            "https://www.googleapis.com/auth/drive"
+        ]
+        creds_dict = json.loads(creds_json)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        client = gspread.authorize(creds)
+        return client.open_by_key(sheet_id).sheet1
+    except Exception as e:
+        print(f"❌ スプレッドシート接続エラー: {e}")
+        return None
+
+# スプレッドシートを取得
+sheet = init_gspread()
+
+# メモリ上のデータ保持用
+user_data = {}
+
+# --------------------------------------------------
+# 🔰 初期キャラクターデータ（茉鈴・橘柊人・河野蜜柑）
+# --------------------------------------------------
 DEFAULT_CHARACTERS = [
     {
         "name": "茉鈴",
@@ -173,23 +205,45 @@ GACHA_POOL = [
     }
 ]
 
-# セーブデータの読み込み
+# --------------------------------------------------
+# 📊 セーブデータの読み込みと保存
+# --------------------------------------------------
 def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return {int(k): v for k, v in data.items()}
-    return {}
+    global user_data
+    if not sheet:
+        return
+    try:
+        records = sheet.get_all_records()
+        user_data.clear()
+        for row in records:
+            u_id = int(row["user_id"])
+            user_data[u_id] = json.loads(row["data_json"])
+        print("📊 スプレッドシートからデータを正常に読み込みました。")
+    except Exception as e:
+        print(f"❌ データの読み込みエラー: {e}")
 
-user_data = load_data()
-
-# セーブデータの保存
 def save_data():
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(user_data, f, ensure_ascii=False, indent=4)
+    if not sheet:
+        return
+    try:
+        rows = [["user_id", "data_json"]]
+        for u_id, data in user_data.items():
+            rows.append([str(u_id), json.dumps(data, ensure_ascii=False)])
+        
+        sheet.clear()
+        sheet.update('A1', rows)
+        print("💾 スプレッドシートへデータを保存しました。")
+    except Exception as e:
+        print(f"❌ データの保存エラー: {e}")
 
-# ユーザープロフィールの取得とデータ補完
+# 起動時にスプレッドシートからデータを読み込む
+load_data()
+
+# --------------------------------------------------
+# 👤 ユーザープロフィールの取得と補完
+# --------------------------------------------------
 def get_user_profile(user_id):
+    user_id = int(user_id)
     if user_id not in user_data:
         user_data[user_id] = {
             "gold": 1000,
@@ -202,7 +256,7 @@ def get_user_profile(user_id):
 
     u_info = user_data[user_id]
 
-    # 既存ユーザーのキャラデータ補完（項目がない場合のみ追加）
+    # 既存ユーザーのキャラデータ補完
     for c in u_info.get("characters", []):
         if "element" not in c:
             c["element"] = "赤"
