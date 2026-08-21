@@ -1,6 +1,7 @@
 import os
 import discord
 from discord.ext import commands
+from aiohttp import web
 
 from database import user_data, get_user_profile, save_data
 from gacha import GachaView
@@ -8,6 +9,25 @@ from shop import ShopView
 from battle import run_battle  # 👈 battle.py から処理を呼び出し
 import admin
 
+# --------------------------------------------------
+# 🌐 Renderポートエラー回避用のダミーWebサーバー設定
+# --------------------------------------------------
+async def handle(request):
+    return web.Response(text="Bot is running!")
+
+async def start_dummy_server():
+    app = web.Application()
+    app.add_routes([web.get('/', handle)])
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", 10000))
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start()
+    print(f"ダミーWebサーバーがポート {port} で起動しました。")
+
+# --------------------------------------------------
+# 🤖 Discord Bot の設定
+# --------------------------------------------------
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -16,6 +36,7 @@ class MyBot(commands.Bot):
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self):
+        await start_dummy_server()  # 👈 Bot起動時にダミーWebサーバーも一緒に立ち上げる
         await admin.setup(self)  # 👈 管理者コマンドを登録
         await self.tree.sync()
         print("スラッシュコマンドの同期が完了しました！")
