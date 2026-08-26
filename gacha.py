@@ -1,6 +1,6 @@
 import random
 import discord
-from database import GACHA_POOL, get_user_profile
+from database import GACHA_POOL, get_user_profile, save_data
 
 def draw_10_gacha():
     """10連ガチャを引く処理"""
@@ -31,21 +31,27 @@ class GachaView(discord.ui.View):
         self.user_id = user_id
 
     async def process_gacha(self, interaction: discord.Interaction, cost_type: str):
+        # 1. ユーザーチェック（他の人のガチャボタンを押した場合はここで弾く）
         if interaction.user.id != self.user_id:
             await interaction.response.send_message("❌ 他のユーザーのガチャ画面です。", ephemeral=True)
             return
+
+        # 2. 💡 ここで defer() を呼び出し！「考え中…」にしてタイムアウトを15秒に延ばす
+        await interaction.response.defer()
 
         u_data = get_user_profile(self.user_id)
         items = u_data["items"]
 
         if cost_type == "rainbow":
             if items.get("虹の欠片", 0) < 1000:
-                await interaction.response.send_message("❌ 虹の欠片が足りません！（必要: 1000個）", ephemeral=True)
+                # defer() 後なので followup で送信します
+                await interaction.followup.send("❌ 虹の欠片が足りません！（必要: 1000個）", ephemeral=True)
                 return
             items["虹の欠片"] -= 1000
         elif cost_type == "ticket":
             if items.get("ガチャチケ", 0) < 10:
-                await interaction.response.send_message("❌ ガチャチケが足りません！（必要: 10枚）", ephemeral=True)
+                # defer() 後なので followup で送信します
+                await interaction.followup.send("❌ ガチャチケが足りません！（必要: 10枚）", ephemeral=True)
                 return
             items["ガチャチケ"] -= 10
 
@@ -81,6 +87,9 @@ class GachaView(discord.ui.View):
 
             result_lines.append(f"{idx}. {rarity_icon} **[{template['rarity']}] {template['name']}** {status_note}")
 
+        # 3. ガチャ結果を保存
+        save_data()
+
         embed = discord.Embed(
             title="🎰 10連ガチャ結果！",
             description="\n".join(result_lines),
@@ -90,7 +99,8 @@ class GachaView(discord.ui.View):
             text=f"残高 ｜ 虹の欠片: {items.get('虹の欠片', 0)}個 / ガチャチケ: {items.get('ガチャチケ', 0)}枚"
         )
 
-        await interaction.response.edit_message(embed=embed, view=None)
+        # 4. defer() 済みのメッセージを編集して結果を表示する
+        await interaction.edit_original_response(embed=embed, view=None)
 
     @discord.ui.button(label="虹の欠片 1000個で10連", style=discord.ButtonStyle.primary, emoji="💎")
     async def draw_rainbow(self, interaction: discord.Interaction, button: discord.ui.Button):
