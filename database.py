@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -206,7 +207,7 @@ GACHA_POOL = [
 ]
 
 # --------------------------------------------------
-# 📊 セーブデータの読み込みと保存
+# 📊 セーブデータの読み込みと保存（非同期対応）
 # --------------------------------------------------
 def load_data():
     global user_data
@@ -222,7 +223,8 @@ def load_data():
     except Exception as e:
         print(f"❌ データの読み込みエラー: {e}")
 
-def save_data():
+# 実際にスプレッドシートへ書き込む内部関数
+def _sync_save():
     if not sheet:
         return
     try:
@@ -236,7 +238,15 @@ def save_data():
     except Exception as e:
         print(f"❌ データの保存エラー: {e}")
 
-# 起動時にスプレッドシートからデータを読み込む
+# Discordの返答を止めないようバックグラウンドで保存を実行
+def save_data():
+    try:
+        loop = asyncio.get_running_loop()
+        loop.run_in_executor(None, _sync_save)
+    except RuntimeError:
+        _sync_save()
+
+# 起動時に読み込み
 load_data()
 
 # --------------------------------------------------
