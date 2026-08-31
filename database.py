@@ -142,7 +142,7 @@ GACHA_POOL = [
         "element": "光",
         "role": "アタッカー",
         "gender": "？",
-        "best_equip": 紙パックのいちごオレ,
+        "best_equip": "紙パックのいちごオレ",
         "equip": None
     },
     {
