@@ -109,7 +109,7 @@ GACHA_POOL = [
         "name": "竹村しえら",
         "icon": "<:602506_siera:1524716095867719750>",
         "level": 1,
-        "exp": 0
+        "exp": 0,
         "rarity": "★3",
         "rate": 0.1,
         "hp": 90,
