@@ -60,7 +60,7 @@ class GachaView(discord.ui.View):
         result_lines = []
 
         for idx, template in enumerate(drawn_templates, start=1):
-            rarity_icon = "✨" if template["rarity"] == "★5" else ("🌟" if template["rarity"] == "★4" else "⚪")
+            rarity_icon = "✨" if template["rarity"] == "★5" else ("🌟" if template["rarity"] == "★4" else "icon")
             existing_char = next((c for c in user_chars if c["name"] == template["name"]), None)
 
             if existing_char:
