@@ -22,7 +22,7 @@ def select_character_by_rarity():
 def draw_10_gacha():
     """10連ガチャを引く処理"""
     def draw_10_gacha():
-    """10連ガチャ（9枠通常 + 1枠★3以上確定枠などの処理例）"""
+        """10連ガチャ（9枠通常 + 1枠★3以上確定枠などの処理例）"""
     results = []
     
     # 通常枠 9連
