@@ -2,7 +2,7 @@ import os
 import json
 import asyncio
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 
 # --------------------------------------------------
 # 🌐 Google スプレッドシートの認証・接続設定
@@ -16,14 +16,19 @@ def init_gspread():
         return None
 
     try:
-        scope = [
-            "https://spreadsheets.google.com/feeds",
+        # 最新の google-auth ライブラリを使用した認証
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive"
         ]
         creds_dict = json.loads(creds_json)
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
         client = gspread.authorize(creds)
-        return client.open_by_key(sheet_id).sheet1
+        
+        # シートを取得して接続テスト
+        worksheet = client.open_by_key(sheet_id).sheet1
+        print("✅ Googleスプレッドシートへの接続に成功しました！")
+        return worksheet
     except Exception as e:
         print(f"❌ スプレッドシート接続エラー: {e}")
         return None
@@ -117,7 +122,7 @@ GACHA_POOL = [
         "atk": 22,
         "spd": 11,
         "rec": 6,
-        "skill_name": "どけ！　大天災しえらさんのお通りだぞ！",
+        "skill_name": "どけ！ 大天災しえらさんのお通りだぞ！",
         "skill_pow": 1.4,
         "element": "紫",
         "role": "アタッカー",
@@ -137,7 +142,7 @@ GACHA_POOL = [
         "atk": 25,
         "spd": 12,
         "rec": 18,
-        "skill_name": "どけ！　おまいらの心を奪いにきたぞ！",
+        "skill_name": "どけ！ おまいらの心を奪いにきたぞ！",
         "skill_pow": 1.1,
         "element": "光",
         "role": "アタッカー",
@@ -295,4 +300,6 @@ def get_user_profile(user_id):
             c["equip"] = None
 
     return u_info
+
+# 強制保存テスト（起動時）
 save_data()
