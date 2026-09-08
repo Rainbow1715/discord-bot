@@ -37,7 +37,15 @@ class MyBot(commands.Bot):
 
     async def setup_hook(self):
         await start_dummy_server()  # 👈 Bot起動時にダミーWebサーバーも一緒に立ち上げる
-        await admin.setup(self)  # 👈 管理者コマンドを登録
+        await admin.setup(self)     # 👈 管理者コマンドを登録
+        
+        # 🔻 ここを追加！ cogs/feed.py を読み込みます 🔻
+        try:
+            await self.load_extension("cogs.feed")
+            print("✅ cogs.feed の読み込みに成功しました！")
+        except Exception as e:
+            print(f"❌ cogs.feed の読み込みエラー: {e}")
+
         await self.tree.sync()
         print("スラッシュコマンドの同期が完了しました！")
 
