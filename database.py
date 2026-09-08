@@ -146,7 +146,9 @@ GACHA_POOL = [
         "role": "アタッカー",
         "gender": "女",
         "best_equip": "なんか強そうな棒",
-        "equip": None
+        "equip": None,
+        "likes": ["果肉なしいちごオレ"],
+        "dislikes": ["激辛ラーメン","紅茶"]
     },
     {
         "name": "れーちゃん",
@@ -166,7 +168,9 @@ GACHA_POOL = [
         "role": "アタッカー",
         "gender": "？",
         "best_equip": "紙パックのいちごオレ",
-        "equip": None
+        "equip": None,
+        "likes": ["果肉なしいちごオレ"],
+        "dislikes": ["激辛ラーメン","紅茶"]
     },
     {
         "name": "レオ",
@@ -186,7 +190,9 @@ GACHA_POOL = [
         "role": "アタッカー",
         "gender": "男",
         "best_equip": "ナイフ",
-        "equip": None
+        "equip": None,
+        "likes": ["クソデカステーキ"],
+        "dislikes": ["野菜たっぷりサラダ","ほうれん草のキッシュ","ブロッコリー"]
     },
     {
         "name": "Gerânio",
@@ -204,7 +210,9 @@ GACHA_POOL = [
         "role": "アタッカー",
         "gender": "男",
         "best_equip": "ロケット",
-        "equip": None
+        "equip": None,
+        "likes": ["オムライス"],
+        "dislikes": None
     },
     {
         "name": "白黒レイ",
@@ -222,7 +230,9 @@ GACHA_POOL = [
         "role": "アタッカー",
         "gender": "？",
         "best_equip": "電子機器",
-        "equip": None
+        "equip": None,
+        "likes": ["果肉なしいちごオレ","オムライス","卵かけご飯"],
+        "dislikes": "納豆"
     },
     {
         "name": "茉鈴",
@@ -243,9 +253,78 @@ GACHA_POOL = [
         "role": "サポーター",
         "gender": "女",
         "best_equip": "子供用カメラ",
-        "equip": None
+        "equip": None,
+        "likes": ["コーンマヨピザ","オムライス"],
+        "dislikes": "激辛ラーメン"
     }
 ]
+
+# 🍱 ご飯アイテムの定義
+FOOD_ITEMS = {
+    "ショートケーキ": {"icon": "🍰"},
+    "激辛ラーメン": {"icon": "🍜"},
+    "おにぎり": {"icon": "🍙"},
+    "ハニーローストピーナッツ": {"icon": ""},
+    "果肉なしいちごオレ": {"icon": ""},
+    "紅茶": {"icon": ""},
+    "クソデカステーキ": {"icon": ""},
+    "野菜たっぷりサラダ": {"icon": ""},
+    "酒": {"icon": ""},
+    "オムライス": {"icon": ""},
+    "卵かけご飯": {"icon": ""},
+    "ブロッコリー": {"icon": ""},
+    "納豆": {"icon": ""},
+    "怪しい肉": {"icon": ""},
+    "ほうれん草のキッシュ": {"icon": ""},
+    "レモンのタルト": {"icon": ""},
+    "コーンマヨピザ": {"icon": ""},
+    "レモネード": {"icon": ""},
+    "ナスの肉味噌炒め": {"icon": ""},
+    "きのこのバター醤油炒め": {"icon": ""},
+    "カプレーゼ": {"icon": ""},
+    "バジルのスパゲッティ": {"icon": ""},
+    "ラムネ": {"icon": ""},
+    "ぶどうのコンポート": {"icon": ""},
+    "ブルーベリージャムパン": {"icon": ""},
+    "ピーマンの肉詰め": {"icon": ""},
+}
+
+# 🍰 各キャラの好み設定（GACHA_POOL内の各キャラ辞書の中に書いてもOKです）
+CHARACTER_TASTE = {
+    "竹村しえら": {
+        "likes": ["ショートケーキ"],
+        "dislikes": ["激辛ラーメン"]
+    },
+    "レオ": {
+        "likes": ["高級お肉"],
+        "dislikes": ["ショートケーキ"]
+    }
+}
+
+# 📈 レベルアップに必要な経験値テーブル（例: Lv.1 -> Lv.2 に 100xp 必要）
+def get_required_exp(level):
+    return level * 100
+
+# 🎁 レベルアップ時の報酬判定関数
+def check_level_up(char_data):
+    rewards = []
+    while True:
+        req_exp = get_required_exp(char_data["level"])
+        if char_data["exp"] >= req_exp:
+            char_data["exp"] -= req_exp
+            char_data["level"] += 1
+            
+            # レベルアップ報酬の決定（例: 虹の欠片、ガチャチケ、ランダムボックスなど）
+            lvl = char_data["level"]
+            if lvl % 5 == 0:
+                rewards.append("🎫 ガチャチケ x1")
+            elif lvl % 3 == 0:
+                rewards.append("💎 虹の欠片 x300")
+            else:
+                rewards.append("🎁 ご飯ランダムボックス x1")
+        else:
+            break
+    return rewards
 
 # --------------------------------------------------
 # 📊 セーブデータの読み込みと保存（非同期対応）
