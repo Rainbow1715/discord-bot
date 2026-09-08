@@ -1,3 +1,4 @@
+print("🔍 database.py の読み込みを開始しました！")
 import os
 import json
 import asyncio
