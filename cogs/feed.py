@@ -87,7 +87,7 @@ class FoodSelectView(discord.ui.View):
             reaction_msg = f"大喜びしている！✨\n「わーい！ {food_name} 大好き！」"
             color = discord.Color.pink()
         elif taste == "dislike":
-            reaction_msg = f"ちょっと苦手そうだ…💧\n「うっ… {food_name} はあんまり…」"
+            reaction_msg = f"微妙な表情。\n「……」"
             color = discord.Color.dark_gray()
         else:
             reaction_msg = f"おいしそうに食べている！😋\n「もぐもぐ… {food_name} 、ごちそうさま！」"
