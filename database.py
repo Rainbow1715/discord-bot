@@ -225,6 +225,7 @@ GACHA_POOL = [
 def load_data():
     global user_data
     if not sheet:
+        print("⚠️ 【警告】sheetが初期化されていないため、読み込みをスキップしました。")
         return
     try:
         records = sheet.get_all_records()
@@ -239,6 +240,7 @@ def load_data():
 # 実際にスプレッドシートへ書き込む内部関数
 def _sync_save():
     if not sheet:
+        print("⚠️ 【警告】sheetが初期化されていないため、保存をスキップしました。")
         return
     try:
         rows = [["user_id", "data_json"]]
