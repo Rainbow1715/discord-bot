@@ -293,3 +293,4 @@ def get_user_profile(user_id):
             c["equip"] = None
 
     return u_info
+save_data()
