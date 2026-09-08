@@ -11,6 +11,15 @@ def select_character_by_rarity():
     
     # 2. 選ばれたレア度のキャラリストを取得
     pool = [c for c in GACHA_POOL if c.get("rarity") == chosen_rarity]
+
+    # 3. 🎂 ピックアップ判定
+    # そのレア度の中にピックアップ対象キャラが含まれているか確認
+    pickup_in_pool = [c for c in pool if c.get("name") in PICKUP_CHARACTERS]
+    
+    if pickup_in_pool:
+        # 指定した確率（例: 50%）でピックアップキャラを優先選出
+        if random.random() < PICKUP_BOOST_RATE:
+            return random.choice(pickup_in_pool)
     
     # 該当レア度のキャラがまだ登録されていない場合は、存在するキャラの中からフォールバック
     if not pool:
