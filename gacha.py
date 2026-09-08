@@ -86,7 +86,7 @@ class GachaView(discord.ui.View):
                 existing_char["count"] = existing_char.get("count", 1) + 1
                 existing_char["hp"] += 2
                 existing_char["atk"] += 1
-                status_note = f"**[重複 +1]** (所持数: {existing_char['count']})"
+                status_note = f"[重複 +1] (所持数: {existing_char['count']})"
             else:
                 new_char = {
                     "name": template["name"],
