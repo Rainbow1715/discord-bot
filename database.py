@@ -35,92 +35,7 @@ def init_gspread():
 sheet = init_gspread()
 user_data = {}
 
-# --------------------------------------------------
-# 🔰 初期キャラクターデータ（茉鈴・橘柊人・河野蜜柑）
-# --------------------------------------------------
-DEFAULT_CHARACTERS = [
-    {
-        "name": "茉鈴",
-        "icon": "<:6_marin:1476539399188648016>",
-        "level": 1,
-        "exp": 0,
-        "hp": 80,
-        "max_hp": 80,
-        "atk": 5,
-        "spd": 10,
-        "rec": 20,
-        "skill_name": "キラキラがたくさん！",
-        "skill_pow": 1.2,
-        "skill_type": "heal_all",
-        "rarity": "★2",
-        "count": 1,
-        "element": "光",
-        "role": "サポーター",
-        "gender": "女",
-        "best_equip": "子供用カメラ",
-        "equip": None,
-        "likes": ["コーンマヨピザ", "オムライス"],
-        "dislikes": ["激辛ラーメン"],
-        "affection_level": 1,
-        "affection_exp": 0,
-        "known_likes": [],
-        "known_dislikes": []
-    },
-    {
-        "name": "橘柊人",
-        "icon": "<:6_syuuto:1476538895968768000>",
-        "level": 1,
-        "exp": 0,
-        "hp": 120,
-        "max_hp": 120,
-        "atk": 25,
-        "spd": 12,
-        "rec": 5,
-        "skill_name": "ハリセン攻撃",
-        "skill_pow": 1.5,
-        "skill_type": "physical",
-        "rarity": "★3",
-        "count": 1,
-        "element": "赤",
-        "role": "アタッカー",
-        "gender": "男",
-        "best_equip": "ハリセン",
-        "equip": None,
-        "likes": [],
-        "dislikes": [],
-        "affection_level": 1,
-        "affection_exp": 0,
-        "known_likes": [],
-        "known_dislikes": []
-    },
-    {
-        "name": "河野蜜柑",
-        "icon": "<:6_11_mikan:1539927243491385375>",
-        "level": 1,
-        "exp": 0,
-        "hp": 90,
-        "max_hp": 90,
-        "atk": 10,
-        "spd": 10,
-        "rec": 8,
-        "skill_name": "君たちにはこの虫が見えないの……？",
-        "skill_pow": 1.0,
-        "skill_type": "stun",
-        "rarity": "★2",
-        "count": 1,
-        "element": "紫",
-        "role": "サポーター",
-        "gender": "女",
-        "best_equip": "学校の箒",
-        "equip": None,
-        "likes": [],
-        "dislikes": [],
-        "affection_level": 1,
-        "affection_exp": 0,
-        "known_likes": [],
-        "known_dislikes": []
-    }
-]
+
 
 # 🎰 レア度ごとの排出確率設定
 RARITY_RATES = {
@@ -285,6 +200,74 @@ GACHA_POOL = [
         "equip": None,
         "likes": ["コーンマヨピザ", "オムライス"],
         "dislikes": ["激辛ラーメン"],
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
+    }
+]
+
+# --------------------------------------------------
+# 🔰 初期キャラクターデータ（GACHA_POOLから検索して取得）
+# --------------------------------------------------
+# GACHA_POOLの中から指定した名前のキャラを探すヘルパー関数
+def find_gacha_char(name):
+    for c in GACHA_POOL:
+        if c["name"] == name:
+            return c
+    return None
+
+DEFAULT_CHARACTERS = [
+    find_gacha_char("茉鈴"),
+    {
+        "name": "橘柊人",
+        "icon": "<:6_syuuto:1476538895968768000>",
+        "level": 1,
+        "exp": 0,
+        "hp": 120,
+        "max_hp": 120,
+        "atk": 25,
+        "spd": 12,
+        "rec": 5,
+        "skill_name": "ハリセン攻撃",
+        "skill_pow": 1.5,
+        "skill_type": "physical",
+        "rarity": "★3",
+        "count": 1,
+        "element": "赤",
+        "role": "アタッカー",
+        "gender": "男",
+        "best_equip": "ハリセン",
+        "equip": None,
+        "likes": [],
+        "dislikes": [],
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
+    },
+    {
+        "name": "河野蜜柑",
+        "icon": "<:6_11_mikan:1539927243491385375>",
+        "level": 1,
+        "exp": 0,
+        "hp": 90,
+        "max_hp": 90,
+        "atk": 10,
+        "spd": 10,
+        "rec": 8,
+        "skill_name": "君たちにはこの虫が見えないの……？",
+        "skill_pow": 1.0,
+        "skill_type": "stun",
+        "rarity": "★2",
+        "count": 1,
+        "element": "紫",
+        "role": "サポーター",
+        "gender": "女",
+        "best_equip": "学校の箒",
+        "equip": None,
+        "likes": [],
+        "dislikes": [],
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
