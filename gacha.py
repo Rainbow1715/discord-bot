@@ -1,6 +1,6 @@
 import random
 import discord
-from database import GACHA_POOL, RARITY_RATES, get_user_profile, save_data
+from database import GACHA_POOL, RARITY_RATES, PICKUP_CHARACTERS, PICKUP_BOOST_RATE, get_user_profile, save_data
 
 def select_character_by_rarity():
     """レア度確率に基づいてキャラを1体抽選する（存在しないレア度は自動フォールバック）"""
