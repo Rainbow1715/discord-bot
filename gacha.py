@@ -1,26 +1,33 @@
 import random
 import discord
-from database import GACHA_POOL, get_user_profile, save_data
+from database import GACHA_POOL, RARITY_RATES, get_user_profile, save_data
 
+def select_character_by_rarity():
+    """レア度確率に基づいてキャラを1体抽選する（存在しないレア度は自動フォールバック）"""
+    # 1. 重み付きランダムでレア度を決定
+    rarities = list(RARITY_RATES.keys())
+    weights = list(RARITY_RATES.values())
+    chosen_rarity = random.choices(rarities, weights=weights, k=1)[0]
+    
+    # 2. 選ばれたレア度のキャラリストを取得
+    pool = [c for c in GACHA_POOL if c.get("rarity") == chosen_rarity]
+    
+    # 該当レア度のキャラがまだ登録されていない場合は、存在するキャラの中からフォールバック
+    if not pool:
+        # ★3〜★5などで存在するプールから再選出
+        available_rarities = list(set(c.get("rarity") for c in GACHA_POOL))
+        chosen_rarity = random.choice(available_rarities)
+        pool = [c for c in GACHA_POOL if c.get("rarity") == chosen_rarity]
+        
 def draw_10_gacha():
     """10連ガチャを引く処理"""
+    def draw_10_gacha():
+    """10連ガチャ（9枠通常 + 1枠★3以上確定枠などの処理例）"""
     results = []
-    rarity_weights = [70, 25, 5]  # ★3: 70%, ★4: 25%, ★5: 5%
-
-    star3_pool = [c for c in GACHA_POOL if c["rarity"] == "★3"]
-    star4_pool = [c for c in GACHA_POOL if c["rarity"] == "★4"]
-    star5_pool = [c for c in GACHA_POOL if c["rarity"] == "★5"]
-
+    
+    # 通常枠 9連
     for _ in range(10):
-        selected_rarity = random.choices(["★3", "★4", "★5"], weights=rarity_weights)[0]
-        if selected_rarity == "★3":
-            char_template = random.choice(star3_pool)
-        elif selected_rarity == "★4":
-            char_template = random.choice(star4_pool)
-        else:
-            char_template = random.choice(star5_pool)
-
-        results.append(char_template)
+        results.append(select_character_by_rarity())
 
     return results
 
