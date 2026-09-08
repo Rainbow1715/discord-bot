@@ -14,7 +14,6 @@ def select_character_by_rarity():
     
     # 該当レア度のキャラがまだ登録されていない場合は、存在するキャラの中からフォールバック
     if not pool:
-        # ★3〜★5などで存在するプールから再選出
         available_rarities = list(set(c.get("rarity") for c in GACHA_POOL))
         chosen_rarity = random.choice(available_rarities)
         pool = [c for c in GACHA_POOL if c.get("rarity") == chosen_rarity]
@@ -23,13 +22,13 @@ def select_character_by_rarity():
     if not pool:
         return GACHA_POOL[0] if GACHA_POOL else None
         
+    return random.choice(pool)
+
 def draw_10_gacha():
     """10連ガチャを引く処理"""
-    def draw_10_gacha():
-        """10連ガチャ（9枠通常 + 1枠★3以上確定枠などの処理例）"""
     results = []
     
-    # 通常枠 9連
+    # 通常枠 10連
     for _ in range(10):
         results.append(select_character_by_rarity())
 
@@ -47,42 +46,40 @@ class GachaView(discord.ui.View):
             await interaction.response.send_message("❌ 他のユーザーのガチャ画面です。", ephemeral=True)
             return
 
-        # 2. 💡 ここで defer() を呼び出し！「考え中…」にしてタイムアウトを15秒に延ばす
+        # 2. 「考え中…」にしてタイムアウトを15秒に延ばす
         await interaction.response.defer()
-
-        # process_gacha 内のループ処理部分の例
-    for template in drawn_templates:
-        if not template:
-            continue  # None の場合はスキップ
-            char_icon = template.get("icon", "❓")
 
         u_data = get_user_profile(self.user_id)
         items = u_data["items"]
 
+        # コストチェックと消費
         if cost_type == "rainbow":
             if items.get("虹の欠片", 0) < 1000:
-                # defer() 後なので followup で送信します
                 await interaction.followup.send("❌ 虹の欠片が足りません！（必要: 1000個）", ephemeral=True)
                 return
             items["虹の欠片"] -= 1000
         elif cost_type == "ticket":
             if items.get("ガチャチケ", 0) < 10:
-                # defer() 後なので followup で送信します
                 await interaction.followup.send("❌ ガチャチケが足りません！（必要: 10枚）", ephemeral=True)
                 return
             items["ガチャチケ"] -= 10
 
+        # ガチャの実行
         drawn_templates = draw_10_gacha()
         user_chars = u_data["characters"]
         result_lines = []
 
         for idx, template in enumerate(drawn_templates, start=1):
+            if not template:
+                continue
+
             # キャラ固有のiconが設定されていればそれを優先し、なければレア度標準の絵文字を使う
             char_icon = template.get("icon")
             if char_icon:
                 rarity_icon = char_icon
             else:
-                rarity_icon = "✨" if template["rarity"] == "★5" else ("🌟" if template["rarity"] == "★4" else "")
+                rarity_icon = "✨" if template.get("rarity") == "★5" else ("🌟" if template.get("rarity") == "★4" else "")
+
             existing_char = next((c for c in user_chars if c["name"] == template["name"]), None)
 
             if existing_char:
@@ -93,22 +90,22 @@ class GachaView(discord.ui.View):
             else:
                 new_char = {
                     "name": template["name"],
-                    "rarity": template["rarity"],
+                    "rarity": template.get("rarity", "★3"),
                     "icon": template.get("icon"),
                     "count": 1,
                     "level": 1,
                     "exp": 0,
-                    "hp": template["hp"],
-                    "atk": template["atk"],
-                    "spd": template["spd"],
-                    "rec": template["rec"],
-                    "skill_name": template["skill_name"],
-                    "skill_pow": template["skill_pow"],
+                    "hp": template.get("hp", 100),
+                    "atk": template.get("atk", 10),
+                    "spd": template.get("spd", 10),
+                    "rec": template.get("rec", 10),
+                    "skill_name": template.get("skill_name", "通常攻撃"),
+                    "skill_pow": template.get("skill_pow", 1.0),
                 }
                 user_chars.append(new_char)
                 status_note = "**[NEW!]**"
 
-            result_lines.append(f"{idx}. {rarity_icon} **[{template['rarity']}] {template['name']}** {status_note}")
+            result_lines.append(f"{idx}. {rarity_icon} **[{template.get('rarity', '★3')}] {template['name']}** {status_note}")
 
         # 3. ガチャ結果を保存
         save_data()
