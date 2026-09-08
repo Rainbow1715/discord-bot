@@ -123,8 +123,6 @@ class GachaView(discord.ui.View):
             # 表示テキストの先頭に birthday_mark (🎂) を追加
             result_lines.append(f"{idx}. {birthday_mark}{rarity_icon} **[{template.get('rarity', '★3')}] {char_name}** {status_note}")
 
-            result_lines.append(f"{idx}. {rarity_icon} **[{template.get('rarity', '★3')}] {template['name']}** {status_note}")
-
         # 3. ガチャ結果を保存
         save_data()
 
