@@ -53,8 +53,8 @@ class GachaView(discord.ui.View):
         # process_gacha 内のループ処理部分の例
     for template in drawn_templates:
         if not template:
-        continue  # None の場合はスキップ
-        char_icon = template.get("icon", "❓")
+            continue  # None の場合はスキップ
+            char_icon = template.get("icon", "❓")
 
         u_data = get_user_profile(self.user_id)
         items = u_data["items"]
