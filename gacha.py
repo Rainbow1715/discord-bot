@@ -3,7 +3,7 @@ import discord
 from database import GACHA_POOL, RARITY_RATES, PICKUP_CHARACTERS, PICKUP_BOOST_RATE, get_user_profile, save_data
 
 def select_character_by_rarity():
-    """レア度確率に基づいてキャラを1体抽選する（存在しないレア度は自動フォールバック）"""
+    """レア度確率に基づいてキャラを1体抽選する（フォールバック時は低レア優先）"""
     # 1. 重み付きランダムでレア度を決定
     rarities = list(RARITY_RATES.keys())
     weights = list(RARITY_RATES.values())
@@ -12,25 +12,28 @@ def select_character_by_rarity():
     # 2. 選ばれたレア度のキャラリストを取得
     pool = [c for c in GACHA_POOL if c.get("rarity") == chosen_rarity]
 
-    # 3. 🎂 ピックアップ判定
-    # そのレア度の中にピックアップ対象キャラが含まれているか確認
-    pickup_in_pool = [c for c in pool if c.get("name") in PICKUP_CHARACTERS]
-    
-    if pickup_in_pool:
-        # 指定した確率（例: 50%）でピックアップキャラを優先選出
-        if random.random() < PICKUP_BOOST_RATE:
-            return random.choice(pickup_in_pool)
-    
-    # 該当レア度のキャラがまだ登録されていない場合は、存在するキャラの中からフォールバック
+    # 3. 該当レア度のキャラが未実装の場合のフォールバック処理
     if not pool:
-        available_rarities = list(set(c.get("rarity") for c in GACHA_POOL))
-        chosen_rarity = random.choice(available_rarities)
-        pool = [c for c in GACHA_POOL if c.get("rarity") == chosen_rarity]
+        # ★5を除外した、現在存在する低レア度プール（★3〜★4）に安全に流す
+        non_star5_pool = [c for c in GACHA_POOL if c.get("rarity") != "★5"]
+        if non_star5_pool:
+            pool = non_star5_pool
+        else:
+            pool = GACHA_POOL
 
-    # それでも万が一プールが空ならエラー回避用のデフォルトキャラを返す
+    # それでも万が一プール全体が空なら None を返す
     if not pool:
         return GACHA_POOL[0] if GACHA_POOL else None
-        
+
+    # 4. 🎂 ピックアップ判定
+    # そのプール（選ばれたレア度）の中にピックアップ対象キャラが含まれているか確認
+    pickup_in_pool = [c for c in pool if c.get("name") in PICKUP_CHARACTERS]
+    if pickup_in_pool:
+        # 指定した確率（90%など）でピックアップキャラを優先選出
+        if random.random() < PICKUP_BOOST_RATE:
+            return random.choice(pickup_in_pool)
+
+    # 5. 通常選出
     return random.choice(pool)
 
 def draw_10_gacha():
