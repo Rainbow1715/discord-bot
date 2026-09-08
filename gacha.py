@@ -18,6 +18,10 @@ def select_character_by_rarity():
         available_rarities = list(set(c.get("rarity") for c in GACHA_POOL))
         chosen_rarity = random.choice(available_rarities)
         pool = [c for c in GACHA_POOL if c.get("rarity") == chosen_rarity]
+
+    # それでも万が一プールが空ならエラー回避用のデフォルトキャラを返す
+    if not pool:
+        return GACHA_POOL[0] if GACHA_POOL else None
         
 def draw_10_gacha():
     """10連ガチャを引く処理"""
