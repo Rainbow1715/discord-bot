@@ -22,7 +22,6 @@ class FoodSelectView(discord.ui.View):
         ]
 
         if not available_foods:
-            # ご飯を持っていない場合
             select = discord.ui.Select(
                 placeholder="あげるご飯がありません…",
                 options=[discord.SelectOption(label="ご飯を持っていません", value="none")],
@@ -31,7 +30,6 @@ class FoodSelectView(discord.ui.View):
             self.add_item(select)
             return
 
-        # ドロップダウンの選択肢を作成（最大25個）
         options = []
         for food_name in available_foods[:25]:
             count = user_items[food_name]
@@ -57,7 +55,6 @@ class FoodSelectView(discord.ui.View):
         self.add_item(select)
 
     async def food_selected_callback(self, interaction: discord.Interaction):
-        # 本人確認
         if interaction.user.id != self.user_id:
             await interaction.response.send_message("❌ 他の人の操作はできません。", ephemeral=True)
             return
@@ -67,20 +64,22 @@ class FoodSelectView(discord.ui.View):
             return
 
         user_info = db.get_user_profile(self.user_id)
+        
+        if self.target_char_index >= len(user_info["characters"]):
+            await interaction.response.send_message("❌ キャラクターデータが見つかりません。", ephemeral=True)
+            return
+
         char_data = user_info["characters"][self.target_char_index]
 
-        # 所持数の確認と消費
         if user_info["items"].get(food_name, 0) <= 0:
             await interaction.response.send_message("❌ そのご飯は持っていません！", ephemeral=True)
             return
 
         user_info["items"][food_name] -= 1
 
-        # データベースのご飯処理を実行
         result = db.feed_character(user_info, char_data, food_name)
         db.save_data()
 
-        # 反応メッセージと演出の組み立て
         taste = result["taste_type"]
         char_name = char_data["name"]
 
@@ -88,7 +87,7 @@ class FoodSelectView(discord.ui.View):
             reaction_msg = f"大喜びしている！✨\n「わーい！ {food_name} 大好き！」"
             color = discord.Color.pink()
         elif taste == "dislike":
-            reaction_msg = f"微妙な反応。\n「………」"
+            reaction_msg = f"ちょっと苦手そうだ…💧\n「うっ… {food_name} はあんまり…」"
             color = discord.Color.dark_gray()
         else:
             reaction_msg = f"おいしそうに食べている！😋\n「もぐもぐ… {food_name} 、ごちそうさま！」"
@@ -100,7 +99,6 @@ class FoodSelectView(discord.ui.View):
             color=color
         )
 
-        # 獲得した経験値情報
         exp_detail = f"+{result['gained_exp']} XP"
         if result["is_first_time"]:
             exp_detail += " **(★初めてのご飯ボーナス +20XP!)**"
@@ -108,7 +106,6 @@ class FoodSelectView(discord.ui.View):
         embed.add_field(name="獲得なつき経験値", value=exp_detail, inline=False)
         embed.add_field(name="現在のなつきLv.", value=f"Lv. {result['current_level']}", inline=True)
 
-        # レベルアップ報酬が発生した場合
         if result["rewards"]:
             reward_str = "\n".join(result["rewards"])
             embed.add_field(name="🎉 なつき度アップ報酬GET！", value=reward_str, inline=False)
@@ -120,11 +117,10 @@ class FoodSelectView(discord.ui.View):
 # 🎴 キャラカード & 「ご飯をあげる」ボタンの View
 # --------------------------------------------------
 class CharacterCardView(discord.ui.View):
-    def __init__(self, user_id: int, char_index: int, total_chars: int):
+    def __init__(self, user_id: int, char_index: int):
         super().__init__(timeout=120)
         self.user_id = user_id
         self.char_index = char_index
-        self.total_chars = total_chars
 
     @discord.ui.button(label="🍱 ご飯をあげる", style=discord.ButtonStyle.success)
     async def feed_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -132,7 +128,6 @@ class CharacterCardView(discord.ui.View):
             await interaction.response.send_message("❌ 他の人のキャラカードは操作できません。", ephemeral=True)
             return
 
-        # ご飯選択メニューを表示（ephemeral=True で本人だけにポップアップ表示）
         food_view = FoodSelectView(self.user_id, self.char_index)
         await interaction.response.send_message("🍱 どのアイテムをあげますか？", view=food_view, ephemeral=True)
 
@@ -145,7 +140,8 @@ class FeedCog(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="chara", description="所持キャラクターの一覧となつき度を確認します")
-    async def chara_command(self, interaction: discord.Interaction):
+    @app_commands.describe(name="確認したいキャラクターの名前（一部でもOK）")
+    async def chara_command(self, interaction: discord.Interaction, name: str = None):
         user_info = db.get_user_profile(interaction.user.id)
         characters = user_info.get("characters", [])
 
@@ -153,12 +149,41 @@ class FeedCog(commands.Cog):
             await interaction.response.send_message("キャラクターを所持していません。", ephemeral=True)
             return
 
-        # 今回は先頭のキャラクターカードを表示する例（ページ切り替えなども拡張可能です）
-        target_index = 0
-        char = characters[target_index]
+        # 名前が指定されていない場合は所持キャラ一覧リストを表示
+        if not name:
+            char_list_str = "\n".join([f"・{c['name']} (Lv.{c.get('level', 1)})" for c in characters])
+            embed = discord.Embed(
+                title=f"👥 {interaction.user.display_name} の所持キャラ一覧",
+                description=f"{char_list_str}\n\n💡 `/chara 名前` で特定のキャラカードを開いてご飯をあげられます！",
+                color=discord.Color.blue()
+            )
+            await interaction.response.send_message(embed=embed)
+            return
 
+        # 🔍 名前での検索処理（部分一致）
+        matched_chars = []
+        for idx, char in enumerate(characters):
+            if name.lower() in char["name"].lower():
+                matched_chars.append((idx, char))
+
+        # 該当なしの場合
+        if not matched_chars:
+            await interaction.response.send_message(f"❌ 「{name}」に一致する所持キャラクターが見つかりませんでした。", ephemeral=True)
+            return
+
+        # 複数ヒットした場合
+        if len(matched_chars) > 1:
+            candidates_str = "\n".join([f"・{char['name']}" for _, char in matched_chars])
+            await interaction.response.send_message(
+                f"🔍 候補が複数いるよ！\n{candidates_str}\n\nもう少し詳しく名前を入力してみてね！",
+                ephemeral=True
+            )
+            return
+
+        # 1体だけに特定できた場合
+        target_index, char = matched_chars[0]
         req_exp = db.get_required_affection_exp(char.get("affection_level", 1))
-        
+
         embed = discord.Embed(
             title=f"{char.get('icon', '')} {char['name']}",
             color=discord.Color.gold()
@@ -167,14 +192,13 @@ class FeedCog(commands.Cog):
         embed.add_field(name="属性 / 役割", value=f"{char.get('element', '光')} / {char.get('role', 'サポーター')}", inline=True)
         embed.add_field(name="なつき度", value=f"Lv. {char.get('affection_level', 1)} ({char.get('affection_exp', 0)}/{req_exp} XP)", inline=False)
 
-        # 判明済みの好き嫌いリスト表示
         known_likes = "、".join(char.get("known_likes", [])) or "まだ判明していません"
         known_dislikes = "、".join(char.get("known_dislikes", [])) or "まだ判明していません"
-        
+
         embed.add_field(name="❤️ 好きな食べ物（判明済み）", value=known_likes, inline=False)
         embed.add_field(name="💔 嫌いな食べ物（判明済み）", value=known_dislikes, inline=False)
 
-        view = CharacterCardView(interaction.user.id, target_index, len(characters))
+        view = CharacterCardView(interaction.user.id, target_index)
         await interaction.response.send_message(embed=embed, view=view)
 
 async def setup(bot):
