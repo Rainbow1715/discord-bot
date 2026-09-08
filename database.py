@@ -17,7 +17,6 @@ def init_gspread():
         return None
 
     try:
-        # 最新の google-auth ライブラリを使用した認証
         scopes = [
             "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive"
@@ -26,7 +25,6 @@ def init_gspread():
         creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
         client = gspread.authorize(creds)
         
-        # シートを取得して接続テスト
         worksheet = client.open_by_key(sheet_id).sheet1
         print("✅ Googleスプレッドシートへの接続に成功しました！")
         return worksheet
@@ -34,10 +32,7 @@ def init_gspread():
         print(f"❌ スプレッドシート接続エラー: {e}")
         return None
 
-# スプレッドシートを取得
 sheet = init_gspread()
-
-# メモリ上のデータ保持用
 user_data = {}
 
 # --------------------------------------------------
@@ -63,7 +58,13 @@ DEFAULT_CHARACTERS = [
         "role": "サポーター",
         "gender": "女",
         "best_equip": "子供用カメラ",
-        "equip": None
+        "equip": None,
+        "likes": ["コーンマヨピザ", "オムライス"],
+        "dislikes": ["激辛ラーメン"],
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
     },
     {
         "name": "橘柊人",
@@ -84,7 +85,13 @@ DEFAULT_CHARACTERS = [
         "role": "アタッカー",
         "gender": "男",
         "best_equip": "ハリセン",
-        "equip": None
+        "equip": None,
+        "likes": [],
+        "dislikes": [],
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
     },
     {
         "name": "河野蜜柑",
@@ -105,26 +112,28 @@ DEFAULT_CHARACTERS = [
         "role": "サポーター",
         "gender": "女",
         "best_equip": "学校の箒",
-        "equip": None
+        "equip": None,
+        "likes": [],
+        "dislikes": [],
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
     }
 ]
 
-# database.py の適当な場所（GACHA_POOL の上など）に追加
-
-# 🎰 レア度ごとの排出確率設定（合計 1.0 = 100%）
+# 🎰 レア度ごとの排出確率設定
 RARITY_RATES = {
-    "★5": 0.0000001,  # 1%
-    "★4": 0.12,  # 12%
-    "★3": 0.20,  # 20%
-    "★2": 0.35,  # 35% (★1・★2追加用の土台)
-    "★1": 0.3499999,  # 35% (★1・★2追加用の土台)
+    "★5": 0.0000001,
+    "★4": 0.12,
+    "★3": 0.20,
+    "★2": 0.35,
+    "★1": 0.3499999,
 }
 
-# database.py の設定欄に追加
-
 # 🎂 今月のバースデー・ピックアップ設定
-PICKUP_CHARACTERS = ["竹村しえら","レオ","Gerânio"]  # 誕生月のキャラ名をここに入れる（複数指定も可）
-PICKUP_BOOST_RATE = 0.60  # 対象レア度が出た際、90%の確率でピックアップキャラになる
+PICKUP_CHARACTERS = ["竹村しえら", "レオ", "Gerânio"]
+PICKUP_BOOST_RATE = 0.60
 
 # 🎰 ガチャ排出キャラクタープール
 GACHA_POOL = [
@@ -148,7 +157,11 @@ GACHA_POOL = [
         "best_equip": "なんか強そうな棒",
         "equip": None,
         "likes": ["果肉なしいちごオレ"],
-        "dislikes": ["激辛ラーメン","紅茶"]
+        "dislikes": ["激辛ラーメン", "紅茶"],
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
     },
     {
         "name": "れーちゃん",
@@ -170,7 +183,11 @@ GACHA_POOL = [
         "best_equip": "紙パックのいちごオレ",
         "equip": None,
         "likes": ["果肉なしいちごオレ"],
-        "dislikes": ["激辛ラーメン","紅茶"]
+        "dislikes": ["激辛ラーメン", "紅茶"],
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
     },
     {
         "name": "レオ",
@@ -192,7 +209,11 @@ GACHA_POOL = [
         "best_equip": "ナイフ",
         "equip": None,
         "likes": ["クソデカステーキ"],
-        "dislikes": ["野菜たっぷりサラダ","ほうれん草のキッシュ","ブロッコリー"]
+        "dislikes": ["野菜たっぷりサラダ", "ほうれん草のキッシュ", "ブロッコリー"],
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
     },
     {
         "name": "Gerânio",
@@ -212,7 +233,11 @@ GACHA_POOL = [
         "best_equip": "ロケット",
         "equip": None,
         "likes": ["オムライス"],
-        "dislikes": None
+        "dislikes": [],
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
     },
     {
         "name": "白黒レイ",
@@ -231,8 +256,12 @@ GACHA_POOL = [
         "gender": "？",
         "best_equip": "電子機器",
         "equip": None,
-        "likes": ["果肉なしいちごオレ","オムライス","卵かけご飯"],
-        "dislikes": "納豆"
+        "likes": ["果肉なしいちごオレ", "オムライス", "卵かけご飯"],
+        "dislikes": ["納豆"],
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
     },
     {
         "name": "茉鈴",
@@ -254,8 +283,12 @@ GACHA_POOL = [
         "gender": "女",
         "best_equip": "子供用カメラ",
         "equip": None,
-        "likes": ["コーンマヨピザ","オムライス"],
-        "dislikes": "激辛ラーメン"
+        "likes": ["コーンマヨピザ", "オムライス"],
+        "dislikes": ["激辛ラーメン"],
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
     }
 ]
 
@@ -289,42 +322,81 @@ FOOD_ITEMS = {
     "ピーマンの肉詰め": {"icon": ""},
 }
 
-# 🍰 各キャラの好み設定（GACHA_POOL内の各キャラ辞書の中に書いてもOKです）
-CHARACTER_TASTE = {
-    "竹村しえら": {
-        "likes": ["ショートケーキ"],
-        "dislikes": ["激辛ラーメン"]
-    },
-    "レオ": {
-        "likes": ["高級お肉"],
-        "dislikes": ["ショートケーキ"]
-    }
-}
-
-# 📈 レベルアップに必要な経験値テーブル（例: Lv.1 -> Lv.2 に 100xp 必要）
-def get_required_exp(level):
+# 📈 なつき度の必要経験値計算（例: Lv.1 -> Lv.2 に 100xp）
+def get_required_affection_exp(level):
     return level * 100
 
-# 🎁 レベルアップ時の報酬判定関数
-def check_level_up(char_data):
+# 🎁 なつき度レベルアップ判定と報酬
+def check_affection_level_up(char_data, user_info):
     rewards = []
     while True:
-        req_exp = get_required_exp(char_data["level"])
-        if char_data["exp"] >= req_exp:
-            char_data["exp"] -= req_exp
-            char_data["level"] += 1
+        req_exp = get_required_affection_exp(char_data["affection_level"])
+        if char_data["affection_exp"] >= req_exp:
+            char_data["affection_exp"] -= req_exp
+            char_data["affection_level"] += 1
+            lvl = char_data["affection_level"]
             
-            # レベルアップ報酬の決定（例: 虹の欠片、ガチャチケ、ランダムボックスなど）
-            lvl = char_data["level"]
+            # レベルアップ報酬
             if lvl % 5 == 0:
                 rewards.append("🎫 ガチャチケ x1")
+                user_info["items"]["ガチャチケ"] = user_info["items"].get("ガチャチケ", 0) + 1
             elif lvl % 3 == 0:
                 rewards.append("💎 虹の欠片 x300")
+                user_info["items"]["虹の欠片"] = user_info["items"].get("虹の欠片", 0) + 300
             else:
                 rewards.append("🎁 ご飯ランダムボックス x1")
+                user_info["items"]["ご飯ランダムボックス"] = user_info["items"].get("ご飯ランダムボックス", 0) + 1
         else:
             break
     return rewards
+
+# 🍱 ご飯をあげる処理
+def feed_character(user_info, char_data, food_name):
+    likes = char_data.get("likes", [])
+    dislikes = char_data.get("dislikes", [])
+    
+    # 判明済みリストの初期化
+    if "known_likes" not in char_data:
+        char_data["known_likes"] = []
+    if "known_dislikes" not in char_data:
+        char_data["known_dislikes"] = []
+
+    # 初めて食べるご飯かどうかのチェック
+    is_first_time = (food_name not in char_data["known_likes"]) and (food_name not in char_data["known_dislikes"])
+    
+    # 基本XPの判定（好き:100 / 嫌い:20 / 普通:50）
+    if food_name in likes:
+        base_exp = 100
+        taste_type = "like"
+        if food_name not in char_data["known_likes"]:
+            char_data["known_likes"].append(food_name)
+    elif food_name in dislikes:
+        base_exp = 20
+        taste_type = "dislike"
+        if food_name not in char_data["known_dislikes"]:
+            char_data["known_dislikes"].append(food_name)
+    else:
+        base_exp = 50
+        taste_type = "normal"
+
+    # 初回ボーナス +20xp
+    first_bonus = 20 if is_first_time else 0
+    total_gained_exp = base_exp + first_bonus
+
+    # なつき度・経験値の加算
+    char_data["affection_level"] = char_data.get("affection_level", 1)
+    char_data["affection_exp"] = char_data.get("affection_exp", 0) + total_gained_exp
+
+    # レベルアップチェック
+    rewards = check_affection_level_up(char_data, user_info)
+
+    return {
+        "taste_type": taste_type,
+        "is_first_time": is_first_time,
+        "gained_exp": total_gained_exp,
+        "current_level": char_data["affection_level"],
+        "rewards": rewards
+    }
 
 # --------------------------------------------------
 # 📊 セーブデータの読み込みと保存（非同期対応）
@@ -344,7 +416,6 @@ def load_data():
     except Exception as e:
         print(f"❌ データの読み込みエラー: {e}")
 
-# 実際にスプレッドシートへ書き込む内部関数
 def _sync_save():
     if not sheet:
         print("⚠️ 【警告】sheetが初期化されていないため、保存をスキップしました。")
@@ -360,7 +431,6 @@ def _sync_save():
     except Exception as e:
         print(f"❌ データの保存エラー: {e}")
 
-# Discordの返答を止めないようバックグラウンドで保存を実行
 def save_data():
     try:
         loop = asyncio.get_running_loop()
@@ -379,7 +449,7 @@ def get_user_profile(user_id):
     if user_id not in user_data:
         user_data[user_id] = {
             "gold": 1000,
-            "items": {"虹の欠片": 100, "ガチャチケ": 100},
+            "items": {"虹の欠片": 100, "ガチャチケ": 100, "おにぎり": 5, "ショートケーキ": 2, "激辛ラーメン": 2},
             "characters": [dict(c) for c in DEFAULT_CHARACTERS],
             "party_indices": [0, 1, 2],
             "mails": []
@@ -388,7 +458,7 @@ def get_user_profile(user_id):
 
     u_info = user_data[user_id]
 
-    # 既存ユーザーのキャラデータ補完
+    # 既存ユーザーのキャラデータ＆なつき度データ自動補完
     for c in u_info.get("characters", []):
         if "element" not in c:
             c["element"] = "赤"
@@ -400,6 +470,18 @@ def get_user_profile(user_id):
             c["best_equip"] = None
         if "equip" not in c:
             c["equip"] = None
+        if "likes" not in c:
+            c["likes"] = []
+        if "dislikes" not in c:
+            c["dislikes"] = []
+        if "affection_level" not in c:
+            c["affection_level"] = 1
+        if "affection_exp" not in c:
+            c["affection_exp"] = 0
+        if "known_likes" not in c:
+            c["known_likes"] = []
+        if "known_dislikes" not in c:
+            c["known_dislikes"] = []
 
     return u_info
 
