@@ -82,6 +82,12 @@ class GachaView(discord.ui.View):
             if not template:
                 continue
 
+            char_name = template.get("name", "")
+            
+            # 🎂 誕生月ピックアップ対象かどうかをチェック
+            is_pickup = char_name in PICKUP_CHARACTERS
+            birthday_mark = "🎂 " if is_pickup else ""
+
             # キャラ固有のiconが設定されていればそれを優先し、なければレア度標準の絵文字を使う
             char_icon = template.get("icon")
             if char_icon:
@@ -112,7 +118,10 @@ class GachaView(discord.ui.View):
                     "skill_pow": template.get("skill_pow", 1.0),
                 }
                 user_chars.append(new_char)
-                status_note = "**[NEW!]**"
+                status_note = "**[✨NEW!✨]**"
+
+            # 表示テキストの先頭に birthday_mark (🎂) を追加
+            result_lines.append(f"{idx}. {birthday_mark}{rarity_icon} **[{template.get('rarity', '★3')}] {char_name}** {status_note}")
 
             result_lines.append(f"{idx}. {rarity_icon} **[{template.get('rarity', '★3')}] {template['name']}** {status_note}")
 
