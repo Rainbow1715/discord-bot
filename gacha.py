@@ -77,6 +77,7 @@ class GachaView(discord.ui.View):
                 new_char = {
                     "name": template["name"],
                     "rarity": template["rarity"],
+                    "icon": template.get("icon"),
                     "count": 1,
                     "level": 1,
                     "exp": 0,
