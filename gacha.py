@@ -1,7 +1,7 @@
 import random
 import discord
 from database import GACHA_POOL, RARITY_RATES, PICKUP_CHARACTERS, PICKUP_BOOST_RATE, get_user_profile, save_data
-from achievement import check_and_unlock_achievement  # 👈 実実績解除関数をインポート
+from achievement import on_gacha_draw
 
 def select_character_by_rarity():
     """レア度確率に基づいてキャラを1体抽選する（フォールバック時は低レア優先）"""
