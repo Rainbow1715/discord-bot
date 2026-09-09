@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 from aiohttp import web
 
-from database import user_data, get_user_profile, save_data
+from database import user_data, get_user_profile, save_data, GACHA_POOL
 from gacha import GachaView
 from shop import ShopView
 import admin
@@ -45,7 +45,7 @@ class MyBot(commands.Bot):
         except Exception as e:
             print(f"❌ cogs.feed の読み込みエラー: {e}")
 
-        # 🔻cogsフォルダ内の item.py を読み込む🔻
+        # 🔻 cogs/item.py の読み込み 🔻
         try:
             await self.load_extension("cogs.item")
             print("✅ cogs.item の読み込みに成功しました！")
@@ -229,9 +229,6 @@ async def party(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, view=view)
 
 
-# 💡 /battle は battle.py (BattleCog) 側で一括管理されるため、main.py 側の直接定義は削除しました。
-
-
 @bot.tree.command(name="gacha", description="虹の欠片やチケットを使って10連ガチャを回します")
 async def gacha(interaction: discord.Interaction):
     u_data = get_user_profile(interaction.user.id)
@@ -274,6 +271,10 @@ async def shop(interaction: discord.Interaction):
     view = ShopView(interaction.user.id)
     await interaction.response.send_message(embed=embed, view=view)
 
+
+# --------------------------------------------------
+# 📬 メール受信・受取コマンド（キャラ受取対応版）
+# --------------------------------------------------
 @bot.tree.command(name="mailbox", description="届いているメールや報酬を確認・受け取ります")
 async def mailbox(interaction: discord.Interaction):
     u_data = get_user_profile(interaction.user.id)
@@ -288,15 +289,52 @@ async def mailbox(interaction: discord.Interaction):
     total_gold = 0
     total_rainbow = 0
     total_ticket = 0
+    received_chars = []
     mail_titles = []
 
     for m in unclaimed_mails:
         total_gold += m.get("gold", 0)
         total_rainbow += m.get("rainbow", 0)
         total_ticket += m.get("ticket", 0)
+        
+        # 👤 添付キャラの処理
+        char_name = m.get("char_name")
+        if char_name:
+            template = next((c for c in GACHA_POOL if c["name"] == char_name), None)
+            if template:
+                user_chars = u_data.setdefault("characters", [])
+                existing_char = next((c for c in user_chars if c["name"] == char_name), None)
+
+                if existing_char:
+                    existing_char["count"] = existing_char.get("count", 1) + 1
+                    existing_char["hp"] += 2
+                    existing_char["atk"] += 1
+                    received_chars.append(f"{char_name} (重複強化 +1)")
+                else:
+                    new_char = {
+                        "name": template["name"],
+                        "rarity": template.get("rarity", "★3"),
+                        "element": template.get("element", "赤"),
+                        "role": template.get("role", "アタッカー"),
+                        "gender": template.get("gender", "？"),
+                        "icon": template.get("icon"),
+                        "count": 1,
+                        "level": 1,
+                        "exp": 0,
+                        "hp": template.get("hp", 100),
+                        "atk": template.get("atk", 10),
+                        "spd": template.get("spd", 10),
+                        "rec": template.get("rec", 10),
+                        "skill_name": template.get("skill_name", "通常攻撃"),
+                        "skill_pow": template.get("skill_pow", 1.0),
+                    }
+                    user_chars.append(new_char)
+                    received_chars.append(f"{char_name} (新規獲得!)")
+
         m["claimed"] = True
         mail_titles.append(m["title"])
 
+    # 反映
     u_data["gold"] += total_gold
     u_data["items"]["虹の欠片"] = u_data["items"].get("虹の欠片", 0) + total_rainbow
     u_data["items"]["ガチャチケ"] = u_data["items"].get("ガチャチケ", 0) + total_ticket
@@ -307,13 +345,19 @@ async def mailbox(interaction: discord.Interaction):
         description="\n".join([f"・{t}" for t in mail_titles]),
         color=0x2ECC71
     )
-    embed.add_field(name="獲得アイテム", value=(
+    
+    reward_msg = (
         f"💰 **ゴールド**: +{total_gold} G\n"
         f"💎 **虹の欠片**: +{total_rainbow} 個\n"
         f"🎫 **ガチャチケ**: +{total_ticket} 枚"
-    ))
+    )
+    if received_chars:
+        reward_msg += f"\n👤 **獲得キャラ**: " + ", ".join(received_chars)
+
+    embed.add_field(name="獲得アイテム", value=reward_msg, inline=False)
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 bot.run(TOKEN)
