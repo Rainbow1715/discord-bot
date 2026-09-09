@@ -19,7 +19,7 @@ ACHIEVEMENTS = {
         "reward_rainbow": 1000,
     },
     "win_50": {
-        "title": "⚔️あと半分",
+        "title": "⚔️ あと半分",
         "desc": "バトルで50回勝利する",
         "reward_gold": 0,
         "reward_rainbow": 5000,
@@ -44,12 +44,12 @@ ACHIEVEMENTS = {
     }
 }
 
-# 📢 実績通知を送るチャンネルID（ここにコピーした数字を入れてください）
+# 📢 実績通知を送るチャンネルID
 LOG_CHANNEL_ID = 1547122457062940712
 
 
 # --------------------------------------------------
-# ⚔️ バトル勝利時の自動実績チェックまとめ
+# ⚔️ バトル勝利時の自動実績チェック
 # --------------------------------------------------
 async def on_battle_win(interaction: discord.Interaction, u_data: dict):
     """バトル勝利時に呼び出され、カウントアップと実績解除を一括処理する関数"""
@@ -59,6 +59,23 @@ async def on_battle_win(interaction: discord.Interaction, u_data: dict):
 
     if u_data["win_count"] >= 10:
         await check_and_unlock_achievement(interaction, "win_10")
+    if u_data["win_count"] >= 50:
+        await check_and_unlock_achievement(interaction, "win_50")
+
+
+# --------------------------------------------------
+# 🎰 ガチャ実行時の自動実績チェック
+# --------------------------------------------------
+async def on_gacha_draw(interaction: discord.Interaction, u_data: dict):
+    """ガチャを引いた時に呼び出し、実績判定を行う関数"""
+    count = u_data.get("gacha_count", 0)
+
+    if count >= 1:
+        await check_and_unlock_achievement(interaction, "gacha_1")
+    if count >= 10:
+        await check_and_unlock_achievement(interaction, "gacha_10")
+    if count >= 50:
+        await check_and_unlock_achievement(interaction, "gacha_50")
 
 
 # --------------------------------------------------
@@ -74,6 +91,7 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
     if "unlocked_achievements" not in u_data:
         u_data["unlocked_achievements"] = []
 
+    # 既に解除済みの場合は処理しない
     if achievement_id in u_data["unlocked_achievements"]:
         return
 
@@ -114,20 +132,17 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
         print(f"本人への実績通知エラー: {e}")
 
     # --------------------------------------------------
-    # 📢 通知②：チャンネルIDを直接指定して投稿
+    # 📢 通知②：チャンネルIDへ直接テキストで投稿
     # --------------------------------------------------
     try:
-        # botオブジェクト経由でID指定でチャンネルを取得
         target_channel = interaction.client.get_channel(LOG_CHANNEL_ID)
         
         if target_channel:
-        # メンバーの表示名（またはmention）を使って普通テキストで送信
-        user_name = interaction.user.display_name  # または interaction.user.mention
-        await channel.send(f"{interaction.user.mention} が 実績【{ach['name']}】を解除しました！")
-        
+            # メンション付きの普通メッセージで送信
+            await target_channel.send(f"{interaction.user.mention} が 実績【{ach['title']}】を解除しました！")
             print(f"✅ 実績ログを送信しました (ID: {LOG_CHANNEL_ID})")
         else:
-            print(f"⚠️ 指定されたチャンネルID ({LOG_CHANNEL_ID}) が見つかりませんでした。Botが該当サーバーに参加しているか確認してください。")
+            print(f"⚠️ 指定されたチャンネルID ({LOG_CHANNEL_ID}) が見つかりませんでした。")
 
     except Exception as e:
         print(f"ログチャンネルへの実績通知エラー: {e}")
