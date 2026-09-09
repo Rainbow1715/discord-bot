@@ -22,7 +22,7 @@ class ItemView(discord.ui.View):
             gold = self.u_data.get("gold", 0)
             items = self.u_data.get("items", {})
             rainbow = items.get("虹の欠片", 0)
-            ticket = items.get("ガチャチケット", 0)  # 保存時のキー名に合わせて調整してください
+            ticket = items.get("ガチャチケ", 0)  # 保存時のキー名に合わせて調整してください
 
             embed = discord.Embed(
                 title=f"🎒 {self.user.display_name} の所持アイテム (1/2)",
@@ -31,7 +31,7 @@ class ItemView(discord.ui.View):
             )
             embed.add_field(name="💰 ゴールド", value=f"**{gold:,}** G", inline=True)
             embed.add_field(name="💎 虹の欠片", value=f"**{rainbow:,}** 個", inline=True)
-            embed.add_field(name="🎫 ガチャチケット", value=f"**{ticket:,}** 枚", inline=False)
+            embed.add_field(name="🎫 ガチャチケ", value=f"**{ticket:,}** 枚", inline=False)
             embed.set_footer(text="ページ 1/2 | 下のボタンで切り替え")
 
         else:
@@ -41,7 +41,7 @@ class ItemView(discord.ui.View):
             items = self.u_data.get("items", {})
             
             # 通貨以外のアイテム（食べ物など）を抽出
-            exclude_keys = {"虹の欠片", "ガチャチケット"}
+            exclude_keys = {"虹の欠片", "ガチャチケ"}
             food_items = {k: v for k, v in items.items() if k not in exclude_keys and v > 0}
 
             embed = discord.Embed(
