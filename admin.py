@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from database import user_data, save_data
-from battle import run_battle
+from battle import execute_battle  # 👈 run_battle から execute_battle に変更
 
 # 👑 あなたのDiscordユーザーID（数値）
 ADMIN_ID = 837631984280666162
@@ -101,8 +101,8 @@ async def admin_cancel_mail(interaction: discord.Interaction, mail_id: str):
 @app_commands.command(name="admin_test_battle", description="【管理者】テストバトルを実行します")
 @is_admin()
 async def admin_test_battle(interaction: discord.Interaction):
-    # run_battle 自体が最初のメッセージ送信を行うため、直接呼び出します
-    await run_battle(interaction)
+    # execute_battle を呼び出し（通常バトルと同じロジックを実行）
+    await execute_battle(interaction, is_event=False)
 
 
 async def setup(bot):
