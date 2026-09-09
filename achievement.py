@@ -15,8 +15,14 @@ ACHIEVEMENTS = {
     "win_10": {
         "title": "⚔️ 百戦錬磨の兆し",
         "desc": "バトルで10回勝利する",
-        "reward_gold": 1000,
-        "reward_rainbow": 100,
+        "reward_gold": 0,
+        "reward_rainbow": 1000,
+    },
+    "win_50": {
+        "title": "⚔️あと半分",
+        "desc": "バトルで50回勝利する",
+        "reward_gold": 0,
+        "reward_rainbow": 5000,
     },
     "gacha_10": {
         "title": "🎰 ガチャ中毒",
@@ -26,8 +32,8 @@ ACHIEVEMENTS = {
     }
 }
 
-# 📢 実績通知を送るチャンネル名
-LOG_CHANNEL_NAME = "実績解除ログ"
+# 📢 実績通知を送るチャンネルID（ここにコピーした数字を入れてください）
+LOG_CHANNEL_ID = 1547122457062940712
 
 
 # --------------------------------------------------
@@ -35,13 +41,10 @@ LOG_CHANNEL_NAME = "実績解除ログ"
 # --------------------------------------------------
 async def on_battle_win(interaction: discord.Interaction, u_data: dict):
     """バトル勝利時に呼び出され、カウントアップと実績解除を一括処理する関数"""
-    # 勝利数をカウントアップ
     u_data["win_count"] = u_data.get("win_count", 0) + 1
 
-    # 初勝利実績のチェック
     await check_and_unlock_achievement(interaction, "first_win")
 
-    # 10勝実績のチェック
     if u_data["win_count"] >= 10:
         await check_and_unlock_achievement(interaction, "win_10")
 
@@ -56,20 +59,17 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
     if not u_data:
         return
 
-    # ユーザーデータ内に実績用の領域がなければ作成
     if "unlocked_achievements" not in u_data:
         u_data["unlocked_achievements"] = []
 
-    # すでに解除済みの場合はスルー
     if achievement_id in u_data["unlocked_achievements"]:
         return
 
-    # 実績データ取得
     ach = ACHIEVEMENTS.get(achievement_id)
     if not ach:
         return
 
-    # 1. データ更新（解除フラグ ＆ 報酬付与）
+    # データ更新（解除フラグ ＆ 報酬付与）
     u_data["unlocked_achievements"].append(achievement_id)
     u_data["gold"] = u_data.get("gold", 0) + ach["reward_gold"]
     
@@ -80,7 +80,7 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
     save_data()
 
     # --------------------------------------------------
-    # 🔔 通知①：本人への専用メッセージ（Followup / Ephemeral）
+    # 🔔 通知①：本人への専用メッセージ（Ephemeral）
     # --------------------------------------------------
     reward_text = []
     if ach["reward_gold"] > 0:
@@ -102,11 +102,11 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
         print(f"本人への実績通知エラー: {e}")
 
     # --------------------------------------------------
-    # 📢 通知②：実績専用チャンネルへの自動投稿
+    # 📢 通知②：チャンネルIDを直接指定して投稿
     # --------------------------------------------------
     try:
-        # サーバー内の全テキストチャンネルから名前で検索
-        target_channel = discord.utils.get(interaction.guild.text_channels, name=LOG_CHANNEL_NAME)
+        # botオブジェクト経由でID指定でチャンネルを取得
+        target_channel = interaction.client.get_channel(LOG_CHANNEL_ID)
         
         if target_channel:
             embed_log = discord.Embed(
@@ -115,11 +115,10 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
                 color=0x3498DB
             )
             await target_channel.send(embed=embed_log)
-            print(f"✅ 実績通知を送信しました: #{LOG_CHANNEL_NAME}")
+            print(f"✅ 実績ログを送信しました (ID: {LOG_CHANNEL_ID})")
         else:
-            # チャンネルが見つからない場合ログを出す
-            print(f"⚠️ チャンネル '#{LOG_CHANNEL_NAME}' が見つかりませんでした。Botの権限かチャンネル名を確認してください。")
-            
+            print(f"⚠️ 指定されたチャンネルID ({LOG_CHANNEL_ID}) が見つかりませんでした。Botが該当サーバーに参加しているか確認してください。")
+
     except Exception as e:
         print(f"ログチャンネルへの実績通知エラー: {e}")
 
