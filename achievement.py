@@ -7,7 +7,7 @@ from database import user_data, save_data
 # --------------------------------------------------
 ACHIEVEMENTS = {
     "first_win": {
-        "title": "🏆 はじめての勝利",
+        "title": "🔰 はじめての勝利",
         "desc": "バトルで1回勝利する",
         "reward_gold": 500,
         "reward_rainbow": 0,
@@ -24,17 +24,23 @@ ACHIEVEMENTS = {
         "reward_gold": 0,
         "reward_rainbow": 5000,
     },
+    "gacha_1": {
+        "title": "🔰 初めてのガチャ",
+        "desc": "ガチャを累計1回引く",
+        "reward_gold": 0,
+        "reward_rainbow": 300,
+    },
     "gacha_10": {
         "title": "🎰 ガチャ中毒",
         "desc": "ガチャを累計10回引く",
         "reward_gold": 0,
-        "reward_rainbow": 300,
+        "reward_rainbow": 800,
     },
     "gacha_50": {
         "title": "🎰 もうちょいで100",
         "desc": "ガチャを累計50回引く",
         "reward_gold": 0,
-        "reward_rainbow": 800,
+        "reward_rainbow": 1000,
     }
 }
 
