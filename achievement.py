@@ -66,12 +66,23 @@ async def on_battle_win(interaction: discord.Interaction, u_data: dict):
     # 👭 複数キャラ（コンビ・グループ）編成チェック
     # --------------------------------------------------
     party = u_data.get("party", [])
-    party_char_names = {c.get("name") for c in party if isinstance(c, dict)}
+    
+    # パーティデータから名前を取り出す（辞書・文字列どちらにも対応）
+    party_char_names = set()
+    for c in party:
+        if isinstance(c, dict):
+            party_char_names.add(c.get("name"))
+        elif isinstance(c, str):
+            party_char_names.add(c)
 
-    # 竹村しえら ＆ れーちゃん が両方パーティにいるか？
+    print(f"DEBUG: 現在のパーティ内の名前一覧 -> {party_char_names}")
+
     target_pair = {"竹村しえら", "れーちゃん"}
     if target_pair.issubset(party_char_names):
+        print("DEBUG: 条件達成！実績を解除します。")
         await check_and_unlock_achievement(interaction, "win_siera_retya")
+    else:
+        print(f"DEBUG: 条件未達成。不足しているキャラ -> {target_pair - party_char_names}")
 
 
 # --------------------------------------------------
