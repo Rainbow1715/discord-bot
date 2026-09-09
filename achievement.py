@@ -105,7 +105,9 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
     # 📢 通知②：実績専用チャンネルへの自動投稿
     # --------------------------------------------------
     try:
+        # サーバー内の全テキストチャンネルから名前で検索
         target_channel = discord.utils.get(interaction.guild.text_channels, name=LOG_CHANNEL_NAME)
+        
         if target_channel:
             embed_log = discord.Embed(
                 title="📢 実績解除ニュース！",
@@ -113,6 +115,11 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
                 color=0x3498DB
             )
             await target_channel.send(embed=embed_log)
+            print(f"✅ 実績通知を送信しました: #{LOG_CHANNEL_NAME}")
+        else:
+            # チャンネルが見つからない場合ログを出す
+            print(f"⚠️ チャンネル '#{LOG_CHANNEL_NAME}' が見つかりませんでした。Botの権限かチャンネル名を確認してください。")
+            
     except Exception as e:
         print(f"ログチャンネルへの実績通知エラー: {e}")
 
