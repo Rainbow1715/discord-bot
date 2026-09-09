@@ -21,6 +21,11 @@ ACHIEVEMENTS = {
         "desc": "バトルで50回勝利する",
         "reward_rainbow": 5000,
     },
+    "win_100": {
+        "title": "⚔️ やるやん",
+        "desc": "バトルで100回勝利する",
+        "reward_rainbow": 10000,
+    },
     "gacha_1": {
         "title": "🔰 初めてのガチャ",
         "desc": "ガチャを累計1回引く",
@@ -36,10 +41,35 @@ ACHIEVEMENTS = {
         "desc": "ガチャを累計50回引く",
         "reward_rainbow": 1000,
     },
+    "gacha_100": {
+        "title": "🎰 真のガチャ中毒",
+        "desc": "ガチャを累計100回引く",
+        "reward_rainbow": 3000,
+    },
     # 🆕 特定キャラ編成で勝利の実績
     "win_siera_retya": {
         "title": "😰 ど、同一人物……",
         "desc": "竹村しえら と れーちゃん を編成してバトルに勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_siera_x3": {
+        "title": "😰 ど、同一人物……②",
+        "desc": "いずれかの 竹村しえら を3人編成してバトルに勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_reo": {
+        "title": "🤨 誰だお前？",
+        "desc": "レオ と レオ(仮面ライダーパロ) を編成してバトルに勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_marin_orihara": {
+        "title": "😰　なんでそんなことしたの？",
+        "desc": "茉鈴 と 折原和也 を編成してバトルに勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_reo_roi": {
+        "title": "🧐 なんでこんなことしたの？",
+        "desc": "レオ と ロイ を編成してバトルに勝利する",
         "reward_rainbow": 500,
     },
     # 👤 特定キャラ入手実績
@@ -48,6 +78,38 @@ ACHIEVEMENTS = {
         "desc": "白黒レイ を獲得する",
         "reward_rainbow": 17000,
     },
+    "get_rider_siera": {
+        "title": "🚀 宇宙、キター！　……はっず",
+        "desc": "しえら(仮面ライダーパロ) を獲得する",
+        "reward_rainbow": 200,
+    },
+    "get_rider_reo": {
+        "title": "🐉 今の俺は、負ける気がしねぇ！",
+        "desc": "レオ(仮面ライダーパロ) を獲得する",
+        "reward_rainbow": 200,
+    },
+    "get_trickal_rúcia": {
+        "title": "🪅 一緒に遊ばない？",
+        "desc": "ルシア(トリッカルパロ) を獲得する",
+        "reward_rainbow": 200,
+    },
+    "get_trickal_mukuro": {
+        "title": "🙌 ぼくが遊びにきたのだよ。",
+        "desc": "ムクロ(トリッカルパロ) を獲得する",
+        "reward_rainbow": 200,
+    },
+    # 💔 敗北系実績
+    "first_lose": {
+        "title": "🔰 最初の挫折",
+        "desc": "初めてバトルで敗北する",
+        "reward_rainbow": 200
+    },
+    "lose_10": {
+        "title": "🩹 七転び八起き",
+        "desc": "累計10回バトルで敗北する",
+        "reward_rainbow": 350
+    },
+}
 }
 
 # 📢 実績通知を送るチャンネルID
@@ -67,6 +129,20 @@ async def on_battle_win(interaction: discord.Interaction, u_data: dict):
         await check_and_unlock_achievement(interaction, "win_10")
     if u_data["win_count"] >= 50:
         await check_and_unlock_achievement(interaction, "win_50")
+
+# --------------------------------------------------
+# 💔 バトル敗北時の自動実績チェック
+# --------------------------------------------------
+async def on_battle_lose(interaction: discord.Interaction, u_data: dict):
+    """バトル敗北時に呼び出され、敗北カウントの更新と実績解除を行う関数"""
+    u_data["lose_count"] = u_data.get("lose_count", 0) + 1
+
+    # 1回敗北
+    await check_and_unlock_achievement(interaction, "first_lose")
+
+    # 10回敗北
+    if u_data["lose_count"] >= 10:
+        await check_and_unlock_achievement(interaction, "lose_10")
 
     # --------------------------------------------------
     # 👭 複数キャラ（コンビ・グループ）編成チェック
