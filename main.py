@@ -6,7 +6,6 @@ from aiohttp import web
 from database import user_data, get_user_profile, save_data
 from gacha import GachaView
 from shop import ShopView
-from battle import run_battle  # 👈 battle.py から処理を呼び出し
 import admin
 
 # --------------------------------------------------
@@ -53,7 +52,7 @@ class MyBot(commands.Bot):
         except Exception as e:
             print(f"❌ zukan の読み込みエラー: {e}")
 
-        # 🔻 バトル (battle.py) の読み込み 👈 ここを追加！ 🔻
+        # 🔻 バトル (battle.py) の読み込み 🔻
         try:
             await self.load_extension("battle")
             print("✅ battle の読み込みに成功しました！")
@@ -179,7 +178,6 @@ async def chars(interaction: discord.Interaction):
         rarity_str = f" [{c.get('rarity', '★3')}]"
         count_str = f" (所持数: {c.get('count', 1)})" if c.get('count', 1) > 1 else ""
 
-        # 各項目の取得
         elem_str = c.get("element", "なし")
         role_str = c.get("role", "アタッカー")
         gender_str = c.get("gender", "？")
@@ -187,15 +185,12 @@ async def chars(interaction: discord.Interaction):
         elem_icon = ELEMENT_ICONS.get(elem_str, "🎨")
         role_icon = ROLE_ICONS.get(role_str, "🛡️")
 
-        # 🎭 キャラ固有の顔文字アイコン（データになければ属性アイコンで代用）
         char_icon = c.get("icon") if c.get("icon") else elem_icon
 
-        # 装備ボーナス表示の判定
         equip_name = c.get('equip') or 'なし'
         is_best = c.get('equip') and c.get('equip') == c.get('best_equip')
         equip_bonus_str = " ✨(ATK+20%!)" if is_best else ""
 
-        # メッセージ作成
         status_msg = (
             f"**Lv.{c['level']}**{count_str} (XP: {c['exp']} / {next_exp})\n"
             f"{elem_icon} **属性**: {elem_str} | {role_icon} **ロール**: {role_str} | **性別**: {gender_str}\n"
@@ -204,7 +199,6 @@ async def chars(interaction: discord.Interaction):
             f"⚡ **速度**: {c['spd']} | 💖 **回復量**: {c['rec']}\n"
             f"✨ **スキル**: {c['skill_name']} (威力: {c['skill_pow']})"
         )
-        # タイトルにレオたちの顔文字を表示！
         embed.add_field(name=f"[{idx}] {char_icon} {c['name']}{rarity_str}", value=status_msg, inline=False)
 
     await interaction.response.send_message(embed=embed)
@@ -228,9 +222,7 @@ async def party(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, view=view)
 
 
-@bot.tree.command(name="battle", description="敵とオートバトルを行います")
-async def battle(interaction: discord.Interaction):
-    await run_battle(interaction)
+# 💡 /battle は battle.py (BattleCog) 側で一括管理されるため、main.py 側の直接定義は削除しました。
 
 
 @bot.tree.command(name="gacha", description="虹の欠片やチケットを使って10連ガチャを回します")
@@ -286,7 +278,6 @@ async def mailbox(interaction: discord.Interaction):
         await interaction.response.send_message("📬 未受け取りのメールはありません。", ephemeral=True)
         return
 
-    # 未受取メールの報酬をまとめて獲得
     total_gold = 0
     total_rainbow = 0
     total_ticket = 0
