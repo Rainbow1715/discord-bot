@@ -1,7 +1,7 @@
 import random
 import discord
 from database import GACHA_POOL, RARITY_RATES, PICKUP_CHARACTERS, PICKUP_BOOST_RATE, get_user_profile, save_data
-from achievement import on_gacha_draw
+from achievement import on_gacha_draw, check_character_achievements
 
 def select_character_by_rarity():
     """レア度確率に基づいてキャラを1体抽選する（フォールバック時は低レア優先）"""
@@ -137,6 +137,7 @@ class GachaView(discord.ui.View):
 
         # 実績の判定（1回 / 10回 / 50回 をまとめてチェック）
         await on_gacha_draw(interaction, u_data)
+        await check_character_achievements(interaction, u_data, obtained_names)
 
         embed = discord.Embed(
             title="🎰 10連ガチャ結果！",
