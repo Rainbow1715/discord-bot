@@ -131,6 +131,8 @@ class GachaView(discord.ui.View):
         # 🎰 ガチャ実行回数の加算 ＆ 実績チェック
         # --------------------------------------------------
         u_data["gacha_count"] = u_data.get("gacha_count", 0) + 1
+
+        obtained_names = [t.get("name") for t in drawn_templates if t and t.get("name")]
         
         # ガチャ結果を保存
         save_data()
