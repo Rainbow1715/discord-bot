@@ -1,12 +1,44 @@
 import asyncio
 import random
 import discord
-from database import get_user_profile, save_data
+from database import get_user_profile, save_data, GACHA_POOL
 
-import discord
-import random
+# --------------------------------------------------
+# 🎪 イベントステージ＆通常ステージ設定
+# --------------------------------------------------
+# ここを書き換えるだけで、簡単に新しいイベントボスを追加・変更できます！
+EVENT_STAGES = {
+    "normal": {
+        "name": "通常クエスト",
+        "boss_type": "scaled_monster", # レベル同期の雑魚モンスター
+        "enemy_name": "野生のモンスター",
+        "icon": "👹",
+        "base_hp": 80,
+        "base_atk": 10,
+        "reward_gold": (1000, 3000),
+        "reward_rainbow": (50, 100),
+        "reward_exp": (50, 100),
+    },
+    "event_boss": {
+        "name": "【特別イベント】強敵襲来！",
+        "boss_type": "gacha_character", # ガチャキャラを敵として出す
+        "target_gacha_name": None,       # Noneならガチャプールからランダム、"キャラ名" を入れれば特定キャラ固定
+        "boss_level": 100,               # ボスのレベル設定（Lv.100など）
+        "hp_multiplier": 5.0,            # ボス用HP補正（100LvのHPを何倍にするか）
+        "atk_multiplier": 1.2,           # ボス用攻撃力補正
+        "reward_gold": (5000, 10000),
+        "reward_rainbow": (200, 500),
+        "reward_exp": (200, 400),
+    }
+}
 
-# 属性相性表（攻撃側 -> 防御側: 倍率）
+# 現在開催中のモード（"normal" または "event_boss" を選ぶだけ！）
+CURRENT_STAGE_KEY = "event_boss"
+
+
+# --------------------------------------------------
+# ⚖️ 属性・補助関数
+# --------------------------------------------------
 ELEMENT_EFFECTIVENESS = {
     "赤": {"緑": 1.5, "青": 0.8},
     "緑": {"青": 1.5, "赤": 0.8},
@@ -15,93 +47,138 @@ ELEMENT_EFFECTIVENESS = {
     "紫": {"光": 1.5},
 }
 
-def get_effective_atk(char):
-    """ベスト装備ならATK+20%補正"""
-    base_atk = char["atk"]
-    if char.get("equip") and char.get("equip") == char.get("best_equip"):
-        return int(base_atk * 1.2)
-    return base_atk
-
-def get_element_multiplier(atk_elem, def_elem):
-    """属性相性倍率を取得"""
-    if not atk_elem or not def_elem:
-        return 1.0
-    return ELEMENT_EFFECTIVENESS.get(atk_elem, {}).get(def_elem, 1.0)
-
-async def run_battle(interaction: discord.Interaction):
-    # バトル処理の呼び出し例
-    await interaction.response.send_message("⚔️ バトルを開始します！（仮実装）", ephemeral=True)
-
 def create_smooth_bar(ratio, length=10):
+    ratio = max(0.0, min(1.0, ratio))
     filled_length = int(length * ratio)
     if ratio > 0 and filled_length == 0:
         filled_length = 1
-
     filled_bar = "█" * filled_length
     empty_bar = "⬜︎" * (length - filled_length)
     return filled_bar + empty_bar
 
+
+# --------------------------------------------------
+# 👤 キャラクタークラス
+# --------------------------------------------------
 class Character:
-    def __init__(self, data_dict):
+    def __init__(self, data_dict, is_boss=False):
         self.data = data_dict
-        self.name = data_dict["name"]
+        self.name = data_dict.get("name", "謎の敵")
         self.icon = data_dict.get("icon", "👤")
-        self.max_hp = data_dict["hp"]
-        self.hp = data_dict["hp"]
-        self.atk = data_dict["atk"]
-        self.spd = data_dict["spd"]
-        self.rec = data_dict["rec"]
-        self.skill_name = data_dict["skill_name"]
-        self.skill_pow = data_dict["skill_pow"]
+        self.element = data_dict.get("element", "無")
+        self.level = data_dict.get("level", 1)
+        self.max_hp = data_dict.get("hp", 100)
+        self.hp = self.max_hp
+        self.atk = data_dict.get("atk", 15)
+        self.spd = data_dict.get("spd", 10)
+        self.rec = data_dict.get("rec", 0)
+        self.skill_name = data_dict.get("skill_name", "通常攻撃")
+        self.skill_pow = data_dict.get("skill_pow", 20)
         self.skill_type = data_dict.get("skill_type", "normal")
+        self.is_boss = is_boss
 
     def action(self, target, party, boss_state):
+        # 35%の確率でスキル発動
         if random.randint(1, 100) <= 35:
-            # 茉鈴：自分以外の味方全員をフル回復
             if self.skill_type == "heal_all":
                 healed_names = []
                 for p in party:
                     if p != self and p.hp > 0:
-                        p.hp = p.max_hp
+                        p.hp = min(p.max_hp, p.hp + int(p.max_hp * 0.5))
                         healed_names.append(p.name)
-
                 if healed_names:
-                    return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(healed_names)}** のHPが全回復した！"
-                else:
-                    return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし回復する対象がいない！"
+                    return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(healed_names)}** のHPが回復した！"
+                return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし回復対象がいない！"
 
-            # 橘柊人：固定物理30ダメージ
             elif self.skill_type == "physical":
-                dmg = self.skill_pow
+                dmg = self.skill_pow + int(self.atk * 0.5)
                 target.hp = max(0, target.hp - dmg)
-                return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ 敵に **{dmg}** の物理ダメージ！"
+                return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ 敵に **{dmg}** ダメージ！"
 
-            # 河野蜜柑：敵を3ターン行動不能にする
             elif self.skill_type == "stun":
-                boss_state["stun_turns"] = 3
-                return f"🌀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ 敵は動揺して **3ターン行動不能** になった！"
+                boss_state["stun_turns"] = 2
+                return f"🌀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ 敵は動揺して **2ターン行動不能** になった！"
 
-            # 通常スキル
             else:
-                dmg = self.skill_pow + random.randint(-3, 3)
+                dmg = self.skill_pow + self.atk + random.randint(-3, 3)
                 target.hp = max(0, target.hp - dmg)
-                return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ 敵に {dmg} ダメージ！"
+                return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ 敵に **{dmg}** ダメージ！"
         else:
-            dmg = self.atk + random.randint(-2, 2)
+            dmg = max(1, self.atk + random.randint(-2, 2))
             target.hp = max(0, target.hp - dmg)
-            return f"🗡️ {self.icon} **{self.name}** の攻撃！ 敵に {dmg} ダメージ！"
+            return f"🗡️ {self.icon} **{self.name}** の攻撃！ 敵に **{dmg}** ダメージ！"
 
+
+# --------------------------------------------------
+# ⚔️ メインバトル処理
+# --------------------------------------------------
 async def run_battle(interaction: discord.Interaction):
     u_data = get_user_profile(interaction.user.id)
     party = [Character(u_data["characters"][i]) for i in u_data["party_indices"] if i < len(u_data["characters"])]
 
-    boss_hp = 120
-    max_boss_hp = 120
+    if not party:
+        await interaction.response.send_message("❌ パーティメンバーがセットされていません。`/party` で編成してください！", ephemeral=True)
+        return
 
+    # 味方パーティの平均レベルを計算（スケーリング用）
+    avg_level = sum(p.level for p in party) // len(party)
+
+    # ステージ設定の読み込み
+    stage_info = EVENT_STAGES.get(CURRENT_STAGE_KEY, EVENT_STAGES["normal"])
+
+    # 👹 敵（ボス）の生成ロジック
+    if stage_info["boss_type"] == "gacha_character":
+        # ガチャプールから指定キャラ、またはランダムで抽出
+        target_name = stage_info.get("target_gacha_name")
+        candidate = None
+        if target_name:
+            candidate = next((c for c in GACHA_POOL if c["name"] == target_name), None)
+        if not candidate:
+            candidate = random.choice(GACHA_POOL)
+
+        boss_lvl = stage_info.get("boss_level", 100)
+        
+        # Lv.100相当のステータス計算（レベルアップ上昇値を適用）
+        calculated_hp = int((candidate["hp"] + (boss_lvl * 15)) * stage_info.get("hp_multiplier", 3.0))
+        calculated_atk = int((candidate["atk"] + (boss_lvl * 3)) * stage_info.get("atk_multiplier", 1.0))
+
+        boss_data = {
+            "name": f"【Lv.{boss_lvl}】{candidate['name']}",
+            "icon": candidate.get("icon", "👹"),
+            "element": candidate.get("element", "無"),
+            "level": boss_lvl,
+            "hp": calculated_hp,
+            "atk": calculated_atk,
+            "spd": candidate.get("spd", 10),
+            "rec": candidate.get("rec", 0),
+            "skill_name": candidate.get("skill_name", "極大攻撃"),
+            "skill_pow": candidate.get("skill_pow", 50),
+            "skill_type": candidate.get("skill_type", "normal")
+        }
+    else:
+        # 味方レベルに比例して強くなる通常敵
+        boss_lvl = max(1, avg_level)
+        boss_data = {
+            "name": f"【Lv.{boss_lvl}】{stage_info['enemy_name']}",
+            "icon": stage_info["icon"],
+            "element": "無",
+            "level": boss_lvl,
+            "hp": stage_info["base_hp"] + (boss_lvl * 25),
+            "atk": stage_info["base_atk"] + (boss_lvl * 4),
+            "spd": 10,
+            "rec": 0,
+            "skill_name": "なぎ払い",
+            "skill_pow": 15 + (boss_lvl * 2),
+            "skill_type": "normal"
+        }
+
+    boss = Character(boss_data, is_boss=True)
+
+    # バトル開始Embed送信
     embed = discord.Embed(
-        title="⚔️ バトル開始！",
-        description=f"パーティ ({', '.join([p.name for p in party])}) が出撃します！",
-        color=0x00FF00,
+        title=f"⚔️ {stage_info['name']} 開始！",
+        description=f"立ちはだかる敵: **{boss.name}**\n出撃メンバー: {', '.join([f'**{p.name}** (Lv.{p.level})' for p in party])}",
+        color=0xE74C3C if stage_info["boss_type"] == "gacha_character" else 0x3498DB,
     )
     await interaction.response.send_message(embed=embed)
     battle_msg = await interaction.original_response()
@@ -110,45 +187,37 @@ async def run_battle(interaction: discord.Interaction):
     logs = []
     boss_state = {"stun_turns": 0}
 
-    while boss_hp > 0 and any(p.hp > 0 for p in party):
+    # バトルループ
+    while boss.hp > 0 and any(p.hp > 0 for p in party):
         await asyncio.sleep(1.8)
         turn_log = f"**--- ターン {turn} ---**\n"
 
-        class DummyBoss:
-            pass
-
-        boss = DummyBoss()
-        boss.hp = boss_hp
-
-        # 味方の攻撃
+        # 味方の攻撃ターン
         for p in party:
             if p.hp > 0 and boss.hp > 0:
                 turn_log += p.action(boss, party, boss_state) + "\n"
 
-        boss_hp = boss.hp
-
-        # 敵の攻撃（行動不能判定）
-        if boss_hp > 0:
+        # 敵（ボス）の攻撃ターン
+        if boss.hp > 0:
             if boss_state["stun_turns"] > 0:
-                turn_log += f"💫 **ボス** は動けない！（残り {boss_state['stun_turns']} ターン）\n"
+                turn_log += f"💫 **{boss.name}** は動けない！（残り {boss_state['stun_turns']} ターン）\n"
                 boss_state["stun_turns"] -= 1
             else:
                 alive_party = [p for p in party if p.hp > 0]
                 if alive_party:
                     target = random.choice(alive_party)
-                    enemy_dmg = random.randint(8, 15)
-                    target.hp = max(0, target.hp - enemy_dmg)
-                    turn_log += f"👹 **ボス** の攻撃！ {target.icon} **{target.name}** に {enemy_dmg} ダメージ！\n"
+                    turn_log += boss.action(target, party, boss_state) + "\n"
 
         logs.append(turn_log)
         if len(logs) > 2:
             logs.pop(0)
 
-        boss_bar = create_smooth_bar(max(0, boss_hp) / max_boss_hp)
-        status_text = f"\n👹 **ボス HP**: {boss_hp}/{max_boss_hp} {boss_bar}\n"
+        # ステータスバー更新
+        boss_bar = create_smooth_bar(boss.hp / boss.max_hp)
+        status_text = f"\n{boss.icon} **{boss.name}**: HP {boss.hp}/{boss.max_hp} {boss_bar}\n"
 
         for p in party:
-            p_bar = create_smooth_bar(max(0, p.hp) / p.max_hp)
+            p_bar = create_smooth_bar(p.hp / p.max_hp)
             status_text += f"{p.icon} **{p.name}**: HP {p.hp}/{p.max_hp} {p_bar}\n"
 
         new_embed = discord.Embed(
@@ -159,11 +228,16 @@ async def run_battle(interaction: discord.Interaction):
         await battle_msg.edit(embed=new_embed)
         turn += 1
 
+    # 勝利 / 敗北 判定
     await asyncio.sleep(1.0)
-    if boss_hp <= 0:
-        exp_gained = random.randint(30, 100)
-        gold_gained = random.randint(1000, 5000)
-        rainbow_gained = random.randint(90, 150)
+    if boss.hp <= 0:
+        g_min, g_max = stage_info["reward_gold"]
+        r_min, r_max = stage_info["reward_rainbow"]
+        e_min, e_max = stage_info["reward_exp"]
+
+        gold_gained = random.randint(g_min, g_max)
+        rainbow_gained = random.randint(r_min, r_max)
+        exp_gained = random.randint(e_min, e_max)
 
         u_data["gold"] += gold_gained
         u_data["items"]["虹の欠片"] = u_data["items"].get("虹の欠片", 0) + rainbow_gained
@@ -175,8 +249,8 @@ async def run_battle(interaction: discord.Interaction):
             next_exp = c_data["level"] * 100
             if c_data["exp"] >= next_exp:
                 c_data["level"] += 1
-                c_data["hp"] += 5
-                c_data["atk"] += 2
+                c_data["hp"] += 8
+                c_data["atk"] += 3
                 lvl_up_msgs.append(f"🎉 **{c_data['name']}** (Lv.{c_data['level']} にUP!)")
 
         save_data()
@@ -185,7 +259,7 @@ async def run_battle(interaction: discord.Interaction):
         result_embed = discord.Embed(
             title="🎉 VICTORY!",
             description=(
-                f"ボスを撃破した！\n\n"
+                f"**{boss.name}** を撃破した！\n\n"
                 f"💰 **獲得金**: {gold_gained} G\n"
                 f"💎 **獲得虹の欠片**: {rainbow_gained} 個\n"
                 f"✨ **獲得経験値**: 出撃メンバー全員に {exp_gained} EXP"
