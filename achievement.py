@@ -121,12 +121,10 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
         target_channel = interaction.client.get_channel(LOG_CHANNEL_ID)
         
         if target_channel:
-            embed_log = discord.Embed(
-                title="📢 実績解除ニュース！",
-                description=f"**{interaction.user.display_name}** さんが実績【**{ach['title']}**】を解除しました！👏",
-                color=0x3498DB
-            )
-            await target_channel.send(embed=embed_log)
+        # メンバーの表示名（またはmention）を使って普通テキストで送信
+        user_name = interaction.user.display_name  # または interaction.user.mention
+        await channel.send(f"{interaction.user.mention} が 実績【{ach['name']}】を解除しました！")
+        
             print(f"✅ 実績ログを送信しました (ID: {LOG_CHANNEL_ID})")
         else:
             print(f"⚠️ 指定されたチャンネルID ({LOG_CHANNEL_ID}) が見つかりませんでした。Botが該当サーバーに参加しているか確認してください。")
