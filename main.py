@@ -45,6 +45,13 @@ class MyBot(commands.Bot):
         except Exception as e:
             print(f"❌ cogs.feed の読み込みエラー: {e}")
 
+        # 🔻cogsフォルダ内の item.py を読み込む🔻
+        try:
+            await self.load_extension("cogs.item")
+            print("✅ cogs.item の読み込みに成功しました！")
+        except Exception as e:
+            print(f"❌ cogs.item の読み込みエラー: {e}")
+            
         # 🔻 図鑑 (zukan.py) の読み込み 🔻
         try:
             await self.load_extension("zukan")
