@@ -43,6 +43,10 @@ class Character:
         self.name = data_dict.get("name", "謎の敵")
         self.icon = data_dict.get("icon", "👤")
         self.element = data_dict.get("element", "無")
+        
+        # ⚔️ 攻撃タイプ（物理 / 魔法）を追加（未設定の場合はデフォルトで「物理」）
+        self.atk_type = data_dict.get("atk_type", "物理")
+        
         self.level = data_dict.get("level", 1)
         self.max_hp = data_dict.get("hp", 100)
         self.hp = self.max_hp
@@ -55,6 +59,9 @@ class Character:
         self.is_boss = is_boss
 
     def action(self, target, party, boss_state):
+        # 攻撃タイプ用アイコン
+        type_icon = "⚔️" if self.atk_type == "物理" else "🔮"
+
         # 35%の確率でスキル発動
         if random.randint(1, 100) <= 35:
             if self.skill_type == "heal_all":
@@ -81,9 +88,10 @@ class Character:
                 target.hp = max(0, target.hp - dmg)
                 return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
         else:
+            # 通常攻撃（物理/魔法をログに明記）
             dmg = max(1, self.atk + random.randint(-2, 2))
             target.hp = max(0, target.hp - dmg)
-            return f"🗡️ {self.icon} **{self.name}** の攻撃！ **{target.name}** に **{dmg}** ダメージ！"
+            return f"{type_icon} {self.icon} **{self.name}** の{self.atk_type}攻撃！ **{target.name}** に **{dmg}** ダメージ！"
 
 
 # --------------------------------------------------
@@ -117,6 +125,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             "name": f"【Lv.{boss_lvl}】{candidate['name']}",
             "icon": candidate.get("icon", "👹"),
             "element": candidate.get("element", "無"),
+            "atk_type": candidate.get("atk_type", random.choice(["物理", "魔法"])),  # キャラデータにあれば取得、無ければランダム
             "level": boss_lvl,
             "hp": calculated_hp,
             "atk": calculated_atk,
@@ -134,6 +143,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             "name": f"【Lv.{boss_lvl}】野生のモンスター",
             "icon": "👹",
             "element": "無",
+            "atk_type": random.choice(["物理", "魔法"]),
             "level": boss_lvl,
             "hp": 80 + (boss_lvl * 25),
             "atk": 10 + (boss_lvl * 4),
@@ -148,9 +158,12 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
     boss = Character(boss_data, is_boss=True)
 
+    # メンバー表示に [物理/魔法] の表記を追加
+    party_desc = ', '.join([f"**{p.name}** [{p.atk_type}] (Lv.{p.level})" for p in party])
+
     embed = discord.Embed(
         title=f"⚔️ {title_name} 開始！",
-        description=f"立ちはだかる敵: **{boss.name}**\n出撃メンバー: {', '.join([f'**{p.name}** (Lv.{p.level})' for p in party])}",
+        description=f"立ちはだかる敵: **{boss.name}** [{boss.atk_type}]\n出撃メンバー: {party_desc}",
         color=0xE74C3C if is_event else 0x3498DB,
     )
     await interaction.response.send_message(embed=embed)
@@ -253,9 +266,8 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         # --------------------------------------------------
         # 💀 敗北処理
         # --------------------------------------------------
-        # 💀 敗北実績のチェック
         await on_battle_lose(interaction, u_data)
-        save_data()  # save_user_profile ではなく save_data() に統一
+        save_data()
 
         result_embed = discord.Embed(
             title="💀 GAME OVER...",
