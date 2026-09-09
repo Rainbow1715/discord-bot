@@ -27,11 +27,11 @@ ACHIEVEMENTS = {
 }
 
 # 📢 実績通知を送るチャンネル名
-LOG_CHANNEL_NAME = "実績解除"
+LOG_CHANNEL_NAME = "実績解除ログ"
 
 
 # --------------------------------------------------
-# ⚔️ バトル勝利時の自動実績チェックまとめ（ここを追加！）
+# ⚔️ バトル勝利時の自動実績チェックまとめ
 # --------------------------------------------------
 async def on_battle_win(interaction: discord.Interaction, u_data: dict):
     """バトル勝利時に呼び出され、カウントアップと実績解除を一括処理する関数"""
@@ -106,7 +106,7 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
     # --------------------------------------------------
     try:
         target_channel = discord.utils.get(interaction.guild.text_channels, name=LOG_CHANNEL_NAME)
-        if target_channel:1547122457062940712
+        if target_channel:
             embed_log = discord.Embed(
                 title="📢 実績解除ニュース！",
                 description=f"**{interaction.user.display_name}** さんが実績【**{ach['title']}**】を解除しました！👏",
