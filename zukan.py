@@ -1,4 +1,5 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 import database as db
 
@@ -17,7 +18,7 @@ class ZukanView(discord.ui.View):
         self.update_buttons()
 
     def update_buttons(self):
-        max_page = (len(self.all_characters) - 1) // self.per_page
+        max_page = max(0, (len(self.all_characters) - 1) // self.per_page)
         self.prev_button.disabled = (self.current_page == 0)
         self.next_button.disabled = (self.current_page >= max_page)
 
@@ -28,10 +29,11 @@ class ZukanView(discord.ui.View):
 
         obtained_count = len(self.user_char_names)
         total_count = len(self.all_characters)
+        rate = int(obtained_count / total_count * 100) if total_count > 0 else 0
 
         embed = discord.Embed(
             title=f"📖 キャラクター図鑑 ({obtained_count}/{total_count})",
-            description=f"コンプリート率: {int(obtained_count / total_count * 100)}%\n" + "─" * 20,
+            description=f"コンプリート率: {rate}%\n" + "─" * 20,
             color=0x3498DB
         )
 
@@ -54,7 +56,7 @@ class ZukanView(discord.ui.View):
 
             embed.add_field(name=field_name, value=field_value, inline=False)
 
-        max_page = (len(self.all_characters) - 1) // self.per_page + 1
+        max_page = max(1, (len(self.all_characters) - 1) // self.per_page + 1)
         embed.set_footer(text=f"ページ {self.current_page + 1} / {max_page}")
         return embed
 
@@ -76,31 +78,39 @@ class ZukanView(discord.ui.View):
         self.update_buttons()
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
+
 # --------------------------------------------------
-# 💬 コマンド部分 (`/zukan` または `!zukan`)
+# 💬 Cog（コマンド本体）
 # --------------------------------------------------
-@bot.command(name="zukan", aliases=["図鑑"])
-async def show_zukan(ctx):
-    user_info = db.get_user_profile(ctx.author.id)
+class ZukanCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
-    # 全マスターキャラクターのリストを作成（重複排除）
-    all_master_chars = []
-    seen_names = set()
+    @app_commands.command(name="zukan", description="キャラクター図鑑（コンプリート状況）を確認します")
+    async def zukan(self, interaction: discord.Interaction):
+        user_info = db.get_user_profile(interaction.user.id)
 
-    # GACHA_POOL と DEFAULT_CHARACTERS の両方をまとめる
-    master_sources = db.GACHA_POOL + db.DEFAULT_CHARACTERS
-    for c in master_sources:
-        if c and c["name"] not in seen_names:
-            seen_names.add(c["name"])
-            all_master_chars.append(c)
+        # 全マスターキャラクターのリストを作成（重複排除）
+        all_master_chars = []
+        seen_names = set()
 
-    # レア度順（★5 > ★4 > ★3...）に並び替え
-    all_master_chars.sort(key=lambda x: x.get("rarity", "★1"), reverse=True)
+        master_sources = db.GACHA_POOL + db.DEFAULT_CHARACTERS
+        for c in master_sources:
+            if c and c.get("name") and c["name"] not in seen_names:
+                seen_names.add(c["name"])
+                all_master_chars.append(c)
 
-    # ユーザーが所持しているキャラ名のセット
-    user_char_names = {c["name"] for c in user_info.get("characters", [])}
+        # レア度順（★5 > ★4 > ★3...）に並び替え
+        all_master_chars.sort(key=lambda x: x.get("rarity", "★1"), reverse=True)
 
-    view = ZukanView(ctx.author.id, all_master_chars, user_char_names)
-    embed = view.create_embed()
+        # ユーザーが所持しているキャラ名のセット
+        user_char_names = {c["name"] for c in user_info.get("characters", []) if "name" in c}
 
-    await ctx.send(embed=embed, view=view)
+        view = ZukanView(interaction.user.id, all_master_chars, user_char_names)
+        embed = view.create_embed()
+
+        await interaction.response.send_message(embed=embed, view=view)
+
+
+async def setup(bot):
+    await bot.add_cog(ZukanCog(bot))
