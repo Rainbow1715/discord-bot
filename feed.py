@@ -1,5 +1,25 @@
+# --------------------------------------------------
+# 🍺 お酒関連の設定
+# --------------------------------------------------
+ALCOHOL_ITEMS = ["酒", "ビール", "ワイン", "ウイスキー", "日本酒"]
+
+# お酒が飲める（成人）キャラのリスト
+# 飲ませてOKなキャラが増えたら、ここに名前を追加するだけでOK！
+ADULT_CHARACTERS = [
+    "オリハラ カズヤ",
+]
+
 def feed_character(user_data, char_data, food_name):
     char_name = char_data["name"]
+    
+    # 🚫 お酒・未成年チェック（ここを追加！）
+    if food_name in ALCOHOL_ITEMS and char_name not in ADULT_CHARACTERS:
+        return {
+            "status": "error",
+            "reason": "underage_alcohol",
+            "message": f"❌ **{char_name}** はお酒を飲むことができません！"
+        }
+    
     taste = CHARACTER_TASTE.get(char_name, {"likes": [], "dislikes": []})
     
     # 既存の記録用リストがなければ初期化
