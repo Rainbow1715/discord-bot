@@ -128,16 +128,15 @@ class GachaView(discord.ui.View):
             result_lines.append(f"{idx}. {birthday_mark}{rarity_icon} **[{template.get('rarity', '★3')}] {char_name}** {status_note}")
 
         # --------------------------------------------------
-        # 🎰 ガチャ回数のカウント ＆ 実績解除チェック
+        # 🎰 ガチャ実行回数の加算 ＆ 実績チェック
         # --------------------------------------------------
         u_data["gacha_count"] = u_data.get("gacha_count", 0) + 1
         
-        # 3. ガチャ結果を保存
+        # ガチャ結果を保存
         save_data()
 
-        # 実績の判定（10回以上で解除）
-        if u_data["gacha_count"] >= 10:
-            await check_and_unlock_achievement(interaction, "gacha_10")
+        # 実績の判定（1回 / 10回 / 50回 をまとめてチェック）
+        await on_gacha_draw(interaction, u_data)
 
         embed = discord.Embed(
             title="🎰 10連ガチャ結果！",
