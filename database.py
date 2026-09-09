@@ -330,8 +330,28 @@ def check_affection_level_up(char_data, user_info):
             break
     return rewards
 
+# --------------------------------------------------
+# 🍺 お酒関連の設定
+# --------------------------------------------------
+ALCOHOL_ITEMS = ["酒", "ビール", "ワイン", "ウイスキー", "日本酒"]
+
+# お酒が飲める（成人）キャラのリスト
+ADULT_CHARACTERS = [
+    "オリハラ カズヤ",
+]
+
 # 🍱 ご飯をあげる処理
 def feed_character(user_info, char_data, food_name):
+    char_name = char_data.get("name", "")
+
+    # 🚫 お酒・未成年チェック
+    if food_name in ALCOHOL_ITEMS and char_name not in ADULT_CHARACTERS:
+        return {
+            "status": "error",
+            "reason": "underage_alcohol",
+            "message": f"❌ **{char_name}** はお酒を飲むことができません！"
+        }
+        
     likes = char_data.get("likes", [])
     dislikes = char_data.get("dislikes", [])
     
