@@ -14,31 +14,26 @@ ACHIEVEMENTS = {
     "win_10": {
         "title": "⚔️ 百戦錬磨の兆し",
         "desc": "バトルで10回勝利する",
-        "reward_gold": 0,
         "reward_rainbow": 1000,
     },
     "win_50": {
         "title": "⚔️ あと半分",
         "desc": "バトルで50回勝利する",
-        "reward_gold": 0,
         "reward_rainbow": 5000,
     },
     "gacha_1": {
         "title": "🔰 初めてのガチャ",
         "desc": "ガチャを累計1回引く",
-        "reward_gold": 0,
         "reward_rainbow": 300,
     },
     "gacha_10": {
         "title": "🎰 ガチャ中毒",
         "desc": "ガチャを累計10回引く",
-        "reward_gold": 0,
         "reward_rainbow": 800,
     },
     "gacha_50": {
         "title": "🎰 もうちょいで100",
         "desc": "ガチャを累計50回引く",
-        "reward_gold": 0,
         "reward_rainbow": 1000,
     },
     # 🆕 特定キャラ編成で勝利の実績
@@ -46,6 +41,7 @@ ACHIEVEMENTS = {
         "title": "😰 ど、同一人物……",
         "desc": "竹村しえら と れーちゃん を編成してバトルに勝利する",
         "reward_rainbow": 500,
+    },
 }
 
 # 📢 実績通知を送るチャンネルID
@@ -67,15 +63,14 @@ async def on_battle_win(interaction: discord.Interaction, u_data: dict):
         await check_and_unlock_achievement(interaction, "win_50")
 
     # --------------------------------------------------
-    # 🆕 複数キャラ（コンビ・グループ）編成チェック
+    # 👭 複数キャラ（コンビ・グループ）編成チェック
     # --------------------------------------------------
-    # パーティ内のキャラ名一覧（セットにしておくと検索がスムーズです）
     party = u_data.get("party", [])
     party_char_names = {c.get("name") for c in party if isinstance(c, dict)}
 
-    # 例①：しえら ＆ れーちゃん が両方パーティにいるか？
+    # 竹村しえら ＆ れーちゃん が両方パーティにいるか？
     target_pair = {"竹村しえら", "れーちゃん"}
-    if target_pair.issubset(party_char_names):  # target_pair が全員含まれていれば True
+    if target_pair.issubset(party_char_names):
         await check_and_unlock_achievement(interaction, "win_siera_retya")
 
 
@@ -115,26 +110,21 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
     if not ach:
         return
 
-    # データ更新（解除フラグ ＆ 報酬付与）
+    # データ更新（解除フラグ ＆ 虹の欠片付与）
     u_data["unlocked_achievements"].append(achievement_id)
-    u_data["gold"] = u_data.get("gold", 0) + ach["reward_gold"]
+    
+    reward_rainbow = ach.get("reward_rainbow", 0)
     
     if "items" not in u_data:
         u_data["items"] = {}
-    u_data["items"]["虹の欠片"] = u_data["items"].get("虹の欠片", 0) + ach["reward_rainbow"]
+    u_data["items"]["虹の欠片"] = u_data["items"].get("虹の欠片", 0) + reward_rainbow
     
     save_data()
 
     # --------------------------------------------------
     # 🔔 通知①：本人への専用メッセージ（Ephemeral）
     # --------------------------------------------------
-    reward_text = []
-    if ach["reward_gold"] > 0:
-        reward_text.append(f"💰 {ach['reward_gold']} G")
-    if ach["reward_rainbow"] > 0:
-        reward_text.append(f"💎 虹の欠片 {ach['reward_rainbow']}個")
-    
-    reward_str = " / ".join(reward_text) if reward_text else "なし"
+    reward_str = f"💎 虹の欠片 {reward_rainbow}個" if reward_rainbow > 0 else "なし"
 
     embed_user = discord.Embed(
         title="🎉 実績を解除しました！",
@@ -154,7 +144,6 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
         target_channel = interaction.client.get_channel(LOG_CHANNEL_ID)
         
         if target_channel:
-            # メンション付きの普通メッセージで送信
             await target_channel.send(f"{interaction.user.mention} が 実績【{ach['title']}】を解除しました！")
             print(f"✅ 実績ログを送信しました (ID: {LOG_CHANNEL_ID})")
         else:
@@ -183,9 +172,12 @@ class AchievementCog(commands.Cog):
 
         for ach_id, ach in ACHIEVEMENTS.items():
             status = "✅ 達成済み" if ach_id in unlocked else "🔒 未達成"
+            reward_val = ach.get("reward_rainbow", 0)
+            reward_info = f" (🎁 虹の欠片 {reward_val}個)" if reward_val > 0 else ""
+            
             embed.add_field(
                 name=f"{ach['title']} ({status})",
-                value=f"{ach['desc']}",
+                value=f"{ach['desc']}{reward_info}",
                 inline=False
             )
 
