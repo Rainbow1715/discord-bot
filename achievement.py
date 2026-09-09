@@ -44,9 +44,9 @@ ACHIEVEMENTS = {
     },
     # 👤 特定キャラ入手実績
     "get_kami": {
-        "title": "なんで？",
-        "description": "白黒レイ を獲得する",
-        "icon": "❔"
+        "title": "❔ なんで？",
+        "desc": "白黒レイ を獲得する",
+        "reward_rainbow": 17000,
     },
 }
 
