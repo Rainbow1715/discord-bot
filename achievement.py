@@ -41,7 +41,12 @@ ACHIEVEMENTS = {
         "desc": "ガチャを累計50回引く",
         "reward_gold": 0,
         "reward_rainbow": 1000,
-    }
+    },
+    # 🆕 特定キャラ編成で勝利の実績
+    "win_siera_retya": {
+        "title": "😰 ど、同一人物……",
+        "desc": "竹村しえら と れーちゃん を編成してバトルに勝利する",
+        "reward_rainbow": 500,
 }
 
 # 📢 実績通知を送るチャンネルID
@@ -61,6 +66,18 @@ async def on_battle_win(interaction: discord.Interaction, u_data: dict):
         await check_and_unlock_achievement(interaction, "win_10")
     if u_data["win_count"] >= 50:
         await check_and_unlock_achievement(interaction, "win_50")
+
+    # --------------------------------------------------
+    # 🆕 複数キャラ（コンビ・グループ）編成チェック
+    # --------------------------------------------------
+    # パーティ内のキャラ名一覧（セットにしておくと検索がスムーズです）
+    party = u_data.get("party", [])
+    party_char_names = {c.get("name") for c in party if isinstance(c, dict)}
+
+    # 例①：しえら ＆ れーちゃん が両方パーティにいるか？
+    target_pair = {"竹村しえら", "れーちゃん"}
+    if target_pair.issubset(party_char_names):  # target_pair が全員含まれていれば True
+        await check_and_unlock_achievement(interaction, "win_siera_retya")
 
 
 # --------------------------------------------------
