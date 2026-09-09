@@ -29,6 +29,12 @@ ACHIEVEMENTS = {
         "desc": "ガチャを累計10回引く",
         "reward_gold": 0,
         "reward_rainbow": 300,
+    },
+    "gacha_50": {
+        "title": "🎰 もうちょいで100",
+        "desc": "ガチャを累計50回引く",
+        "reward_gold": 0,
+        "reward_rainbow": 800,
     }
 }
 
