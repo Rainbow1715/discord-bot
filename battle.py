@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from database import get_user_profile, save_data, GACHA_POOL
-from achievement import check_and_unlock_achievement
+from achievement import on_battle_win  # 👈 実績側の処理を1つだけインポート
 
 # --------------------------------------------------
 # 🎪 イベントステージ設定
@@ -211,19 +211,9 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         u_data["gold"] += gold_gained
         u_data["items"]["虹の欠片"] = u_data["items"].get("虹の欠片", 0) + rainbow_gained
 
-        # --------------------------------------------------
-        # 🏆 勝利数のカウントと実績チェック（ここを追加！）
-        # --------------------------------------------------
-        u_data["win_count"] = u_data.get("win_count", 0) + 1  # 勝利数を+1
+        # 🏆 実績の勝利数カウント＆解除チェック（この1行だけで完結！）
+        await on_battle_win(interaction, u_data)
 
-        # 初勝利実績のチェック
-        await check_and_unlock_achievement(interaction, "first_win")
-        
-        # 10勝実績のチェック
-        if u_data["win_count"] >= 10:
-            await check_and_unlock_achievement(interaction, "win_10")
-        # --------------------------------------------------
-        
         lvl_up_msgs = []
         for p in party:
             c_data = p.data
