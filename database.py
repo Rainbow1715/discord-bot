@@ -226,7 +226,7 @@ GACHA_POOL = [
         "best_equip": "ハリセン",
         "equip": None,
         "likes": [],
-        "dislikes": [],
+        "dislikes": ["酒"],
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
