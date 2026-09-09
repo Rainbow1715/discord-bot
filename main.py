@@ -51,6 +51,13 @@ class MyBot(commands.Bot):
             print("✅ cogs.item の読み込みに成功しました！")
         except Exception as e:
             print(f"❌ cogs.item の読み込みエラー: {e}")
+
+        # 🔻 cogs/rankup.py の読み込み 🔻
+        try:
+            await self.load_extension("cogs.rankup")
+            print("✅ cogs.rankup の読み込みに成功しました！")
+        except Exception as e:
+            print(f"❌ cogs.rankup の読み込みエラー: {e}")
             
         # 🔻 図鑑 (zukan.py) の読み込み 🔻
         try:
