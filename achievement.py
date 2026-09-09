@@ -42,6 +42,12 @@ ACHIEVEMENTS = {
         "desc": "竹村しえら と れーちゃん を編成してバトルに勝利する",
         "reward_rainbow": 500,
     },
+    # 👤 特定キャラ入手実績
+    "get_kami": {
+        "title": "なんで？",
+        "description": "白黒レイ を獲得する",
+        "icon": "❔"
+    },
 }
 
 # 📢 実績通知を送るチャンネルID
@@ -97,6 +103,18 @@ async def on_gacha_draw(interaction: discord.Interaction, u_data: dict):
         await check_and_unlock_achievement(interaction, "gacha_10")
     if count >= 50:
         await check_and_unlock_achievement(interaction, "gacha_50")
+
+# --------------------------------------------------
+# 🎴 特定キャラ獲得時の自動実績チェック
+# --------------------------------------------------
+async def check_character_achievements(interaction: discord.Interaction, u_data: dict, obtained_character_names: list):
+    """
+    ガチャなどでキャラを獲得した際に呼び出す関数
+    obtained_character_names: 今回獲得したキャラの名前のリスト（例: ["竹村しえら", "れーちゃん"]）
+    """
+    # 竹村しえら獲得チェック
+    if"白黒レイ" in obtained_character_names:
+        await check_and_unlock_achievement(interaction, "get_kami")
 
 
 # --------------------------------------------------
