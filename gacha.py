@@ -1,6 +1,7 @@
 import random
 import discord
 from database import GACHA_POOL, RARITY_RATES, PICKUP_CHARACTERS, PICKUP_BOOST_RATE, get_user_profile, save_data
+from achievement import check_and_unlock_achievement  # 👈 実実績解除関数をインポート
 
 def select_character_by_rarity():
     """レア度確率に基づいてキャラを1体抽選する（フォールバック時は低レア優先）"""
@@ -126,8 +127,17 @@ class GachaView(discord.ui.View):
             # 表示テキストの先頭に birthday_mark (🎂) を追加
             result_lines.append(f"{idx}. {birthday_mark}{rarity_icon} **[{template.get('rarity', '★3')}] {char_name}** {status_note}")
 
+        # --------------------------------------------------
+        # 🎰 ガチャ回数のカウント ＆ 実績解除チェック
+        # --------------------------------------------------
+        u_data["gacha_count"] = u_data.get("gacha_count", 0) + len(drawn_templates)
+        
         # 3. ガチャ結果を保存
         save_data()
+
+        # 実績の判定（10回以上で解除）
+        if u_data["gacha_count"] >= 10:
+            await check_and_unlock_achievement(interaction, "gacha_10")
 
         embed = discord.Embed(
             title="🎰 10連ガチャ結果！",
