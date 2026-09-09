@@ -8,7 +8,6 @@ from database import get_user_profile, save_data, GACHA_POOL
 # --------------------------------------------------
 # 🎪 イベントステージ設定
 # --------------------------------------------------
-# ここを書き換えるだけで、イベントボスの種類やレベルを簡単に調整できます！
 EVENT_CONFIG = {
     "name": "【特別イベント】強敵襲来！",
     "target_gacha_name": None,  # Noneならガチャプールからランダム、"キャラ名" を入れれば特定キャラ固定
@@ -55,34 +54,35 @@ class Character:
         self.is_boss = is_boss
 
     def action(self, target, party, boss_state):
+        # 35%の確率でスキル発動
         if random.randint(1, 100) <= 35:
             if self.skill_type == "heal_all":
                 healed_names = []
                 for p in party:
-                    if p != self and p.hp > 0:
+                    if p.hp > 0:
                         p.hp = min(p.max_hp, p.hp + int(p.max_hp * 0.5))
                         healed_names.append(p.name)
                 if healed_names:
                     return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(healed_names)}** のHPが回復した！"
-                return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし回復対象がいない！"
+                return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし効果がなかった！"
 
             elif self.skill_type == "physical":
                 dmg = self.skill_pow + int(self.atk * 0.5)
                 target.hp = max(0, target.hp - dmg)
-                return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ 敵に **{dmg}** ダメージ！"
+                return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
 
             elif self.skill_type == "stun":
                 boss_state["stun_turns"] = 2
-                return f"🌀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ 敵は動揺して **2ターン行動不能** になった！"
+                return f"🌀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は動揺して **2ターン行動不能** になった！"
 
             else:
                 dmg = self.skill_pow + self.atk + random.randint(-3, 3)
                 target.hp = max(0, target.hp - dmg)
-                return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ 敵に **{dmg}** ダメージ！"
+                return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
         else:
             dmg = max(1, self.atk + random.randint(-2, 2))
             target.hp = max(0, target.hp - dmg)
-            return f"🗡️ {self.icon} **{self.name}** の攻撃！ 敵に **{dmg}** ダメージ！"
+            return f"🗡️ {self.icon} **{self.name}** の攻撃！ **{target.name}** に **{dmg}** ダメージ！"
 
 
 # --------------------------------------------------
@@ -101,7 +101,6 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
     # 👹 敵（ボス）の生成
     if is_event:
-        # イベントモード：ガチャキャラを強敵ボス化
         target_name = EVENT_CONFIG.get("target_gacha_name")
         candidate = None
         if target_name:
@@ -129,7 +128,6 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         title_name = EVENT_CONFIG["name"]
         rewards = (EVENT_CONFIG["reward_gold"], EVENT_CONFIG["reward_rainbow"], EVENT_CONFIG["reward_exp"])
     else:
-        # 通常モード：レベル同期する敵
         boss_lvl = max(1, avg_level)
         boss_data = {
             "name": f"【Lv.{boss_lvl}】野生のモンスター",
@@ -166,10 +164,12 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         await asyncio.sleep(1.8)
         turn_log = f"**--- ターン {turn} ---**\n"
 
+        # 味方の攻撃
         for p in party:
             if p.hp > 0 and boss.hp > 0:
                 turn_log += p.action(boss, party, boss_state) + "\n"
 
+        # ボスの攻撃
         if boss.hp > 0:
             if boss_state["stun_turns"] > 0:
                 turn_log += f"💫 **{boss.name}** は動けない！（残り {boss_state['stun_turns']} ターン）\n"
@@ -213,13 +213,20 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         lvl_up_msgs = []
         for p in party:
             c_data = p.data
-            c_data["exp"] += exp_gained
-            next_exp = c_data["level"] * 100
-            if c_data["exp"] >= next_exp:
-                c_data["level"] += 1
-                c_data["hp"] += 8
-                c_data["atk"] += 3
-                lvl_up_msgs.append(f"🎉 **{c_data['name']}** (Lv.{c_data['level']} にUP!)")
+            c_data["exp"] = c_data.get("exp", 0) + exp_gained
+            
+            # 複数レベルアップにも対応するループ処理
+            while True:
+                next_exp = c_data["level"] * 100
+                if c_data["exp"] >= next_exp:
+                    c_data["exp"] -= next_exp  # 経験値を消費
+                    c_data["level"] += 1
+                    c_data["hp"] += 8
+                    c_data["atk"] += 3
+                    if f"🎉 **{c_data['name']}**" not in "".join(lvl_up_msgs):
+                        lvl_up_msgs.append(f"🎉 **{c_data['name']}** (Lv.{c_data['level']} にUP!)")
+                else:
+                    break
 
         save_data()
         lvl_str = "\n" + "\n".join(lvl_up_msgs) if lvl_up_msgs else ""
@@ -242,7 +249,8 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             color=0xFF0000,
         )
 
-    await interaction.followup.send(embed=result_embed)
+    # 既存のメッセージを更新して結果表示（エラー回避）
+    await battle_msg.edit(embed=result_embed)
 
 
 # --------------------------------------------------
