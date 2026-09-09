@@ -203,15 +203,18 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
     # 結末判定
     await asyncio.sleep(1.0)
     if boss.hp <= 0:
+        # --------------------------------------------------
+        # 🏆 勝利処理
+        # --------------------------------------------------
         (g_min, g_max), (r_min, r_max), (e_min, e_max) = rewards
         gold_gained = random.randint(g_min, g_max)
         rainbow_gained = random.randint(r_min, r_max)
         exp_gained = random.randint(e_min, e_max)
 
-        u_data["gold"] += gold_gained
+        u_data["gold"] = u_data.get("gold", 0) + gold_gained
         u_data["items"]["虹の欠片"] = u_data["items"].get("虹の欠片", 0) + rainbow_gained
 
-        # 🏆 実績の勝利数カウント＆解除チェック（この1行だけで完結！）
+        # 🏆 勝利実績チェック
         await on_battle_win(interaction, u_data)
 
         lvl_up_msgs = []
@@ -219,11 +222,10 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             c_data = p.data
             c_data["exp"] = c_data.get("exp", 0) + exp_gained
             
-            # 複数レベルアップにも対応するループ処理
             while True:
                 next_exp = c_data["level"] * 100
                 if c_data["exp"] >= next_exp:
-                    c_data["exp"] -= next_exp  # 経験値を消費
+                    c_data["exp"] -= next_exp
                     c_data["level"] += 1
                     c_data["hp"] += 8
                     c_data["atk"] += 3
@@ -246,21 +248,22 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             ),
             color=0x00FF00,
         )
-        # --- 全滅（敗北）の処理 ---
-if all(c.hp <= 0 for c in party):
-    # ★ 敗北実績のチェックを実行！
-    await on_battle_lose(interaction, u_data)
-    save_user_profile(interaction.user.id, u_data) # データ保存
 
-    # 敗北時の埋め込みメッセージ送信など...
     else:
+        # --------------------------------------------------
+        # 💀 敗北処理
+        # --------------------------------------------------
+        # 💀 敗北実績のチェック
+        await on_battle_lose(interaction, u_data)
+        save_data()  # save_user_profile ではなく save_data() に統一
+
         result_embed = discord.Embed(
             title="💀 GAME OVER...",
             description="全滅してしまった...",
             color=0xFF0000,
         )
 
-    # 既存のメッセージを更新して結果表示（エラー回避）
+    # メッセージを更新して最終結果を表示
     await battle_msg.edit(embed=result_embed)
 
 
