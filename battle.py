@@ -1,52 +1,29 @@
 import asyncio
 import random
 import discord
+from discord import app_commands
+from discord.ext import commands
 from database import get_user_profile, save_data, GACHA_POOL
 
 # --------------------------------------------------
-# 🎪 イベントステージ＆通常ステージ設定
+# 🎪 イベントステージ設定
 # --------------------------------------------------
-# ここを書き換えるだけで、簡単に新しいイベントボスを追加・変更できます！
-EVENT_STAGES = {
-    "normal": {
-        "name": "通常クエスト",
-        "boss_type": "scaled_monster", # レベル同期の雑魚モンスター
-        "enemy_name": "野生のモンスター",
-        "icon": "👹",
-        "base_hp": 80,
-        "base_atk": 10,
-        "reward_gold": (1000, 3000),
-        "reward_rainbow": (50, 100),
-        "reward_exp": (50, 100),
-    },
-    "event_boss": {
-        "name": "【特別イベント】強敵襲来！",
-        "boss_type": "gacha_character", # ガチャキャラを敵として出す
-        "target_gacha_name": None,       # Noneならガチャプールからランダム、"キャラ名" を入れれば特定キャラ固定
-        "boss_level": 100,               # ボスのレベル設定（Lv.100など）
-        "hp_multiplier": 5.0,            # ボス用HP補正（100LvのHPを何倍にするか）
-        "atk_multiplier": 1.2,           # ボス用攻撃力補正
-        "reward_gold": (5000, 10000),
-        "reward_rainbow": (200, 500),
-        "reward_exp": (200, 400),
-    }
+# ここを書き換えるだけで、イベントボスの種類やレベルを簡単に調整できます！
+EVENT_CONFIG = {
+    "name": "【特別イベント】強敵襲来！",
+    "target_gacha_name": None,  # Noneならガチャプールからランダム、"キャラ名" を入れれば特定キャラ固定
+    "boss_level": 100,          # ボスのレベル（Lv.100など）
+    "hp_multiplier": 5.0,       # ボス用HP倍率
+    "atk_multiplier": 1.2,      # ボス用攻撃力倍率
+    "reward_gold": (5000, 10000),
+    "reward_rainbow": (200, 500),
+    "reward_exp": (200, 400),
 }
 
-# 現在開催中のモード（"normal" または "event_boss" を選ぶだけ！）
-CURRENT_STAGE_KEY = "event_boss"
-
 
 # --------------------------------------------------
-# ⚖️ 属性・補助関数
+# ⚖️ 補助関数
 # --------------------------------------------------
-ELEMENT_EFFECTIVENESS = {
-    "赤": {"緑": 1.5, "青": 0.8},
-    "緑": {"青": 1.5, "赤": 0.8},
-    "青": {"赤": 1.5, "緑": 0.8},
-    "光": {"紫": 1.5},
-    "紫": {"光": 1.5},
-}
-
 def create_smooth_bar(ratio, length=10):
     ratio = max(0.0, min(1.0, ratio))
     filled_length = int(length * ratio)
@@ -78,7 +55,6 @@ class Character:
         self.is_boss = is_boss
 
     def action(self, target, party, boss_state):
-        # 35%の確率でスキル発動
         if random.randint(1, 100) <= 35:
             if self.skill_type == "heal_all":
                 healed_names = []
@@ -110,9 +86,9 @@ class Character:
 
 
 # --------------------------------------------------
-# ⚔️ メインバトル処理
+# ⚔️ バトル共通処理
 # --------------------------------------------------
-async def run_battle(interaction: discord.Interaction):
+async def execute_battle(interaction: discord.Interaction, is_event: bool = False):
     u_data = get_user_profile(interaction.user.id)
     party = [Character(u_data["characters"][i]) for i in u_data["party_indices"] if i < len(u_data["characters"])]
 
@@ -120,27 +96,22 @@ async def run_battle(interaction: discord.Interaction):
         await interaction.response.send_message("❌ パーティメンバーがセットされていません。`/party` で編成してください！", ephemeral=True)
         return
 
-    # 味方パーティの平均レベルを計算（スケーリング用）
+    # 味方パーティの平均レベルを計算
     avg_level = sum(p.level for p in party) // len(party)
 
-    # ステージ設定の読み込み
-    stage_info = EVENT_STAGES.get(CURRENT_STAGE_KEY, EVENT_STAGES["normal"])
-
-    # 👹 敵（ボス）の生成ロジック
-    if stage_info["boss_type"] == "gacha_character":
-        # ガチャプールから指定キャラ、またはランダムで抽出
-        target_name = stage_info.get("target_gacha_name")
+    # 👹 敵（ボス）の生成
+    if is_event:
+        # イベントモード：ガチャキャラを強敵ボス化
+        target_name = EVENT_CONFIG.get("target_gacha_name")
         candidate = None
         if target_name:
             candidate = next((c for c in GACHA_POOL if c["name"] == target_name), None)
         if not candidate:
             candidate = random.choice(GACHA_POOL)
 
-        boss_lvl = stage_info.get("boss_level", 100)
-        
-        # Lv.100相当のステータス計算（レベルアップ上昇値を適用）
-        calculated_hp = int((candidate["hp"] + (boss_lvl * 15)) * stage_info.get("hp_multiplier", 3.0))
-        calculated_atk = int((candidate["atk"] + (boss_lvl * 3)) * stage_info.get("atk_multiplier", 1.0))
+        boss_lvl = EVENT_CONFIG.get("boss_level", 100)
+        calculated_hp = int((candidate["hp"] + (boss_lvl * 15)) * EVENT_CONFIG.get("hp_multiplier", 3.0))
+        calculated_atk = int((candidate["atk"] + (boss_lvl * 3)) * EVENT_CONFIG.get("atk_multiplier", 1.0))
 
         boss_data = {
             "name": f"【Lv.{boss_lvl}】{candidate['name']}",
@@ -155,30 +126,33 @@ async def run_battle(interaction: discord.Interaction):
             "skill_pow": candidate.get("skill_pow", 50),
             "skill_type": candidate.get("skill_type", "normal")
         }
+        title_name = EVENT_CONFIG["name"]
+        rewards = (EVENT_CONFIG["reward_gold"], EVENT_CONFIG["reward_rainbow"], EVENT_CONFIG["reward_exp"])
     else:
-        # 味方レベルに比例して強くなる通常敵
+        # 通常モード：レベル同期する敵
         boss_lvl = max(1, avg_level)
         boss_data = {
-            "name": f"【Lv.{boss_lvl}】{stage_info['enemy_name']}",
-            "icon": stage_info["icon"],
+            "name": f"【Lv.{boss_lvl}】野生のモンスター",
+            "icon": "👹",
             "element": "無",
             "level": boss_lvl,
-            "hp": stage_info["base_hp"] + (boss_lvl * 25),
-            "atk": stage_info["base_atk"] + (boss_lvl * 4),
+            "hp": 80 + (boss_lvl * 25),
+            "atk": 10 + (boss_lvl * 4),
             "spd": 10,
             "rec": 0,
             "skill_name": "なぎ払い",
             "skill_pow": 15 + (boss_lvl * 2),
             "skill_type": "normal"
         }
+        title_name = "通常クエスト"
+        rewards = ((1000, 3000), (50, 100), (50, 100))
 
     boss = Character(boss_data, is_boss=True)
 
-    # バトル開始Embed送信
     embed = discord.Embed(
-        title=f"⚔️ {stage_info['name']} 開始！",
+        title=f"⚔️ {title_name} 開始！",
         description=f"立ちはだかる敵: **{boss.name}**\n出撃メンバー: {', '.join([f'**{p.name}** (Lv.{p.level})' for p in party])}",
-        color=0xE74C3C if stage_info["boss_type"] == "gacha_character" else 0x3498DB,
+        color=0xE74C3C if is_event else 0x3498DB,
     )
     await interaction.response.send_message(embed=embed)
     battle_msg = await interaction.original_response()
@@ -187,17 +161,15 @@ async def run_battle(interaction: discord.Interaction):
     logs = []
     boss_state = {"stun_turns": 0}
 
-    # バトルループ
+    # バトル進行ループ
     while boss.hp > 0 and any(p.hp > 0 for p in party):
         await asyncio.sleep(1.8)
         turn_log = f"**--- ターン {turn} ---**\n"
 
-        # 味方の攻撃ターン
         for p in party:
             if p.hp > 0 and boss.hp > 0:
                 turn_log += p.action(boss, party, boss_state) + "\n"
 
-        # 敵（ボス）の攻撃ターン
         if boss.hp > 0:
             if boss_state["stun_turns"] > 0:
                 turn_log += f"💫 **{boss.name}** は動けない！（残り {boss_state['stun_turns']} ターン）\n"
@@ -212,7 +184,6 @@ async def run_battle(interaction: discord.Interaction):
         if len(logs) > 2:
             logs.pop(0)
 
-        # ステータスバー更新
         boss_bar = create_smooth_bar(boss.hp / boss.max_hp)
         status_text = f"\n{boss.icon} **{boss.name}**: HP {boss.hp}/{boss.max_hp} {boss_bar}\n"
 
@@ -228,13 +199,10 @@ async def run_battle(interaction: discord.Interaction):
         await battle_msg.edit(embed=new_embed)
         turn += 1
 
-    # 勝利 / 敗北 判定
+    # 結末判定
     await asyncio.sleep(1.0)
     if boss.hp <= 0:
-        g_min, g_max = stage_info["reward_gold"]
-        r_min, r_max = stage_info["reward_rainbow"]
-        e_min, e_max = stage_info["reward_exp"]
-
+        (g_min, g_max), (r_min, r_max), (e_min, e_max) = rewards
         gold_gained = random.randint(g_min, g_max)
         rainbow_gained = random.randint(r_min, r_max)
         exp_gained = random.randint(e_min, e_max)
@@ -275,3 +243,23 @@ async def run_battle(interaction: discord.Interaction):
         )
 
     await interaction.followup.send(embed=result_embed)
+
+
+# --------------------------------------------------
+# 💬 Cog（コマンド登録）
+# --------------------------------------------------
+class BattleCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(name="battle", description="通常のクエストバトルを行います（味方のレベルに合わせた敵が出現）")
+    async def battle(self, interaction: discord.Interaction):
+        await execute_battle(interaction, is_event=False)
+
+    @app_commands.command(name="battle_event", description="【イベント】強力なガチャキャラボスに挑みます！")
+    async def battle_event(self, interaction: discord.Interaction):
+        await execute_battle(interaction, is_event=True)
+
+
+async def setup(bot):
+    await bot.add_cog(BattleCog(bot))
