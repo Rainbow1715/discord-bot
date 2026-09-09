@@ -9,8 +9,7 @@ ACHIEVEMENTS = {
     "first_win": {
         "title": "🔰 はじめての勝利",
         "desc": "バトルで1回勝利する",
-        "reward_gold": 500,
-        "reward_rainbow": 0,
+        "reward_rainbow": 500,
     },
     "win_10": {
         "title": "⚔️ 百戦錬磨の兆し",
