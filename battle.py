@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from database import get_user_profile, save_data, GACHA_POOL
-from achievement import on_battle_win  # 👈 実績側の処理を1つだけインポート
+from achievement import on_battle_win, on_battle_lose
 
 # --------------------------------------------------
 # 🎪 イベントステージ設定
@@ -246,6 +246,13 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             ),
             color=0x00FF00,
         )
+        # --- 全滅（敗北）の処理 ---
+if all(c.hp <= 0 for c in party):
+    # ★ 敗北実績のチェックを実行！
+    await on_battle_lose(interaction, u_data)
+    save_user_profile(interaction.user.id, u_data) # データ保存
+
+    # 敗北時の埋め込みメッセージ送信など...
     else:
         result_embed = discord.Embed(
             title="💀 GAME OVER...",
