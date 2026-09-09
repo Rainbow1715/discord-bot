@@ -75,6 +75,15 @@ class FoodSelectView(discord.ui.View):
             await interaction.response.send_message("❌ そのご飯は持っていません！", ephemeral=True)
             return
 
+        # 🍶 ここでまず処理を実行（お酒チェック等を行う）
+        result = db.feed_character(user_info, char_data, food_name)
+
+        # 🚫 お酒NGなどのエラーが発生した場合はアイテムを消費せず中断
+        if result.get("status") == "error":
+            await interaction.response.send_message(result["message"], ephemeral=True)
+            return
+            
+        # ✅ 成功した時だけアイテムを消費して保存
         user_info["items"][food_name] -= 1
 
         result = db.feed_character(user_info, char_data, food_name)
