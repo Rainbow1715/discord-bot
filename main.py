@@ -53,6 +53,13 @@ class MyBot(commands.Bot):
         except Exception as e:
             print(f"❌ zukan の読み込みエラー: {e}")
 
+        # 🔻 バトル (battle.py) の読み込み 👈 ここを追加！ 🔻
+        try:
+            await self.load_extension("battle")
+            print("✅ battle の読み込みに成功しました！")
+        except Exception as e:
+            print(f"❌ battle の読み込みエラー: {e}")
+
         await self.tree.sync()
         print("スラッシュコマンドの同期が完了しました！")
 
