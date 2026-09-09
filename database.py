@@ -204,21 +204,7 @@ GACHA_POOL = [
         "affection_exp": 0,
         "known_likes": [],
         "known_dislikes": []
-    }
-]
-
-# --------------------------------------------------
-# 🔰 初期キャラクターデータ（GACHA_POOLから検索して取得）
-# --------------------------------------------------
-# GACHA_POOLの中から指定した名前のキャラを探すヘルパー関数
-def find_gacha_char(name):
-    for c in GACHA_POOL:
-        if c["name"] == name:
-            return c
-    return None
-
-DEFAULT_CHARACTERS = [
-    find_gacha_char("茉鈴"),
+    },
     {
         "name": "橘柊人",
         "icon": "<:6_syuuto:1476538895968768000>",
@@ -273,6 +259,21 @@ DEFAULT_CHARACTERS = [
         "known_likes": [],
         "known_dislikes": []
     }
+]
+
+# --------------------------------------------------
+# 🔰 初期キャラクターデータ（GACHA_POOLから検索して取得）
+# --------------------------------------------------
+# GACHA_POOLの中から指定した名前のキャラを探すヘルパー関数
+def find_gacha_char(name):
+    for c in GACHA_POOL:
+        if c["name"] == name:
+            return c
+    return None
+
+DEFAULT_CHARACTERS = [
+    find_gacha_char("茉鈴"),("橘柊人"),("河野蜜柑"),
+    
 ]
 
 # 🍱 ご飯アイテムの定義
