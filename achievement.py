@@ -26,14 +26,31 @@ ACHIEVEMENTS = {
     }
 }
 
-# 📢 実績通知を送るチャンネル名（サーバー内にこの名前のチャンネルを作っておきます）
+# 📢 実績通知を送るチャンネル名
 LOG_CHANNEL_NAME = "実績解除ログ"
 
 
+# --------------------------------------------------
+# ⚔️ バトル勝利時の自動実績チェックまとめ（ここを追加！）
+# --------------------------------------------------
+async def on_battle_win(interaction: discord.Interaction, u_data: dict):
+    """バトル勝利時に呼び出され、カウントアップと実績解除を一括処理する関数"""
+    # 勝利数をカウントアップ
+    u_data["win_count"] = u_data.get("win_count", 0) + 1
+
+    # 初勝利実績のチェック
+    await check_and_unlock_achievement(interaction, "first_win")
+
+    # 10勝実績のチェック
+    if u_data["win_count"] >= 10:
+        await check_and_unlock_achievement(interaction, "win_10")
+
+
+# --------------------------------------------------
+# 🔓 実績解除・通知共通関数
+# --------------------------------------------------
 async def check_and_unlock_achievement(interaction: discord.Interaction, achievement_id: str):
-    """
-    実績条件を満たした時に呼び出す関数
-    """
+    """実績条件を満たした時に呼び出す関数"""
     u_id = interaction.user.id
     u_data = user_data.get(u_id)
     if not u_data:
@@ -79,7 +96,6 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
         color=0xF1C40F
     )
     
-    # 元のインタラクションに対して自分だけに送る（非公開）
     try:
         await interaction.followup.send(embed=embed_user, ephemeral=True)
     except Exception as e:
@@ -89,7 +105,6 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
     # 📢 通知②：実績専用チャンネルへの自動投稿
     # --------------------------------------------------
     try:
-        # 実行されたサーバー内の該当チャンネルを探す
         target_channel = discord.utils.get(interaction.guild.text_channels, name=LOG_CHANNEL_NAME)
         if target_channel:
             embed_log = discord.Embed(
