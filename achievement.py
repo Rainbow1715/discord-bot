@@ -106,7 +106,7 @@ async def check_and_unlock_achievement(interaction: discord.Interaction, achieve
     # --------------------------------------------------
     try:
         target_channel = discord.utils.get(interaction.guild.text_channels, name=LOG_CHANNEL_NAME)
-        if target_channel:
+        if target_channel:1547122457062940712
             embed_log = discord.Embed(
                 title="📢 実績解除ニュース！",
                 description=f"**{interaction.user.display_name}** さんが実績【**{ach['title']}**】を解除しました！👏",
