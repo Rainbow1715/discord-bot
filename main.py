@@ -66,6 +66,13 @@ class MyBot(commands.Bot):
         except Exception as e:
             print(f"❌ zukan の読み込みエラー: {e}")
 
+        # 🔻 反応図鑑 (reactions.py) の読み込み  🔻
+        try:
+            await self.load_extension("reactions")
+            print("✅ reactions の読み込みに成功しました！")
+        except Exception as e:
+            print(f"❌ reactions の読み込みエラー: {e}")
+
         # 🔻 バトル (battle.py) の読み込み 🔻
         try:
             await self.load_extension("battle")
