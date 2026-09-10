@@ -1,19 +1,30 @@
 import random
 import discord
-# 🆕 NEW_PICKUP_CHARACTERS を database から読み込むように追加
+# database から必要な定数・関数を読み込み
 from database import (
     GACHA_POOL, 
     RARITY_RATES, 
-    PICKUP_CHARACTERS, 
-    NEW_PICKUP_CHARACTERS, 
-    PICKUP_BOOST_RATE, 
+    PICKUP_CHARACTERS,       # 🎂 バースデーピックアップ
+    NEW_PICKUP_CHARACTERS,   # 🆕 新実装ピックアップ
+    PICKUP_BOOST_RATE,       # フォールバック用
     get_user_profile, 
     save_data
 )
 from achievement import on_gacha_draw, check_character_achievements
 
+# --------------------------------------------------
+# ⚙️ ピックアップ率の設定（database.py側に定義があればそちらを優先）
+# --------------------------------------------------
+try:
+    from database import NEW_PICKUP_BOOST_RATE, BIRTHDAY_PICKUP_BOOST_RATE
+except ImportError:
+    # database.py に個別の設定がない場合のデフォルト値（例: 新キャラ30% / バースデー30%）
+    NEW_PICKUP_BOOST_RATE = 0.30
+    BIRTHDAY_PICKUP_BOOST_RATE = 0.30
+
+
 def select_character_by_rarity():
-    """レア度確率に基づいてキャラを1体抽選する（フォールバック時は低レア優先）"""
+    """レア度確率に基づいてキャラを1体抽選する（ピックアップ枠を分離）"""
     # 1. 重み付きランダムでレア度を決定
     rarities = list(RARITY_RATES.keys())
     weights = list(RARITY_RATES.values())
@@ -33,20 +44,27 @@ def select_character_by_rarity():
     if not pool:
         return GACHA_POOL[0] if GACHA_POOL else None
 
-    # 4. 🎯 ピックアップ判定（実装ピックアップ & バースデーピックアップ）
-    # 全ピックアップ対象（重複をまとめたリスト）
-    all_pickups = list(set(PICKUP_CHARACTERS + NEW_PICKUP_CHARACTERS))
-    
-    # そのプール（選ばれたレア度）の中にピックアップ対象キャラが含まれているか確認
-    pickup_in_pool = [c for c in pool if c.get("name") in all_pickups]
-    
-    if pickup_in_pool:
-        # 指定した確率（60%など）でピックアップキャラを優先選出
-        if random.random() < PICKUP_BOOST_RATE:
-            return random.choice(pickup_in_pool)
+    # --------------------------------------------------
+    # 4. 🎯 ピックアップ判定（枠を分離）
+    # --------------------------------------------------
+    # 当該レア度プール内に存在するピックアップ対象を抽出
+    new_pickups_in_pool = [c for c in pool if c.get("name") in NEW_PICKUP_CHARACTERS]
+    birthday_pickups_in_pool = [c for c in pool if c.get("name") in PICKUP_CHARACTERS]
 
-    # 5. 通常選出
+    rand_val = random.random()
+
+    # 🆕 A) 新実装ピックアップ判定
+    if new_pickups_in_pool and rand_val < NEW_PICKUP_BOOST_RATE:
+        return random.choice(new_pickups_in_pool)
+
+    # 🎂 B) バースデーピックアップ判定
+    # （新キャラ判定に漏れた後、次の確率帯でチェック）
+    if birthday_pickups_in_pool and rand_val < (NEW_PICKUP_BOOST_RATE + BIRTHDAY_PICKUP_BOOST_RATE):
+        return random.choice(birthday_pickups_in_pool)
+
+    # 5. 通常選出（すり抜け）
     return random.choice(pool)
+
 
 def draw_10_gacha():
     """10連ガチャを引く処理"""
@@ -116,8 +134,10 @@ class GachaView(discord.ui.View):
 
             if existing_char:
                 existing_char["count"] = existing_char.get("count", 1) + 1
-                existing_char["hp"] += 2
-                existing_char["atk"] += 1
+                # 重複時のステータス上昇処理
+                existing_char["max_hp"] = existing_char.get("max_hp", existing_char.get("hp", 100)) + 2
+                existing_char["hp"] = existing_char.get("hp", 100) + 2
+                existing_char["atk"] = existing_char.get("atk", 10) + 1
                 status_note = f"[重複 +1] (所持数: {existing_char['count']})"
             else:
                 new_char = {
@@ -127,6 +147,7 @@ class GachaView(discord.ui.View):
                     "count": 1,
                     "level": 1,
                     "exp": 0,
+                    "max_hp": template.get("max_hp", template.get("hp", 100)),
                     "hp": template.get("hp", 100),
                     "atk": template.get("atk", 10),
                     "spd": template.get("spd", 10),
@@ -137,7 +158,7 @@ class GachaView(discord.ui.View):
                 user_chars.append(new_char)
                 status_note = "**[✨NEW!✨]**"
 
-            # 表示テキストの先頭に pickup_marks (🆕/🎂) を追加
+            # 表示テキストの作成
             result_lines.append(f"{idx}. {pickup_marks}{rarity_icon} **[{template.get('rarity', '★3')}] {char_name}** {status_note}")
 
         # --------------------------------------------------
