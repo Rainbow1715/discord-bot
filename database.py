@@ -388,9 +388,11 @@ def feed_character(user_info, char_data, food_name):
             "message": f"❌ **{char_name}** はお酒を飲むことができません！"
         }
         
-    likes = char_data.get("likes", [])
-    dislikes = char_data.get("dislikes", [])
-    
+    # GACHA_POOL から最新のマスターデータを取得
+    master_char = find_gacha_char(char_name) or {}
+    master_likes = master_char.get("likes", {})
+    master_dislikes = master_char.get("dislikes", {})
+
     if "known_likes" not in char_data:
         char_data["known_likes"] = []
     if "known_dislikes" not in char_data:
@@ -398,12 +400,16 @@ def feed_character(user_info, char_data, food_name):
 
     is_first_time = (food_name not in char_data["known_likes"]) and (food_name not in char_data["known_dislikes"])
     
-    if food_name in likes:
+    # 辞書・リストのどちらの形式でも安全に判定
+    is_like = food_name in master_likes
+    is_dislike = food_name in master_dislikes
+
+    if is_like:
         base_exp = 100
         taste_type = "like"
         if food_name not in char_data["known_likes"]:
             char_data["known_likes"].append(food_name)
-    elif food_name in dislikes:
+    elif is_dislike:
         base_exp = 20
         taste_type = "dislike"
         if food_name not in char_data["known_dislikes"]:
