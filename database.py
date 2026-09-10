@@ -79,7 +79,7 @@ GACHA_POOL = [
         "dislikes": {
             "激辛ラーメン": "涙目になりながらもしっかりと完食していた。",
             "紅茶": "渋い顔で、しばらくカップと睨めっこをしていた。",
-        }
+        },
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
@@ -104,8 +104,13 @@ GACHA_POOL = [
         "gender": "？",
         "best_equip": "紙パックのいちごオレ",
         "equip": None,
-        "likes": ["果肉なしいちごオレ"],
-        "dislikes": ["激辛ラーメン", "紅茶"],
+        "likes": {
+            "果肉なしいちごオレ": "このねぇ、じんこー的ないちごの味がいいんですよねこれ、などぶつぶつ言っていた。",
+        },
+        "dislikes": {
+            "激辛ラーメン": "食べる前にまず水を要求してきた。",
+            "紅茶": "うーん、れーちゃんこれいらないや……、とあからさまにテンションを下げつつ言ってきた。",
+        },
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
@@ -130,8 +135,14 @@ GACHA_POOL = [
         "gender": "男",
         "best_equip": "ナイフ",
         "equip": None,
-        "likes": ["クソデカステーキ"],
-        "dislikes": ["野菜たっぷりサラダ", "ほうれん草のキッシュ", "ブロッコリー"],
+        "likes": {
+            "クソデカステーキ": "大喜びでがっついて食べた。",
+        },
+        "dislikes": { 
+            "野菜たっぷりサラダ": "いらない、と突き返してきた。",
+            "ほうれん草のキッシュ": "嫌そうな顔をしていた。",
+            "ブロッコリー": "いらないと言っていたが、サラもブロッコリーが嫌いだ、と言うと余裕の笑みを浮かべて食べた。",
+        },
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
@@ -154,7 +165,9 @@ GACHA_POOL = [
         "gender": "男",
         "best_equip": "ロケット",
         "equip": None,
-        "likes": ["オムライス"],
+        "likes": {
+            "オムライス": "妻が作ってくれたものと似ている、と少し嬉しそうに食べていた。"
+        },
         "dislikes": [],
         "affection_level": 1,
         "affection_exp": 0,
@@ -205,8 +218,13 @@ GACHA_POOL = [
         "gender": "女",
         "best_equip": "子供用カメラ",
         "equip": None,
-        "likes": ["コーンマヨピザ", "オムライス"],
-        "dislikes": ["激辛ラーメン"],
+        "likes": {
+            "コーンマヨピザ": "これおいしいねぇ！　と口いっぱいに頬張っていた。",
+            "オムライス": "口の周りをケチャップで汚しながら美味しそうに食べていた。",
+        },
+        "dislikes": {
+            "激辛ラーメン": "一口食べて泣きそうな顔になっていた。",
+        },
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
@@ -233,7 +251,9 @@ GACHA_POOL = [
         "best_equip": "ハリセン",
         "equip": None,
         "likes": [],
-        "dislikes": ["酒"],
+        "dislikes": {
+            "酒": "何か恨みでもあるのか、ずっと睨んでいた。",
+        },
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
@@ -259,7 +279,9 @@ GACHA_POOL = [
         "gender": "女",
         "best_equip": "学校の箒",
         "equip": None,
-        "likes": [],
+        "likes": {
+            "ピーマンの肉詰め": "少し笑顔になり、美味しそうに静かにもぐもぐしていた。",
+        },
         "dislikes": [],
         "affection_level": 1,
         "affection_exp": 0,
