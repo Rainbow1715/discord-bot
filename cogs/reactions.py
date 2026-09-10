@@ -34,7 +34,8 @@ class ReactionsCog(commands.Cog):
             # --------------------------------------------------
             if known_likes:
                 likes_str = "、".join(known_likes)
-                like_reaction = f"「わーい！ {known_likes[0]} 大好き！」"
+                # マスターデータからセリフを取得（設定がなければデフォルトセリフ）
+                like_reaction = master_char.get("like_reaction", "「わーい！ありがとう！」")
             else:
                 likes_str = "まだわかりません"
                 like_reaction = "まだわかりません"
@@ -44,7 +45,8 @@ class ReactionsCog(commands.Cog):
             # --------------------------------------------------
             if known_dislikes:
                 dislikes_str = "、".join(known_dislikes)
-                dislike_reaction = "「……」"
+                # マスターデータからセリフを取得（設定がなければデフォルトセリフ）
+                dislike_reaction = master_char.get("dislike_reaction", "「……」")
             else:
                 dislikes_str = "まだわかりません"
                 dislike_reaction = "まだわかりません"
