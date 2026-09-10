@@ -37,6 +37,10 @@ class MyBot(commands.Bot):
     async def setup_hook(self):
         await start_dummy_server()  # 👈 Bot起動時にダミーWebサーバーも一緒に立ち上げる
         await admin.setup(self)     # 👈 管理者コマンドを登録
+
+        # 🔻 データ再計算スクリプトの実行（1回完了したら消してOK） 🔻
+        import recalculate
+        recalculate.recalculate_all_characters()
         
         # 🔻 cogs/feed.py の読み込み 🔻
         try:
