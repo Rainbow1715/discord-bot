@@ -46,7 +46,7 @@ RARITY_RATES = {
 
 # 🎂 今月のバースデー・ピックアップ設定
 PICKUP_CHARACTERS = ["竹村しえら", "レオ", "Gerânio"]
-PICKUP_BOOST_RATE = 0.30  # バースデーキャラ全体の排出補正率
+PICKUP_BOOST_RATE = 0.40  # バースデーキャラ全体の排出補正率
 
 # 🆕 新キャラ実装・ピックアップ設定
 NEW_PICKUP_CHARACTERS = []  # 実装時に ["新キャラ名"] を指定
