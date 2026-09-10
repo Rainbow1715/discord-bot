@@ -37,12 +37,11 @@ class FoodSelectView(discord.ui.View):
             if not icon:
                 icon = "🍱"
             
-            # 修正例：icon が存在すればそのまま渡す（discord.pyが自動処理してくれます）
             options.append(
                 discord.SelectOption(
                     label=f"{food_name} (所持: {count}個)",
                     value=food_name,
-                    emoji=icon if icon else "🍱"
+                    emoji=icon
                 )
             )
 
@@ -59,9 +58,6 @@ class FoodSelectView(discord.ui.View):
         if interaction.user.id != self.user_id:
             await interaction.response.send_message("❌ 他の人の操作はできません。", ephemeral=True)
             return
-
-        # 💡 ドロップダウンを操作不能にして連打事故を防ぐ（必要に応じて）
-        self.children[0].disabled = True
 
         food_name = self.children[0].values[0]
         if food_name == "none":
