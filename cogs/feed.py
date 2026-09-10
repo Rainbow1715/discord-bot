@@ -37,11 +37,12 @@ class FoodSelectView(discord.ui.View):
             if not icon:
                 icon = "🍱"
             
+            # 修正例：icon が存在すればそのまま渡す（discord.pyが自動処理してくれます）
             options.append(
                 discord.SelectOption(
                     label=f"{food_name} (所持: {count}個)",
                     value=food_name,
-                    emoji=icon if len(icon) == 1 else None
+                    emoji=icon if icon else "🍱"
                 )
             )
 
@@ -75,18 +76,16 @@ class FoodSelectView(discord.ui.View):
             await interaction.response.send_message("❌ そのご飯は持っていません！", ephemeral=True)
             return
 
-        # 🍶 ここでまず処理を実行（お酒チェック等を行う）
+        # 🍶 1回だけ処理を実行（お酒NGなどのチェックも内部で行われる）
         result = db.feed_character(user_info, char_data, food_name)
 
-        # 🚫 お酒NGなどのエラーが発生した場合はアイテムを消費せず中断
+        # 🚫 お酒NGなどのエラーが発生した場合は消費せずに中断
         if result.get("status") == "error":
             await interaction.response.send_message(result["message"], ephemeral=True)
             return
             
-        # ✅ 成功した時だけアイテムを消費して保存
+        # ✅ 成功した場合のみ、アイテムを1つ減らして保存
         user_info["items"][food_name] -= 1
-
-        result = db.feed_character(user_info, char_data, food_name)
         db.save_data()
 
         taste = result["taste_type"]
@@ -109,13 +108,13 @@ class FoodSelectView(discord.ui.View):
         )
 
         exp_detail = f"+{result['gained_exp']} XP"
-        if result["is_first_time"]:
+        if result.get("is_first_time"):
             exp_detail += " **(★初めてのご飯ボーナス +20XP!)**"
 
         embed.add_field(name="獲得なつき経験値", value=exp_detail, inline=False)
         embed.add_field(name="現在のなつきLv.", value=f"Lv. {result['current_level']}", inline=True)
 
-        if result["rewards"]:
+        if result.get("rewards"):
             reward_str = "\n".join(result["rewards"])
             embed.add_field(name="🎉 なつき度アップ報酬GET！", value=reward_str, inline=False)
 
