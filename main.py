@@ -68,10 +68,10 @@ class MyBot(commands.Bot):
 
         # 🔻 反応図鑑 (reactions.py) の読み込み  🔻
         try:
-            await self.load_extension("reactions")
-            print("✅ reactions の読み込みに成功しました！")
+            await self.load_extension("cogs.reactions")
+            print("✅ cogs.reactions の読み込みに成功しました！")
         except Exception as e:
-            print(f"❌ reactions の読み込みエラー: {e}")
+            print(f"❌ cogs.reactions の読み込みエラー: {e}")
 
         # 🔻 バトル (battle.py) の読み込み 🔻
         try:
