@@ -320,14 +320,10 @@ async def mailbox(interaction: discord.Interaction):
                 existing_char = next((c for c in user_chars if c["name"] == char_name), None)
 
                 if existing_char:
+                    # 🔴 ステータスは直接増やさず、所持数（素材）のみ増やす
                     existing_char["count"] = existing_char.get("count", 1) + 1
-                    existing_char["hp"] = existing_char.get("hp", template.get("hp", 100)) + 2
-                    # 🔴 max_hp も一緒に増やす
-                    existing_char["max_hp"] = existing_char.get("max_hp", template.get("max_hp", 100)) + 2
-                    existing_char["atk"] = existing_char.get("atk", template.get("atk", 10)) + 1
-                    received_chars.append(f"{char_name} (重複強化 +1)")
+                    received_chars.append(f"{char_name} (所持数 +1)")
                 else:
-                    # 🔴 template の持つすべてのプロパティ（likes, element等）を安全にコピー
                     new_char = dict(template)
                     new_char["count"] = 1
                     new_char["level"] = 1
