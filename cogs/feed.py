@@ -60,6 +60,9 @@ class FoodSelectView(discord.ui.View):
             await interaction.response.send_message("❌ 他の人の操作はできません。", ephemeral=True)
             return
 
+        # 💡 ドロップダウンを操作不能にして連打事故を防ぐ（必要に応じて）
+        self.children[0].disabled = True
+
         food_name = self.children[0].values[0]
         if food_name == "none":
             return
