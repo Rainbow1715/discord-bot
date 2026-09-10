@@ -168,7 +168,7 @@ GACHA_POOL = [
         "likes": {
             "オムライス": "妻が作ってくれたものと似ている、と少し嬉しそうに食べていた。"
         },
-        "dislikes": [],
+        "dislikes": {},
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
@@ -225,7 +225,7 @@ GACHA_POOL = [
         "best_equip": "子供用カメラ",
         "equip": None,
         "likes": {
-            "コーンマヨピザ": "これおいしいねぇ！　と口いっぱいに頬張っていた。",
+            "コーンマヨピザ": "これおいしいねぇ！ と口いっぱいに頬張っていた。",
             "オムライス": "口の周りをケチャップで汚しながら美味しそうに食べていた。",
         },
         "dislikes": {
@@ -256,7 +256,7 @@ GACHA_POOL = [
         "gender": "男",
         "best_equip": "ハリセン",
         "equip": None,
-        "likes": [],
+        "likes": {},
         "dislikes": {
             "酒": "何か恨みでもあるのか、ずっと睨んでいた。",
         },
@@ -288,7 +288,7 @@ GACHA_POOL = [
         "likes": {
             "ピーマンの肉詰め": "少し笑顔になり、美味しそうに静かにもぐもぐしていた。",
         },
-        "dislikes": [],
+        "dislikes": {},
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
@@ -374,7 +374,7 @@ def check_affection_level_up(char_data, user_info):
 ALCOHOL_ITEMS = ["酒", "ビール", "ワイン", "ウイスキー", "日本酒"]
 
 ADULT_CHARACTERS = [
-    "折原和也","橘柊人","竹村しえら","れーちゃん","Gerânio","レオ",
+    "折原和也", "橘柊人", "竹村しえら", "れーちゃん", "Gerânio", "レオ",
 ]
 
 # 🍱 ご飯をあげる処理
