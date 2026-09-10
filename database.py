@@ -504,8 +504,8 @@ def get_user_profile(user_id):
             c["element"] = master.get("element", c.get("element", "赤"))
             c["role"] = master.get("role", c.get("role", "アタッカー"))
             c["atk_type"] = master.get("atk_type", c.get("atk_type", "物理"))
-            c["likes"] = master.get("likes", c.get("likes", []))
-            c["dislikes"] = master.get("dislikes", c.get("dislikes", []))
+            c["likes"] = master.get("likes", c.get("likes", {}))
+            c["dislikes"] = master.get("dislikes", c.get("dislikes", {}))
 
         if "element" not in c:
             c["element"] = master.get("element", "赤")
@@ -520,9 +520,9 @@ def get_user_profile(user_id):
         if "equip" not in c:
             c["equip"] = None
         if "likes" not in c:
-            c["likes"] = master.get("likes", [])
+            c["likes"] = master.get("likes", {})
         if "dislikes" not in c:
-            c["dislikes"] = master.get("dislikes", [])
+            c["dislikes"] = master.get("dislikes", {})
         if "affection_level" not in c:
             c["affection_level"] = 1
         if "affection_exp" not in c:
