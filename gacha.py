@@ -133,33 +133,30 @@ class GachaView(discord.ui.View):
             existing_char = next((c for c in user_chars if c["name"] == template["name"]), None)
 
             if existing_char:
-                existing_char["count"] = existing_char.get("count", 1) + 1
-                # 重複時のステータス上昇処理
-                existing_char["max_hp"] = existing_char.get("max_hp", existing_char.get("hp", 100)) + 2
-                existing_char["hp"] = existing_char.get("hp", 100) + 2
-                existing_char["atk"] = existing_char.get("atk", 10) + 1
-                status_note = f"[重複 +1] (所持数: {existing_char['count']})"
-            else:
-                new_char = {
-                    "name": template["name"],
-                    "rarity": template.get("rarity", "★3"),
-                    "icon": template.get("icon"),
-                    "count": 1,
-                    "level": 1,
-                    "exp": 0,
-                    "max_hp": template.get("max_hp", template.get("hp", 100)),
-                    "hp": template.get("hp", 100),
-                    "atk": template.get("atk", 10),
-                    "spd": template.get("spd", 10),
-                    "rec": template.get("rec", 10),
-                    "skill_name": template.get("skill_name", "通常攻撃"),
-                    "skill_pow": template.get("skill_pow", 1.0),
-                }
-                user_chars.append(new_char)
-                status_note = "**[✨NEW!✨]**"
+            existing_char["count"] = existing_char.get("count", 1) + 1
+            # 🔴 ステータス加算処理（max_hp, hp, atk）を削除しました
+            status_note = f"[所持数: {existing_char['count']}]"
+        else:
+            new_char = {
+                "name": template["name"],
+                "rarity": template.get("rarity", "★3"),
+                "icon": template.get("icon"),
+                "count": 1,
+                "level": 1,
+                "exp": 0,
+                "max_hp": template.get("max_hp", template.get("hp", 100)),
+                "hp": template.get("hp", 100),
+                "atk": template.get("atk", 10),
+                "spd": template.get("spd", 10),
+                "rec": template.get("rec", 10),
+                "skill_name": template.get("skill_name", "通常攻撃"),
+                "skill_pow": template.get("skill_pow", 1.0),
+            }
+            user_chars.append(new_char)
+            status_note = "**[✨NEW!✨]**"
 
-            # 表示テキストの作成
-            result_lines.append(f"{idx}. {pickup_marks}{rarity_icon} **[{template.get('rarity', '★3')}] {char_name}** {status_note}")
+        # 表示テキストの作成
+        result_lines.append(f"{idx}. {pickup_marks}{rarity_icon} **[{template.get('rarity', '★3')}] {char_name}** {status_note}")
 
         # --------------------------------------------------
         # 🎰 ガチャ実行回数の加算 ＆ 実績チェック
