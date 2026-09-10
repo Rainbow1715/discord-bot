@@ -187,7 +187,7 @@ ROLE_ICONS = {
 }
 
 
-@bot.tree.command(name="chars", description="所持キャラクターの一覧とステータスを確認します")
+@bot.tree.command(name="status", description="所持キャラクターの一覧とステータスを確認します")
 async def chars(interaction: discord.Interaction):
     u_data = get_user_profile(interaction.user.id)
 
