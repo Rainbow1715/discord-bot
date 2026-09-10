@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from database import user_data, get_user_profile, save_data
+from database import user_data, get_user_profile, save_data, GACHA_POOL
 
 # --------------------------------------------------
 # 🌟 レアリティ(★)ごとの必要条件・コスト定義
@@ -128,11 +128,27 @@ class RankUpSelectView(discord.ui.View):
         next_r = NEXT_RARITY[curr_rarity]
         char["rarity"] = next_r
 
-        # 📈 3. ステータス＆スキル倍率の強化
-        # ステータスアップ (+20%)
-        hp_up = int(char["hp"] * 0.20)
-        atk_up = int(char["atk"] * 0.20)
+        # 📈 3. ステータス＆スキル倍率の強化（初期値の10%を参照して加算）
+        # GACHA_POOL から該当キャラの初期データ（マスターデータ）を探す
+        template = next((c for c in GACHA_POOL if c["name"] == char["name"]), None)
+
+        if template:
+            # 初期値の 10% を計算（端数切り捨て、最低でも1は上がるように max を使用）
+            base_hp = template.get("hp", 100)
+            base_atk = template.get("atk", 10)
+            
+            hp_up = max(1, int(base_hp * 0.10))
+            atk_up = max(1, int(base_atk * 0.20))
+        else:
+            # 万が一マスターデータが見つからない場合のフォールバック（固定値）
+            hp_up = 10
+            atk_up = 2
+
+        # 計算した上昇量を加算
         char["hp"] += hp_up
+        if "max_hp" in char:
+            char["max_hp"] += hp_up
+            
         char["atk"] += atk_up
 
         # スキル威力の強化 (倍率 +0.3 増加)
