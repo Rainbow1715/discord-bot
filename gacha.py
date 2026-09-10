@@ -1,6 +1,15 @@
 import random
 import discord
-from database import GACHA_POOL, RARITY_RATES, PICKUP_CHARACTERS, PICKUP_BOOST_RATE, get_user_profile, save_data
+# 🆕 NEW_PICKUP_CHARACTERS を database から読み込むように追加
+from database import (
+    GACHA_POOL, 
+    RARITY_RATES, 
+    PICKUP_CHARACTERS, 
+    NEW_PICKUP_CHARACTERS, 
+    PICKUP_BOOST_RATE, 
+    get_user_profile, 
+    save_data
+)
 from achievement import on_gacha_draw, check_character_achievements
 
 def select_character_by_rarity():
@@ -15,22 +24,24 @@ def select_character_by_rarity():
 
     # 3. 該当レア度のキャラが未実装の場合のフォールバック処理
     if not pool:
-        # ★5を除外した、現在存在する低レア度プール（★3〜★4）に安全に流す
         non_star5_pool = [c for c in GACHA_POOL if c.get("rarity") != "★5"]
         if non_star5_pool:
             pool = non_star5_pool
         else:
             pool = GACHA_POOL
 
-    # それでも万が一プール全体が空なら None を返す
     if not pool:
         return GACHA_POOL[0] if GACHA_POOL else None
 
-    # 4. 🎂 ピックアップ判定
+    # 4. 🎯 ピックアップ判定（実装ピックアップ & バースデーピックアップ）
+    # 全ピックアップ対象（重複をまとめたリスト）
+    all_pickups = list(set(PICKUP_CHARACTERS + NEW_PICKUP_CHARACTERS))
+    
     # そのプール（選ばれたレア度）の中にピックアップ対象キャラが含まれているか確認
-    pickup_in_pool = [c for c in pool if c.get("name") in PICKUP_CHARACTERS]
+    pickup_in_pool = [c for c in pool if c.get("name") in all_pickups]
+    
     if pickup_in_pool:
-        # 指定した確率（90%など）でピックアップキャラを優先選出
+        # 指定した確率（60%など）でピックアップキャラを優先選出
         if random.random() < PICKUP_BOOST_RATE:
             return random.choice(pickup_in_pool)
 
@@ -40,11 +51,8 @@ def select_character_by_rarity():
 def draw_10_gacha():
     """10連ガチャを引く処理"""
     results = []
-    
-    # 通常枠 10連
     for _ in range(10):
         results.append(select_character_by_rarity())
-
     return results
 
 
@@ -54,12 +62,12 @@ class GachaView(discord.ui.View):
         self.user_id = user_id
 
     async def process_gacha(self, interaction: discord.Interaction, cost_type: str):
-        # 1. ユーザーチェック（他の人のガチャボタンを押した場合はここで弾く）
+        # 1. ユーザーチェック
         if interaction.user.id != self.user_id:
             await interaction.response.send_message("❌ 他のユーザーのガチャ画面です。", ephemeral=True)
             return
 
-        # 2. 「考え中…」にしてタイムアウトを15秒に延ばす
+        # 2. 「考え中…」にしてタイムアウトを延ばす
         await interaction.response.defer()
 
         u_data = get_user_profile(self.user_id)
@@ -88,11 +96,16 @@ class GachaView(discord.ui.View):
 
             char_name = template.get("name", "")
             
-            # 🎂 誕生月ピックアップ対象かどうかをチェック
-            is_pickup = char_name in PICKUP_CHARACTERS
-            birthday_mark = "🎂 " if is_pickup else ""
+            # 🎯 ピックアップマークの作成（新実装 🆕 / バースデー 🎂）
+            pickup_marks = ""
+            if char_name in NEW_PICKUP_CHARACTERS:
+                pickup_marks += "🆕"
+            if char_name in PICKUP_CHARACTERS:
+                pickup_marks += "🎂"
+            if pickup_marks:
+                pickup_marks += " "
 
-            # キャラ固有のiconが設定されていればそれを優先し、なければレア度標準の絵文字を使う
+            # キャラ固有のiconが設定されていればそれを優先
             char_icon = template.get("icon")
             if char_icon:
                 rarity_icon = char_icon
@@ -124,20 +137,17 @@ class GachaView(discord.ui.View):
                 user_chars.append(new_char)
                 status_note = "**[✨NEW!✨]**"
 
-            # 表示テキストの先頭に birthday_mark (🎂) を追加
-            result_lines.append(f"{idx}. {birthday_mark}{rarity_icon} **[{template.get('rarity', '★3')}] {char_name}** {status_note}")
+            # 表示テキストの先頭に pickup_marks (🆕/🎂) を追加
+            result_lines.append(f"{idx}. {pickup_marks}{rarity_icon} **[{template.get('rarity', '★3')}] {char_name}** {status_note}")
 
         # --------------------------------------------------
         # 🎰 ガチャ実行回数の加算 ＆ 実績チェック
         # --------------------------------------------------
         u_data["gacha_count"] = u_data.get("gacha_count", 0) + 1
-
         obtained_names = [t.get("name") for t in drawn_templates if t and t.get("name")]
         
-        # ガチャ結果を保存
         save_data()
 
-        # 実績の判定（1回 / 10回 / 50回 をまとめてチェック）
         await on_gacha_draw(interaction, u_data)
         await check_character_achievements(interaction, u_data, obtained_names)
 
@@ -150,7 +160,6 @@ class GachaView(discord.ui.View):
             text=f"残高 ｜ 虹の欠片: {items.get('虹の欠片', 0)}個 / ガチャチケ: {items.get('ガチャチケ', 0)}枚"
         )
 
-        # 4. defer() 済みのメッセージを編集して結果を表示する
         await interaction.edit_original_response(embed=embed, view=None)
 
     @discord.ui.button(label="虹の欠片 1000個で10連", style=discord.ButtonStyle.primary, emoji="💎")
