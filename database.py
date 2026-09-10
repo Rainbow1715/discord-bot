@@ -46,12 +46,13 @@ RARITY_RATES = {
 
 # 🎂 今月のバースデー・ピックアップ設定
 PICKUP_CHARACTERS = ["竹村しえら", "レオ", "Gerânio"]
-PICKUP_BOOST_RATE = 0.50
+PICKUP_BOOST_RATE = 0.30  # バースデーキャラ全体の排出補正率
 
-# 🆕 新キャラ実装・ピックアップ設定（ここに新キャラ名を入れる）
-NEW_PICKUP_CHARACTERS = [""]
+# 🆕 新キャラ実装・ピックアップ設定
+NEW_PICKUP_CHARACTERS = []  # 実装時に ["新キャラ名"] を指定
+NEW_PICKUP_BOOST_RATE = 0.50 # 新キャラ全体の排出補正率
 
-# 🎰 ガチャ排出キャラクタープール
+# 🎰 ガチャ排出キャラクタープール（兼マスターデータ）
 GACHA_POOL = [
     {
         "name": "竹村しえら",
@@ -69,7 +70,7 @@ GACHA_POOL = [
         "skill_pow": 1.4,
         "element": "紫",
         "role": "アタッカー",
-        "atk_type": "物理",  # ⚔️ 物理 / 魔法 を追加
+        "atk_type": "物理",
         "gender": "女",
         "best_equip": "なんか強そうな棒",
         "equip": None,
@@ -96,7 +97,7 @@ GACHA_POOL = [
         "skill_pow": 1.1,
         "element": "光",
         "role": "アタッカー",
-        "atk_type": "魔法",  # ⚔️ 物理 / 魔法 を追加
+        "atk_type": "魔法",
         "gender": "？",
         "best_equip": "紙パックのいちごオレ",
         "equip": None,
@@ -123,7 +124,7 @@ GACHA_POOL = [
         "skill_pow": 25,
         "element": "赤",
         "role": "アタッカー",
-        "atk_type": "物理",  # ⚔️ 物理 / 魔法 を追加
+        "atk_type": "物理",
         "gender": "男",
         "best_equip": "ナイフ",
         "equip": None,
@@ -148,7 +149,7 @@ GACHA_POOL = [
         "skill_pow": 1.2,
         "element": "紫",
         "role": "アタッカー",
-        "atk_type": "物理",  # ⚔️ 物理 / 魔法 を追加
+        "atk_type": "物理",
         "gender": "男",
         "best_equip": "ロケット",
         "equip": None,
@@ -173,7 +174,7 @@ GACHA_POOL = [
         "skill_pow": 17,
         "element": "紫",
         "role": "アタッカー",
-        "atk_type": "物理",  # ⚔️ 物理 / 魔法 を追加
+        "atk_type": "物理",
         "gender": "？",
         "best_equip": "電子機器",
         "equip": None,
@@ -201,7 +202,7 @@ GACHA_POOL = [
         "count": 1,
         "element": "光",
         "role": "サポーター",
-        "atk_type": "魔法",  # ⚔️ 物理 / 魔法 を追加
+        "atk_type": "魔法",
         "gender": "女",
         "best_equip": "子供用カメラ",
         "equip": None,
@@ -211,20 +212,7 @@ GACHA_POOL = [
         "affection_exp": 0,
         "known_likes": [],
         "known_dislikes": []
-    }
-]
-
-# --------------------------------------------------
-# 🔰 初期キャラクターデータ（GACHA_POOLから検索して取得）
-# --------------------------------------------------
-def find_gacha_char(name):
-    for c in GACHA_POOL:
-        if c["name"] == name:
-            return c
-    return None
-
-DEFAULT_CHARACTERS = [
-    find_gacha_char("茉鈴"),
+    },
     {
         "name": "橘柊人",
         "icon": "<:6_syuuto:1476538895968768000>",
@@ -242,7 +230,7 @@ DEFAULT_CHARACTERS = [
         "count": 1,
         "element": "赤",
         "role": "アタッカー",
-        "atk_type": "物理",  # ⚔️ 物理 / 魔法 を追加
+        "atk_type": "物理",
         "gender": "男",
         "best_equip": "ハリセン",
         "equip": None,
@@ -270,7 +258,7 @@ DEFAULT_CHARACTERS = [
         "count": 1,
         "element": "紫",
         "role": "サポーター",
-        "atk_type": "魔法",  # ⚔️ 物理 / 魔法 を追加
+        "atk_type": "魔法",
         "gender": "女",
         "best_equip": "学校の箒",
         "equip": None,
@@ -281,6 +269,21 @@ DEFAULT_CHARACTERS = [
         "known_likes": [],
         "known_dislikes": []
     }
+]
+
+# --------------------------------------------------
+# 🔰 初期キャラクターデータ取得関数
+# --------------------------------------------------
+def find_gacha_char(name):
+    for c in GACHA_POOL:
+        if c["name"] == name:
+            return dict(c)  # 参照渡しを避けるためコピーを返す
+    return None
+
+DEFAULT_CHARACTERS = [
+    find_gacha_char("茉鈴"),
+    find_gacha_char("橘柊人"),
+    find_gacha_char("河野蜜柑")
 ]
 
 # 🍱 ご飯アイテムの定義
@@ -313,7 +316,7 @@ FOOD_ITEMS = {
     "ピーマンの肉詰め": {"icon": ""},
 }
 
-# 📈 なつき度の必要経験値計算（例: Lv.1 -> Lv.2 に 100xp）
+# 📈 なつき度の必要経験値計算
 def get_required_affection_exp(level):
     return level * 100
 
@@ -327,7 +330,6 @@ def check_affection_level_up(char_data, user_info):
             char_data["affection_level"] += 1
             lvl = char_data["affection_level"]
             
-            # レベルアップ報酬
             if lvl % 5 == 0:
                 rewards.append("🎫 ガチャチケ x1")
                 user_info["items"]["ガチャチケ"] = user_info["items"].get("ガチャチケ", 0) + 1
@@ -346,7 +348,6 @@ def check_affection_level_up(char_data, user_info):
 # --------------------------------------------------
 ALCOHOL_ITEMS = ["酒", "ビール", "ワイン", "ウイスキー", "日本酒"]
 
-# お酒が飲める（成人）キャラのリスト
 ADULT_CHARACTERS = [
     "オリハラ カズヤ",
 ]
@@ -355,7 +356,6 @@ ADULT_CHARACTERS = [
 def feed_character(user_info, char_data, food_name):
     char_name = char_data.get("name", "")
 
-    # 🚫 お酒・未成年チェック
     if food_name in ALCOHOL_ITEMS and char_name not in ADULT_CHARACTERS:
         return {
             "status": "error",
@@ -366,16 +366,13 @@ def feed_character(user_info, char_data, food_name):
     likes = char_data.get("likes", [])
     dislikes = char_data.get("dislikes", [])
     
-    # 判明済みリストの初期化
     if "known_likes" not in char_data:
         char_data["known_likes"] = []
     if "known_dislikes" not in char_data:
         char_data["known_dislikes"] = []
 
-    # 初めて食べるご飯かどうかのチェック
     is_first_time = (food_name not in char_data["known_likes"]) and (food_name not in char_data["known_dislikes"])
     
-    # 基本XPの判定（好き:100 / 嫌い:20 / 普通:50）
     if food_name in likes:
         base_exp = 100
         taste_type = "like"
@@ -390,18 +387,14 @@ def feed_character(user_info, char_data, food_name):
         base_exp = 50
         taste_type = "normal"
 
-    # 初回ボーナス +20xp
     first_bonus = 20 if is_first_time else 0
     total_gained_exp = base_exp + first_bonus
 
-    # なつき度・経験値の加算
     char_data["affection_level"] = char_data.get("affection_level", 1)
     char_data["affection_exp"] = char_data.get("affection_exp", 0) + total_gained_exp
 
-    # レベルアップチェック
     rewards = check_affection_level_up(char_data, user_info)
 
-    # 💡 この返り値をコマンド側（Discordコマンド等）で受け取って成功メッセージを作ります
     return {
         "taste_type": taste_type,
         "is_first_time": is_first_time,
@@ -438,7 +431,7 @@ def _sync_save():
             rows.append([str(u_id), json.dumps(data, ensure_ascii=False)])
         
         sheet.clear()
-        sheet.update('A1', rows)
+        sheet.update(range_name='A1', values=rows)
         print("💾 スプレッドシートへデータを保存しました。")
     except Exception as e:
         print(f"❌ データの保存エラー: {e}")
@@ -470,32 +463,25 @@ def get_user_profile(user_id):
 
     u_info = user_data[user_id]
 
-    # 全マスターデータ（GACHA_POOL + DEFAULT_CHARACTERS）をまとめた辞書を作成
     all_master_chars = {c["name"]: c for c in GACHA_POOL if c}
-    for c in DEFAULT_CHARACTERS:
-        if c and c["name"] not in all_master_chars:
-            all_master_chars[c["name"]] = c
 
-    # 既存ユーザーのキャラデータ＆なつき度データ自動補完（マスターから正しい値を補完）
     for c in u_info.get("characters", []):
         char_name = c.get("name")
         master = all_master_chars.get(char_name, {})
 
-        # マスターデータが存在すれば最新の属性・ロール・攻撃タイプ・好き嫌いに更新する
         if master:
             c["element"] = master.get("element", c.get("element", "赤"))
             c["role"] = master.get("role", c.get("role", "アタッカー"))
-            c["atk_type"] = master.get("atk_type", c.get("atk_type", "物理"))  # ⚔️ 自動補完
+            c["atk_type"] = master.get("atk_type", c.get("atk_type", "物理"))
             c["likes"] = master.get("likes", c.get("likes", []))
             c["dislikes"] = master.get("dislikes", c.get("dislikes", []))
 
-        # キーがない場合、マスターデータの値を優先
         if "element" not in c:
             c["element"] = master.get("element", "赤")
         if "role" not in c:
             c["role"] = master.get("role", "アタッカー")
         if "atk_type" not in c:
-            c["atk_type"] = master.get("atk_type", "物理")  # ⚔️ キー無し時の補完
+            c["atk_type"] = master.get("atk_type", "物理")
         if "gender" not in c:
             c["gender"] = master.get("gender", "？")
         if "best_equip" not in c:
