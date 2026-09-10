@@ -74,7 +74,7 @@ class ReactionsCog(commands.Cog):
             # 表示テキストの組み立て
             field_value = (
                 f"**【好きな食べ物】**\n{likes_display}\n\n"
-                f"**【嫌いな食べ物】**\n{dislikes_display}"
+                f"**【嫌いな食べ物】**\n{dislikes_display}\n"
             )
 
             embed.add_field(
