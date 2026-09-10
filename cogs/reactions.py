@@ -23,20 +23,32 @@ class ReactionsCog(commands.Cog):
             char_icon = master_char.get("icon", "👤")
 
             u_char = next((c for c in user_chars if c["name"] == char_name), None)
-            known_likes = u_char.get("known_likes", []) if u_char else []
-            known_dislikes = u_char.get("known_dislikes", []) if u_char else []
 
-            # マスターデータから辞書を取得（旧コードとの互換性のため get を使用）
+            # --------------------------------------------------
+            # 🔒 未所持キャラクターのマスク処理
+            # --------------------------------------------------
+            if not u_char:
+                embed.add_field(
+                    name="❔ ？？？",
+                    value="【まだこのキャラを持っていません】",
+                    inline=False
+                )
+                continue  # 未所持なので以降の反応組み立て処理をスキップして次のキャラへ
+
+            # --------------------------------------------------
+            # 所持キャラの反応組み立て処理（以下は所持している場合のみ実行）
+            # --------------------------------------------------
+            known_likes = u_char.get("known_likes", [])
+            known_dislikes = u_char.get("known_dislikes", [])
+
+            # マスターデータから辞書を取得
             master_likes = master_char.get("likes", {})
             master_dislikes = master_char.get("dislikes", {})
 
-            # --------------------------------------------------
             # ❤️ 好きな食べ物 & 反応の組み立て
-            # --------------------------------------------------
             if known_likes:
                 like_lines = []
                 for food in known_likes:
-                    # 辞書からセリフを取得（なければデフォルト）
                     if isinstance(master_likes, dict):
                         reaction = master_likes.get(food, "「美味しい！」")
                     else:
@@ -46,9 +58,7 @@ class ReactionsCog(commands.Cog):
             else:
                 likes_display = "まだわかりません"
 
-            # --------------------------------------------------
             # 💔 嫌いな食べ物 & 反応の組み立て
-            # --------------------------------------------------
             if known_dislikes:
                 dislike_lines = []
                 for food in known_dislikes:
