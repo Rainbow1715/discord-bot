@@ -314,27 +314,17 @@ async def mailbox(interaction: discord.Interaction):
 
                 if existing_char:
                     existing_char["count"] = existing_char.get("count", 1) + 1
-                    existing_char["hp"] += 2
-                    existing_char["atk"] += 1
+                    existing_char["hp"] = existing_char.get("hp", template.get("hp", 100)) + 2
+                    # 🔴 max_hp も一緒に増やす
+                    existing_char["max_hp"] = existing_char.get("max_hp", template.get("max_hp", 100)) + 2
+                    existing_char["atk"] = existing_char.get("atk", template.get("atk", 10)) + 1
                     received_chars.append(f"{char_name} (重複強化 +1)")
                 else:
-                    new_char = {
-                        "name": template["name"],
-                        "rarity": template.get("rarity", "★3"),
-                        "element": template.get("element", "赤"),
-                        "role": template.get("role", "アタッカー"),
-                        "gender": template.get("gender", "？"),
-                        "icon": template.get("icon"),
-                        "count": 1,
-                        "level": 1,
-                        "exp": 0,
-                        "hp": template.get("hp", 100),
-                        "atk": template.get("atk", 10),
-                        "spd": template.get("spd", 10),
-                        "rec": template.get("rec", 10),
-                        "skill_name": template.get("skill_name", "通常攻撃"),
-                        "skill_pow": template.get("skill_pow", 1.0),
-                    }
+                    # 🔴 template の持つすべてのプロパティ（likes, element等）を安全にコピー
+                    new_char = dict(template)
+                    new_char["count"] = 1
+                    new_char["level"] = 1
+                    new_char["exp"] = 0
                     user_chars.append(new_char)
                     received_chars.append(f"{char_name} (新規獲得!)")
 
