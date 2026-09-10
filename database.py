@@ -66,6 +66,7 @@ GACHA_POOL = [
         "skill_pow": 1.4,
         "element": "紫",
         "role": "アタッカー",
+        "atk_type": "物理",  # ⚔️ 物理 / 魔法 を追加
         "gender": "女",
         "best_equip": "なんか強そうな棒",
         "equip": None,
@@ -92,6 +93,7 @@ GACHA_POOL = [
         "skill_pow": 1.1,
         "element": "光",
         "role": "アタッカー",
+        "atk_type": "魔法",  # ⚔️ 物理 / 魔法 を追加
         "gender": "？",
         "best_equip": "紙パックのいちごオレ",
         "equip": None,
@@ -118,6 +120,7 @@ GACHA_POOL = [
         "skill_pow": 25,
         "element": "赤",
         "role": "アタッカー",
+        "atk_type": "物理",  # ⚔️ 物理 / 魔法 を追加
         "gender": "男",
         "best_equip": "ナイフ",
         "equip": None,
@@ -142,6 +145,7 @@ GACHA_POOL = [
         "skill_pow": 1.2,
         "element": "紫",
         "role": "アタッカー",
+        "atk_type": "物理",  # ⚔️ 物理 / 魔法 を追加
         "gender": "男",
         "best_equip": "ロケット",
         "equip": None,
@@ -166,6 +170,7 @@ GACHA_POOL = [
         "skill_pow": 17,
         "element": "紫",
         "role": "アタッカー",
+        "atk_type": "物理",  # ⚔️ 物理 / 魔法 を追加
         "gender": "？",
         "best_equip": "電子機器",
         "equip": None,
@@ -193,6 +198,7 @@ GACHA_POOL = [
         "count": 1,
         "element": "光",
         "role": "サポーター",
+        "atk_type": "魔法",  # ⚔️ 物理 / 魔法 を追加
         "gender": "女",
         "best_equip": "子供用カメラ",
         "equip": None,
@@ -233,6 +239,7 @@ DEFAULT_CHARACTERS = [
         "count": 1,
         "element": "赤",
         "role": "アタッカー",
+        "atk_type": "物理",  # ⚔️ 物理 / 魔法 を追加
         "gender": "男",
         "best_equip": "ハリセン",
         "equip": None,
@@ -260,6 +267,7 @@ DEFAULT_CHARACTERS = [
         "count": 1,
         "element": "紫",
         "role": "サポーター",
+        "atk_type": "魔法",  # ⚔️ 物理 / 魔法 を追加
         "gender": "女",
         "best_equip": "学校の箒",
         "equip": None,
@@ -470,10 +478,11 @@ def get_user_profile(user_id):
         char_name = c.get("name")
         master = all_master_chars.get(char_name, {})
 
-        # マスターデータが存在すれば最新の属性・ロール・好き嫌いに更新する
+        # マスターデータが存在すれば最新の属性・ロール・攻撃タイプ・好き嫌いに更新する
         if master:
             c["element"] = master.get("element", c.get("element", "赤"))
             c["role"] = master.get("role", c.get("role", "アタッカー"))
+            c["atk_type"] = master.get("atk_type", c.get("atk_type", "物理"))  # ⚔️ 自動補完
             c["likes"] = master.get("likes", c.get("likes", []))
             c["dislikes"] = master.get("dislikes", c.get("dislikes", []))
 
@@ -482,6 +491,8 @@ def get_user_profile(user_id):
             c["element"] = master.get("element", "赤")
         if "role" not in c:
             c["role"] = master.get("role", "アタッカー")
+        if "atk_type" not in c:
+            c["atk_type"] = master.get("atk_type", "物理")  # ⚔️ キー無し時の補完
         if "gender" not in c:
             c["gender"] = master.get("gender", "？")
         if "best_equip" not in c:
