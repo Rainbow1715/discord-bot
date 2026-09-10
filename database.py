@@ -191,8 +191,14 @@ GACHA_POOL = [
         "gender": "？",
         "best_equip": "電子機器",
         "equip": None,
-        "likes": ["果肉なしいちごオレ", "オムライス", "卵かけご飯"],
-        "dislikes": ["納豆"],
+        "likes": {
+            "果肉なしいちごオレ": "",
+            "オムライス": "",
+            "卵かけご飯": "",
+        },
+        "dislikes": {
+            "納豆": "",
+        },
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
