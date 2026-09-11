@@ -128,6 +128,9 @@ class RankUpSelectView(discord.ui.View):
         next_r = NEXT_RARITY[curr_rarity]
         char["rarity"] = next_r
 
+        # 凸数（limit_break）を +1 加算する（無ければ 1 になる）
+        char["limit_break"] = char.get("limit_break", 0) + 1
+
         # 📈 3. ステータス＆スキル倍率の強化（初期値の10%を参照して加算）
         # GACHA_POOL から該当キャラの初期データ（マスターデータ）を探す
         template = next((c for c in GACHA_POOL if c["name"] == char["name"]), None)
