@@ -214,13 +214,29 @@ async def chars(interaction: discord.Interaction):
         is_best = c.get('equip') and c.get('equip') == c.get('best_equip')
         equip_bonus_str = " ✨(ATK+20%!)" if is_best else ""
 
+        # --- ⚙️ スキル表示の整形ロジック ---
+        s_name = c.get("skill_name", "なし")
+        s_pow = c.get("skill_pow", 1.0)
+        s_type = c.get("skill_type", "physical")
+
+        if s_type == "heal_all":
+            skill_info = f"{s_name} (全体回復 / 威力: {s_pow})"
+        elif s_type == "heal":
+            skill_info = f"{s_name} (単体回復 / 威力: {s_pow})"
+        elif s_type == "stun":
+            skill_info = f"{s_name} (敵全体麻痺)"
+        elif s_type == "magic":
+            skill_info = f"{s_name} (魔法攻撃 / 威力: {s_pow})"
+        else:
+            skill_info = f"{s_name} (物理攻撃 / 威力: {s_pow})"
+
         status_msg = (
             f"**Lv.{c['level']}**{count_str} (XP: {c['exp']} / {next_exp})\n"
             f"{elem_icon} **属性**: {elem_str} | {role_icon} **ロール**: {role_str} | **性別**: {gender_str}\n"
             f"🗡️ **装備**: {equip_name}{equip_bonus_str}\n"
             f"❤️ **HP**: {c['hp']} | 🗡️ **攻撃力**: {c['atk']}\n"
             f"⚡ **速度**: {c['spd']} | 💖 **回復量**: {c['rec']}\n"
-            f"✨ **スキル**: {c['skill_name']} (威力: {c['skill_pow']})"
+            f"✨ **スキル**: {skill_info}\n"
         )
         embed.add_field(name=f"[{idx}] {char_icon} {c['name']}{rarity_str}", value=status_msg, inline=False)
 
