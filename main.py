@@ -236,7 +236,7 @@ async def chars(interaction: discord.Interaction):
             f"🗡️ **装備**: {equip_name}{equip_bonus_str}\n"
             f"❤️ **HP**: {c['hp']} | 🗡️ **攻撃力**: {c['atk']}\n"
             f"⚡ **速度**: {c['spd']} | 💖 **回復量**: {c['rec']}\n"
-            f"✨ **スキル**: {skill_info}\n"
+            f"✨ **スキル**: {skill_info}\n\u200b"
         )
         embed.add_field(name=f"[{idx}] {char_icon} {c['name']}{rarity_str}", value=status_msg, inline=False)
 
