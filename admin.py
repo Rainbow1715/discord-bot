@@ -1,7 +1,7 @@
 import time
 import discord
 from discord import app_commands
-from database import user_data, save_data, GACHA_POOL
+from database import user_data, save_data, GACHA_POOL, get_user_profile
 from battle import execute_battle
 
 # 👑 あなたのDiscordユーザーID（数値）
@@ -87,7 +87,7 @@ async def admin_mail(
     )
 
 
-# ✉️ 2. 個人メール送信（🆕 個別送信コマンド）
+# ✉️ 2. 個人メール送信
 @app_commands.command(name="admin_direct_mail", description="【管理者】特定ユーザーに個人メールを送信します")
 @is_admin()
 async def admin_direct_mail(
@@ -119,7 +119,7 @@ async def admin_direct_mail(
     if "mails" not in u_info:
         u_info["mails"] = []
 
-    # 一意のメールIDを自動生成 (例: DM_1715001234)
+    # 一意のメールIDを自動生成
     auto_mail_id = f"DM_{int(time.time())}"
 
     u_info["mails"].append({
@@ -156,7 +156,7 @@ async def admin_direct_mail(
     )
 
 
-# 🗑️ 3. メール取り消し（既存）
+# 🗑️ 3. メール取り消し
 @app_commands.command(name="admin_cancel_mail", description="【管理者】誤送信したメールを取り消します（未受取分のみ）")
 @is_admin()
 async def admin_cancel_mail(interaction: discord.Interaction, mail_id: str):
@@ -179,6 +179,36 @@ async def admin_cancel_mail(interaction: discord.Interaction, mail_id: str):
     )
 
 
+# 🛠 4. 限界突破修正コマンド
+@app_commands.command(name="fix_limit", description="【管理者用】指定ユーザーのキャラデータを強制修正＆確認")
+@is_admin()
+async def fix_limit(interaction: discord.Interaction):
+    u_data = get_user_profile(interaction.user.id)
+    chars = u_data.get("characters", [])
+    
+    logs = []
+    for c in chars:
+        old_count = c.get("count")
+        old_lb = c.get("limit_break")
+        
+        # 正しい limit_break を再計算
+        real_count = c.get("count", 1)
+        c["limit_break"] = max(0, real_count - 1)
+        
+        # 不要な旧キーを削る
+        c.pop("rank_up", None)
+        
+        logs.append(f"・{c['name']}: count={old_count} -> {real_count} | lb={old_lb} -> {c['limit_break']}")
+
+    save_data()
+    
+    msg = "\n".join(logs[:10])
+    await interaction.response.send_message(
+        f"🛠 **修正ログ（一部）:**\n{msg}\n\n✅ データを強制上書き・保存しました！",
+        ephemeral=True
+    )
+
+
 # --------------------------------------------------
 # ⚔️ テストバトル機能
 # --------------------------------------------------
@@ -191,6 +221,7 @@ async def admin_test_battle(interaction: discord.Interaction):
 async def setup(bot):
     # コマンドをボットのツリーに登録
     bot.tree.add_command(admin_mail)
-    bot.tree.add_command(admin_direct_mail)  # 👈 追加
+    bot.tree.add_command(admin_direct_mail)
     bot.tree.add_command(admin_cancel_mail)
+    bot.tree.add_command(fix_limit)  # 👈 ここに追加
     bot.tree.add_command(admin_test_battle)
