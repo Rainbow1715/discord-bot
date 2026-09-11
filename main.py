@@ -47,6 +47,15 @@ class MyBot(commands.Bot):
         )  # 👈 Bot起動時にダミーWebサーバーも一緒に立ち上げる
         await admin.setup(self)  # 👈 管理者コマンドを登録
 
+        # 🔻 起動時に全データの limit_break を再計算して正常化 🔻
+        for user_id, u_data in user_data.items():
+            for c in u_data.get("characters", []):
+                count = c.get("count", 1)
+                c["limit_break"] = max(0, count - 1)
+                c.pop("rank_up", None)
+        save_data()
+        print("✅ ユーザーデータの限界突破数を再計算・同期しました。")
+
         # 🔻 Cogの読み込み一覧 🔻
         cogs = [
             "cogs.feed",
