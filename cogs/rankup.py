@@ -6,22 +6,20 @@ from database import user_data, get_user_profile, save_data, GACHA_POOL
 # --------------------------------------------------
 # 🌟 レアリティ(★)ごとの必要条件・コスト定義
 # --------------------------------------------------
-# キー: 現在のレアリティ文字列
 RANKUP_REQUIREMENTS = {
-    "★1": 15,  # 必要同キャラ数
+    "★1": 15,
     "★2": 20,
     "★3": 25,
     "★4": 50,
 }
 
 RANKUP_GOLD = {
-    "★1": 5000,    # 必要ゴールド
+    "★1": 5000,
     "★2": 15000,
     "★3": 30000,
     "★4": 100000,
 }
 
-# レアリティの進化順
 NEXT_RARITY = {
     "★1": "★2",
     "★2": "★3",
@@ -41,7 +39,8 @@ class RankUpSelectView(discord.ui.View):
         self.user_gold = user_gold
 
         options = []
-        for idx, c in enumerate(characters[:25]):  # メニュー制限上限25件
+        # 同名キャラ重複対策として idx も組み合わせるか、ユニークなIDがあればそれを使用
+        for idx, c in enumerate(characters[:25]):
             rarity = c.get("rarity", "★3")
             count = c.get("count", 1)
             req_count = RANKUP_REQUIREMENTS.get(rarity)
@@ -57,7 +56,7 @@ class RankUpSelectView(discord.ui.View):
             options.append(
                 discord.SelectOption(
                     label=f"[{rarity}] {c['name']} (所持: {count}体)",
-                    value=str(idx),
+                    value=c["name"],  # ← インデックスではなく名前（またはキャラ固有ID）をセット
                     description=f"次ランク条件: {req_str}",
                     emoji="🌟" if can_up else "👤"
                 )
@@ -77,9 +76,15 @@ class RankUpSelectView(discord.ui.View):
             await interaction.response.send_message("❌ 他人の画面は操作できません。", ephemeral=True)
             return
 
-        c_idx = int(self.children[0].values[0])
+        selected_name = self.children[0].values[0]
         u_data = get_user_profile(self.user_id)
-        char = u_data["characters"][c_idx]
+        
+        # 名前で該当キャラを特定（リストから検索）
+        char = next((c for c in u_data.get("characters", []) if c["name"] == selected_name), None)
+
+        if not char:
+            await interaction.response.send_message("❌ 対象のキャラクターが見つかりませんでした。", ephemeral=True)
+            return
 
         curr_rarity = char.get("rarity", "★3")
         count = char.get("count", 1)
@@ -124,30 +129,24 @@ class RankUpSelectView(discord.ui.View):
         consume_count = req_count - 1
         char["count"] -= consume_count  # 同キャラ消費（1体残す）
 
-        # 🌟 2. ★の引き上げ
+        # 🌟 2. ★の引き上げ & 凸数の加算
         next_r = NEXT_RARITY[curr_rarity]
         char["rarity"] = next_r
+        char["limit_break"] = char.get("limit_break", 0) + 1  # 明示的に凸数を+1
 
-        # 凸数（limit_break）を +1 加算する（無ければ 1 になる）
-        char["limit_break"] = char.get("limit_break", 0) + 1
-
-        # 📈 3. ステータス＆スキル倍率の強化（初期値の10%を参照して加算）
-        # GACHA_POOL から該当キャラの初期データ（マスターデータ）を探す
+        # 📈 3. ステータス＆スキル倍率の強化
         template = next((c for c in GACHA_POOL if c["name"] == char["name"]), None)
 
         if template:
-            # 初期値の 10% を計算（端数切り捨て、最低でも1は上がるように max を使用）
             base_hp = template.get("hp", 100)
             base_atk = template.get("atk", 10)
             
             hp_up = max(1, int(base_hp * 0.10))
             atk_up = max(1, int(base_atk * 0.20))
         else:
-            # 万が一マスターデータが見つからない場合のフォールバック（固定値）
             hp_up = 10
             atk_up = 2
 
-        # 計算した上昇量を加算
         char["hp"] += hp_up
         if "max_hp" in char:
             char["max_hp"] += hp_up
