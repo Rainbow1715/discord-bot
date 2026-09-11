@@ -4,6 +4,7 @@ import json
 import asyncio
 import gspread
 from google.oauth2.service_account import Credentials
+import copy
 
 # --------------------------------------------------
 # 🌐 Google スプレッドシートの認証・接続設定
@@ -302,7 +303,7 @@ GACHA_POOL = [
 def find_gacha_char(name):
     for c in GACHA_POOL:
         if c["name"] == name:
-            return dict(c)  # 参照渡しを避けるためコピーを返す
+            return copy.deepcopy(c)  # 参照渡しを避けるためコピーを返す
     return None
 
 DEFAULT_CHARACTERS = [
@@ -377,6 +378,15 @@ ADULT_CHARACTERS = [
     "折原和也", "橘柊人", "竹村しえら", "れーちゃん", "Gerânio", "レオ",
 ]
 
+# --------------------------------------------------
+# 🍖 怪しい肉関連の設定
+# --------------------------------------------------
+SUSPICIOUS_MEAT_ITEMS = ["怪しい肉"]
+
+SUSPICIOUS_MEAT_CHARACTERS = [
+    "Branch Coral", "Root Coral",
+]
+
 # 🍱 ご飯をあげる処理
 def feed_character(user_info, char_data, food_name):
     char_name = char_data.get("name", "")
@@ -386,6 +396,14 @@ def feed_character(user_info, char_data, food_name):
             "status": "error",
             "reason": "underage_alcohol",
             "message": f"❌ **{char_name}** はお酒を飲むことができません！"
+        }
+
+    # 「怪しい肉」をあげる時の処理イメージ
+    if food_name in SUSPICIOUS_MEAT_ITEMS and char_name not in SUSPICIOUS_MEAT_CHARACTERS:
+        return {
+            "status": "error",
+            "reason": "refused",
+            "message": f"❌ **{char_name}** にこんなものあげようとしないでください！"
         }
         
     # GACHA_POOL から最新のマスターデータを取得
@@ -486,7 +504,7 @@ def get_user_profile(user_id):
         user_data[user_id] = {
             "gold": 1000,
             "items": {"虹の欠片": 100, "ガチャチケ": 100, "おにぎり": 5, "ショートケーキ": 2, "激辛ラーメン": 2},
-            "characters": [dict(c) for c in DEFAULT_CHARACTERS if c],
+            "characters": [copy.deepcopy(c) for c in DEFAULT_CHARACTERS if c],
             "party_indices": [0, 1, 2],
             "mails": []
         }
