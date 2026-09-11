@@ -93,12 +93,8 @@ class PartySelectView(discord.ui.View):
             else:
                 base_rarity = int(raw_rarity)
 
-            rank_up = c.get("rank_up", 0)  # ※もしキー名が rank の場合は max(0, c.get("rank", 1) - 1)
-
-            if rank_up > 0:
-                star_str = f"★{base_rarity} +{rank_up}"
-            else:
-                star_str = f"★{base_rarity}"
+            limit_break = c.get("limit_break", max(0, c.get("count", 1) - 1))
+            star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
             options.append(
                 discord.SelectOption(
@@ -149,8 +145,8 @@ class PartySelectView(discord.ui.View):
                 base_rarity = int(raw_rarity.replace("★", "")) if raw_rarity.replace("★", "").isdigit() else 1
             else:
                 base_rarity = int(raw_rarity)
-            rank_up = c.get("rank_up", 0)
-            star_str = f"★{base_rarity} +{rank_up}" if rank_up > 0 else f"★{base_rarity}"
+            limit_break = c.get("limit_break", max(0, c.get("count", 1) - 1))
+            star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
             msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
 
@@ -290,12 +286,8 @@ class StatusPaginationView(discord.ui.View):
             else:
                 base_rarity = int(raw_rarity)
 
-            rank_up = c.get("rank_up", 0)
-
-            if rank_up > 0:
-                rarity_str = f" [★{base_rarity} +{rank_up}]"
-            else:
-                rarity_str = f" [★{base_rarity}]"
+            limit_break = c.get("limit_break", max(0, c.get("count", 1) - 1))
+            rarity_str = f" [★{base_rarity} +{limit_break}]" if limit_break > 0 else f" [★{base_rarity}]"
 
             elem_str = c.get("element", "なし")
             role_str = c.get("role", "アタッカー")
@@ -430,8 +422,8 @@ async def party(interaction: discord.Interaction):
             base_rarity = int(raw_rarity.replace("★", "")) if raw_rarity.replace("★", "").isdigit() else 1
         else:
             base_rarity = int(raw_rarity)
-        rank_up = c.get("rank_up", 0)
-        star_str = f"★{base_rarity} +{rank_up}" if rank_up > 0 else f"★{base_rarity}"
+        limit_break = c.get("limit_break", max(0, c.get("count", 1) - 1))
+        star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
         msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
 
