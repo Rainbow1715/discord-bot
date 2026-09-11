@@ -42,19 +42,8 @@ class MyBot(commands.Bot):
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self):
-        await (
-            start_dummy_server()
-        )  # 👈 Bot起動時にダミーWebサーバーも一緒に立ち上げる
+        await start_dummy_server()  # 👈 Bot起動時にダミーWebサーバーも一緒に立ち上げる
         await admin.setup(self)  # 👈 管理者コマンドを登録
-
-        # 🔻 起動時に全データの limit_break を再計算して正常化 🔻
-        for user_id, u_data in user_data.items():
-            for c in u_data.get("characters", []):
-                count = c.get("count", 1)
-                c["limit_break"] = max(0, count - 1)
-                c.pop("rank_up", None)
-        save_data()
-        print("✅ ユーザーデータの限界突破数を再計算・同期しました。")
 
         # 🔻 Cogの読み込み一覧 🔻
         cogs = [
@@ -102,7 +91,8 @@ class PartySelectView(discord.ui.View):
             else:
                 base_rarity = int(raw_rarity)
 
-            limit_break = c.get("limit_break", max(0, c.get("count", 1) - 1))
+            # ⭕️ limit_break をそのまま取得（所持数からの自動計算を完全排除）
+            limit_break = c.get("limit_break", 0)
             star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
             options.append(
@@ -154,7 +144,9 @@ class PartySelectView(discord.ui.View):
                 base_rarity = int(raw_rarity.replace("★", "")) if raw_rarity.replace("★", "").isdigit() else 1
             else:
                 base_rarity = int(raw_rarity)
-            limit_break = c.get("limit_break", max(0, c.get("count", 1) - 1))
+            
+            # ⭕️ limit_break をそのまま取得
+            limit_break = c.get("limit_break", 0)
             star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
             msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
@@ -295,7 +287,8 @@ class StatusPaginationView(discord.ui.View):
             else:
                 base_rarity = int(raw_rarity)
 
-            limit_break = c.get("limit_break", max(0, c.get("count", 1) - 1))
+            # ⭕️ limit_break をそのまま取得
+            limit_break = c.get("limit_break", 0)
             rarity_str = f" [★{base_rarity} +{limit_break}]" if limit_break > 0 else f" [★{base_rarity}]"
 
             elem_str = c.get("element", "なし")
@@ -431,7 +424,9 @@ async def party(interaction: discord.Interaction):
             base_rarity = int(raw_rarity.replace("★", "")) if raw_rarity.replace("★", "").isdigit() else 1
         else:
             base_rarity = int(raw_rarity)
-        limit_break = c.get("limit_break", max(0, c.get("count", 1) - 1))
+            
+        # ⭕️ limit_break をそのまま取得
+        limit_break = c.get("limit_break", 0)
         star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
         msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
@@ -544,6 +539,7 @@ async def mailbox(interaction: discord.Interaction):
                     new_char["count"] = 1
                     new_char["level"] = 1
                     new_char["exp"] = 0
+                    new_char["limit_break"] = 0  # 👈 新規獲得時も無凸(0)で初期化
                     user_chars.append(new_char)
                     received_chars.append(f"{char_name} (新規獲得!)")
 
