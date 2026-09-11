@@ -93,8 +93,7 @@ class PartySelectView(discord.ui.View):
             else:
                 base_rarity = int(raw_rarity)
 
-            count = c.get("count", 1)         # 所持数（本体1体 + 素材数）
-            limit_break = count - 1           # 凸数（ランクアップ数）
+            limit_break = c.get("limit_break", 0)  # 凸数を直接取得
 
             # 凸数に応じて表記を分岐（例：★2 / ★2 +2）
             if limit_break > 0:
@@ -151,8 +150,7 @@ class PartySelectView(discord.ui.View):
                 base_rarity = int(raw_rarity.replace("★", "")) if raw_rarity.replace("★", "").isdigit() else 1
             else:
                 base_rarity = int(raw_rarity)
-            count = c.get("count", 1)
-            limit_break = count - 1
+            limit_break = c.get("limit_break", 0)
             star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
             msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
@@ -293,8 +291,7 @@ class StatusPaginationView(discord.ui.View):
             else:
                 base_rarity = int(raw_rarity)
 
-            count = c.get("count", 1)
-            limit_break = count - 1
+            limit_break = c.get("limit_break", 0)
 
             if limit_break > 0:
                 rarity_str = f" [★{base_rarity} +{limit_break}]"
@@ -434,8 +431,7 @@ async def party(interaction: discord.Interaction):
             base_rarity = int(raw_rarity.replace("★", "")) if raw_rarity.replace("★", "").isdigit() else 1
         else:
             base_rarity = int(raw_rarity)
-        count = c.get("count", 1)
-        limit_break = count - 1
+        limit_break = c.get("limit_break", 0)
         star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
         msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
