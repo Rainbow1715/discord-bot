@@ -220,6 +220,41 @@ async def set_char_count(
         ephemeral=True
     )
 
+# 🛠 レア度（★の数）を直接変更するコマンド
+@app_commands.command(name="set_char_rarity", description="【管理者用】指定ユーザーのキャラのベースレア度（★）を変更します")
+@is_admin()
+async def set_char_rarity(
+    interaction: discord.Interaction, 
+    char_name: str, 
+    rarity: int,
+    target: discord.User = None
+):
+    target_user = target or interaction.user
+    u_data = get_user_profile(target_user.id)
+    chars = u_data.get("characters", [])
+    
+    target_char = next((c for c in chars if c["name"] == char_name), None)
+    
+    if not target_char:
+        await interaction.response.send_message(
+            f"❌ {target_user.mention} はキャラクター `{char_name}` を所持していません。", 
+            ephemeral=True
+        )
+        return
+
+    old_rarity = target_char.get("rarity")
+    
+    # レア度を数値で上書き（1〜5などに設定）
+    target_char["rarity"] = rarity
+
+    save_data()
+    
+    await interaction.response.send_message(
+        f"✅ **{target_user.display_name}** さんの **{char_name}** のレア度を修正しました！\n"
+        f"・元データ: `{old_rarity}`\n"
+        f"・変更後: `★{rarity}`",
+        ephemeral=True
+    )
 
 # --------------------------------------------------
 # ⚔️ テストバトル機能
@@ -236,4 +271,5 @@ async def setup(bot):
     bot.tree.add_command(admin_direct_mail)
     bot.tree.add_command(admin_cancel_mail)
     bot.tree.add_command(set_char_count)  # 👈 ここに追加
+    bot.tree.add_command(set_char_rarity)
     bot.tree.add_command(admin_test_battle)
