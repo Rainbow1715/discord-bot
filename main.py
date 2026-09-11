@@ -150,7 +150,7 @@ class PartySelectView(discord.ui.View):
             else:
                 base_rarity = int(raw_rarity)
             rank_up = c.get("rank_up", 0)
-star_str = f"★{base_rarity} +{rank_up}" if rank_up > 0 else f"★{base_rarity}"
+            star_str = f"★{base_rarity} +{rank_up}" if rank_up > 0 else f"★{base_rarity}"
 
             msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
 
