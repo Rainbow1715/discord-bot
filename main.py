@@ -53,6 +53,7 @@ class MyBot(commands.Bot):
             "zukan",
             "cogs.reactions",
             "battle",
+            "cogs.use",
         ]
 
         for cog in cogs:
