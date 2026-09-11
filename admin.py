@@ -179,32 +179,40 @@ async def admin_cancel_mail(interaction: discord.Interaction, mail_id: str):
     )
 
 
-# 🛠 4. 限界突破修正コマンド
-@app_commands.command(name="fix_limit", description="【管理者用】指定ユーザーのキャラデータを強制修正＆確認")
+# 🛠 キャラ個別に所持数を修正するコマンド
+@app_commands.command(name="set_char_count", description="【管理者用】指定キャラの所持数（count）を直接変更します")
 @is_admin()
-async def fix_limit(interaction: discord.Interaction):
+async def set_char_count(
+    interaction: discord.Interaction, 
+    char_name: str, 
+    count: int
+):
     u_data = get_user_profile(interaction.user.id)
     chars = u_data.get("characters", [])
     
-    logs = []
-    for c in chars:
-        old_count = c.get("count")
-        old_lb = c.get("limit_break")
-        
-        # 正しい limit_break を再計算
-        real_count = c.get("count", 1)
-        c["limit_break"] = max(0, real_count - 1)
-        
-        # 不要な旧キーを削る
-        c.pop("rank_up", None)
-        
-        logs.append(f"・{c['name']}: count={old_count} -> {real_count} | lb={old_lb} -> {c['limit_break']}")
+    target_char = next((c for c in chars if c["name"] == char_name), None)
+    
+    if not target_char:
+        await interaction.response.send_message(
+            f"❌ キャラクター `{char_name}` を所持していません。", 
+            ephemeral=True
+        )
+        return
+
+    old_count = target_char.get("count", 1)
+    
+    # 所持数と限界突破数を更新
+    target_char["count"] = max(1, count)
+    target_char["limit_break"] = max(0, count - 1)
+    target_char.pop("rank_up", None)
 
     save_data()
     
-    msg = "\n".join(logs[:10])
+    lb_str = f"+{target_char['limit_break']}" if target_char['limit_break'] > 0 else "無凸"
     await interaction.response.send_message(
-        f"🛠 **修正ログ（一部）:**\n{msg}\n\n✅ データを強制上書き・保存しました！",
+        f"✅ **{char_name}** のデータを修正しました！\n"
+        f"・所持数: `{old_count}` ➔ `{target_char['count']}`\n"
+        f"・限界突破: `{lb_str}`",
         ephemeral=True
     )
 
@@ -223,5 +231,5 @@ async def setup(bot):
     bot.tree.add_command(admin_mail)
     bot.tree.add_command(admin_direct_mail)
     bot.tree.add_command(admin_cancel_mail)
-    bot.tree.add_command(fix_limit)  # 👈 ここに追加
+    bot.tree.add_command(set_char_count)  # 👈 ここに追加
     bot.tree.add_command(admin_test_battle)
