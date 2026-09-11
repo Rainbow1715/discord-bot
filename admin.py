@@ -179,22 +179,26 @@ async def admin_cancel_mail(interaction: discord.Interaction, mail_id: str):
     )
 
 
-# 🛠 キャラ個別に所持数を修正するコマンド
-@app_commands.command(name="set_char_count", description="【管理者用】指定キャラの所持数（count）を直接変更します")
+# 🛠 他ユーザーのデータも修正可能なコマンド
+@app_commands.command(name="set_char_count", description="【管理者用】指定ユーザーのキャラ所持数（count）を直接変更します")
 @is_admin()
 async def set_char_count(
     interaction: discord.Interaction, 
     char_name: str, 
-    count: int
+    count: int,
+    target: discord.User = None  # 👈 対象ユーザー（未指定なら自分）
 ):
-    u_data = get_user_profile(interaction.user.id)
+    # targetが指定されていなければ、コマンド実行者を対象にする
+    target_user = target or interaction.user
+    
+    u_data = get_user_profile(target_user.id)
     chars = u_data.get("characters", [])
     
     target_char = next((c for c in chars if c["name"] == char_name), None)
     
     if not target_char:
         await interaction.response.send_message(
-            f"❌ キャラクター `{char_name}` を所持していません。", 
+            f"❌ {target_user.mention} はキャラクター `{char_name}` を所持していません。", 
             ephemeral=True
         )
         return
@@ -210,7 +214,7 @@ async def set_char_count(
     
     lb_str = f"+{target_char['limit_break']}" if target_char['limit_break'] > 0 else "無凸"
     await interaction.response.send_message(
-        f"✅ **{char_name}** のデータを修正しました！\n"
+        f"✅ **{target_user.display_name}** さんの **{char_name}** を修正しました！\n"
         f"・所持数: `{old_count}` ➔ `{target_char['count']}`\n"
         f"・限界突破: `{lb_str}`",
         ephemeral=True
