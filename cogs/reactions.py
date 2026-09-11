@@ -71,10 +71,21 @@ class ReactionsCog(commands.Cog):
             else:
                 dislikes_display = "まだわかりません"
 
+            # --------------------------------------------------
+            # 🍖 怪しい肉の反応
+            # --------------------------------------------------
+            if "怪しい肉" in known_foods:
+                # 判明している場合はマスターデータから取得（なければデフォルト）
+                meat_reaction = master_special.get("怪しい肉", "「……これ、何の肉だ？」")
+                meat_display = f"・{meat_reaction}"
+            else:
+                meat_display = "まだあげたことがありません"
+
             # 表示テキストの組み立て
             field_value = (
                 f"**【好きな食べ物】**\n{likes_display}\n\n"
-                f"**【嫌いな食べ物】**\n{dislikes_display}\n"
+                f"**【嫌いな食べ物】**\n{dislikes_display}\n\n"
+                f"**【怪しい肉】**\n{meat_display}\n"
             )
 
             embed.add_field(
