@@ -85,12 +85,26 @@ class PartySelectView(discord.ui.View):
 
         for idx, c in enumerate(characters[:25]):
             is_default = idx in valid_current_indices
-            count_str = (
-                f" (★{c.get('count', 1)}凸)" if c.get("count", 1) > 1 else ""
-            )
+
+            # レア度の数値（"★3" などの文字列や 3 などの数値に対応）
+            raw_rarity = c.get("rarity", 1)
+            if isinstance(raw_rarity, str):
+                base_rarity = int(raw_rarity.replace("★", "")) if raw_rarity.replace("★", "").isdigit() else 1
+            else:
+                base_rarity = int(raw_rarity)
+
+            count = c.get("count", 1)         # 所持数（本体1体 + 素材数）
+            limit_break = count - 1           # 凸数（ランクアップ数）
+
+            # 凸数に応じて表記を分岐（例：★2 / ★2 +2）
+            if limit_break > 0:
+                star_str = f"★{base_rarity} +{limit_break}"
+            else:
+                star_str = f"★{base_rarity}"
+
             options.append(
                 discord.SelectOption(
-                    label=f"{c['name']}{count_str} (Lv.{c['level']})",
+                    label=f"{c['name']} ({star_str} / Lv.{c['level']})",
                     value=str(idx),
                     description=f"HP:{c['hp']} / ATK:{c['atk']} / SPD:{c['spd']}",
                     default=is_default,
@@ -130,7 +144,18 @@ class PartySelectView(discord.ui.View):
         msg = ""
         for idx, c_idx in enumerate(selected_indices, start=1):
             c = self.characters[c_idx]
-            msg += f"**{idx}. {c['name']}** (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
+            
+            # パーティ設定完了後の表示用レア度計算
+            raw_rarity = c.get("rarity", 1)
+            if isinstance(raw_rarity, str):
+                base_rarity = int(raw_rarity.replace("★", "")) if raw_rarity.replace("★", "").isdigit() else 1
+            else:
+                base_rarity = int(raw_rarity)
+            count = c.get("count", 1)
+            limit_break = count - 1
+            star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
+
+            msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
 
         embed.description = (
             f"{msg}\n✅ **パーティ編成を更新しました！**\n（出撃メンバー:"
@@ -235,7 +260,6 @@ class StatusPaginationView(discord.ui.View):
         self.update_buttons()
 
     def update_buttons(self):
-        # Viewのアイテム（ボタン）を取得して状態を切り替え
         for child in self.children:
             if isinstance(child, discord.ui.Button):
                 if child.custom_id == "prev_page":
@@ -261,10 +285,21 @@ class StatusPaginationView(discord.ui.View):
 
         for i, c in enumerate(page_chars, start=start_idx + 1):
             next_exp = c["level"] * 100
-            rarity_str = f" [{c.get('rarity', '★3')}]"
-            count_str = (
-                f" (所持数: {c.get('count', 1)})" if c.get("count", 1) > 1 else ""
-            )
+            
+            # レア度と凸数の計算
+            raw_rarity = c.get("rarity", 1)
+            if isinstance(raw_rarity, str):
+                base_rarity = int(raw_rarity.replace("★", "")) if raw_rarity.replace("★", "").isdigit() else 1
+            else:
+                base_rarity = int(raw_rarity)
+
+            count = c.get("count", 1)
+            limit_break = count - 1
+
+            if limit_break > 0:
+                rarity_str = f" [★{base_rarity} +{limit_break}]"
+            else:
+                rarity_str = f" [★{base_rarity}]"
 
             elem_str = c.get("element", "なし")
             role_str = c.get("role", "アタッカー")
@@ -294,7 +329,7 @@ class StatusPaginationView(discord.ui.View):
                 skill_info = f"{s_name} (物理攻撃 / 威力: {s_pow})"
 
             status_msg = (
-                f"**Lv.{c['level']}**{count_str} (XP: {c['exp']} /"
+                f"**Lv.{c['level']}** (XP: {c['exp']} /"
                 f" {next_exp})\n{elem_icon} **属性**: {elem_str} | {role_icon}"
                 f" **ロール**: {role_str} | **性別**: {gender_str}\n🗡️ **装備**:"
                 f" {equip_name}{equip_bonus_str}\n❤️ **HP**: {c['hp']} | 🗡️"
@@ -393,7 +428,17 @@ async def party(interaction: discord.Interaction):
 
     msg = ""
     for idx, c in enumerate(party_members, start=1):
-        msg += f"**{idx}. {c['name']}** (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
+        # /party コマンドの表示名横にもレア度と凸数を表示
+        raw_rarity = c.get("rarity", 1)
+        if isinstance(raw_rarity, str):
+            base_rarity = int(raw_rarity.replace("★", "")) if raw_rarity.replace("★", "").isdigit() else 1
+        else:
+            base_rarity = int(raw_rarity)
+        count = c.get("count", 1)
+        limit_break = count - 1
+        star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
+
+        msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
 
     embed.description = (
         msg
