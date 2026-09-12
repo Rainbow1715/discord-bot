@@ -9,7 +9,6 @@ class ReactionsCog(commands.Cog):
 
     @app_commands.command(name="reactions", description="これまでに判明したキャラクターの好物・苦手と反応一覧を表示します")
     async def reactions_command(self, interaction: discord.Interaction):
-        # 💡 1. 応答待ち（タイムアウト対策）
         await interaction.response.defer()
 
         user_info = db.get_user_profile(interaction.user.id)
@@ -32,7 +31,7 @@ class ReactionsCog(commands.Cog):
             # --------------------------------------------------
             if not u_char:
                 embed.add_field(
-                    name=f"❔ ？？？",
+                    name="❔ ？？？",
                     value="【まだこのキャラを持っていません】",
                     inline=False
                 )
@@ -43,13 +42,11 @@ class ReactionsCog(commands.Cog):
             # --------------------------------------------------
             known_likes = u_char.get("known_likes", [])
             known_dislikes = u_char.get("known_dislikes", [])
-            
-            # 💡 怪しい肉などの特殊反応判定用
-            known_special = u_char.get("known_special", [])  # ※データ構造に合わせて調整可
+            known_special = u_char.get("known_special", [])  # 特殊反応の判明フラグ用
 
             master_likes = master_char.get("likes", {})
             master_dislikes = master_char.get("dislikes", {})
-            master_special = master_char.get("special_reactions", {}) # マスター側の辞書
+            master_special = master_char.get("special_reactions", {})
 
             # ❤️ 好きな食べ物
             if known_likes:
@@ -71,20 +68,29 @@ class ReactionsCog(commands.Cog):
             else:
                 dislikes_display = "まだわかりません"
 
-            # 🍖 怪しい肉（修正ポイント！）
-            # known_likes や known_dislikes、または known_special に「怪しい肉」が含まれているかチェック
-            if "怪しい肉" in known_likes or "怪しい肉" in known_dislikes or "怪しい肉" in known_special:
-                meat_reaction = master_special.get("怪しい肉") or master_likes.get("怪しい肉") or master_dislikes.get("怪しい肉") or "「……これ、何の肉だ？」"
-                meat_display = f"・{meat_reaction}"
-            else:
-                meat_display = "まだあげたことがありません"
+            # --------------------------------------------------
+            # 🍖 怪しい肉の判定（対象キャラ＆獲得済みのみ表示）
+            # --------------------------------------------------
+            # 1. そもそもこのキャラが「怪しい肉」に対する特殊反応を持っているかチェック
+            has_meat_reaction = "怪しい肉" in master_special
 
-            # 表示テキストの組み立て
+            # 2. プレイヤーがすでに「怪しい肉」をあげて反応を解放したかチェック
+            is_meat_revealed = (
+                "怪しい肉" in known_special or 
+                "怪しい肉" in known_likes or 
+                "怪しい肉" in known_dislikes
+            )
+
+            # 表示テキストのベース作成
             field_value = (
                 f"**【好きな食べ物】**\n{likes_display}\n\n"
-                f"**【嫌いな食べ物】**\n{dislikes_display}\n\n"
-                f"**【怪しい肉】**\n{meat_display}"
+                f"**【嫌いな食べ物】**\n{dislikes_display}"
             )
+
+            # 条件を満たした場合のみ「怪しい肉」の項目を追加
+            if has_meat_reaction and is_meat_revealed:
+                meat_reaction = master_special.get("怪しい肉", "「……これ、何の肉だ？」")
+                field_value += f"\n\n**【怪しい肉】**\n・{meat_reaction}"
 
             embed.add_field(
                 name=f"{char_icon} {char_name}",
@@ -92,7 +98,6 @@ class ReactionsCog(commands.Cog):
                 inline=False
             )
 
-        # 💡 defer() を使っているため followup.send で送信
         await interaction.followup.send(embed=embed)
 
 async def setup(bot):
