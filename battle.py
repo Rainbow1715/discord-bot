@@ -301,14 +301,25 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         # --------------------------------------------------
         # 📈 安全なレベルアップ処理（無限ループ防止）
         # --------------------------------------------------
+        MAX_LEVEL = 99  # お好みの最大レベルに設定
+
         lvl_up_msgs = []
         for p in party:
             c_data = p.data
+    
+            # すでにカンストしている場合は経験値を加算しない（またはそのまま溜める）
+            if c_data["level"] >= MAX_LEVEL:
+                continue
+
             c_data["exp"] = c_data.get("exp", 0) + exp_gained
             leveled_up = False
-            
-            # 安全のため、1回のバトルでのレベル上昇回数を最大100回に制限
+    
             for _ in range(100):
+                # カンストに達したら即終了
+                if c_data["level"] >= MAX_LEVEL:
+                    c_data["exp"] = 0  # カンスト後の経験値を0にする場合
+                    break
+
                 next_exp = c_data["level"] * 100
                 if c_data["exp"] >= next_exp:
                     c_data["exp"] -= next_exp
@@ -319,7 +330,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
                     leveled_up = True
                 else:
                     break
-            
+    
             if leveled_up:
                 lvl_up_msgs.append(f"🎉 **{c_data['name']}** (Lv.{c_data['level']} にUP!)")
 
