@@ -28,7 +28,7 @@ class UseCog(commands.Cog):
         choices = []
         for item_name, count in items.items():
             # 💡 条件に「使用可能なアイテムリストに含まれているか」を追加
-            if count > 0 and item_name in USABLE_ITEMS and current.lower() in item_name.lower():
+            if count > 0 and item_name in self.USABLE_ITEMS and current.lower() in item_name.lower():
                 choices.append(app_commands.Choice(name=f"{item_name} (所持: {count})", value=item_name))
 
         return choices[:25]
@@ -50,7 +50,7 @@ class UseCog(commands.Cog):
         # ==================================================
         # 🎁 「ごはんランダムボックス」の開封処理
         # ==================================================
-        if item_name == "ごはんランダムボックス":
+        if item_name == "ご飯ランダムボックス":
             # 外部参照した FOOD_ITEMS がリスト形式か辞書形式かで判定
             if isinstance(FOOD_ITEMS, list):
                 food_list = FOOD_ITEMS
