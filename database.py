@@ -374,22 +374,32 @@ FOOD_ITEMS = {
     "ぶどうのコンポート": {"icon": ""},
     "ブルーベリージャムパン": {"icon": ""},
     "ピーマンの肉詰め": {"icon": ""},
+    "塩": {"icon": ""},
+    "プロテインラーメン": {"icon": ""},
 }
 
 # 📈 なつき度の必要経験値計算
 def get_required_affection_exp(level):
     return level * 100
 
-# 🎁 なつき度レベルアップ判定と報酬
+# 🎁 なつき度レベルアップ判定と報酬（上限30レベル設定・経験値ストック対応）
 def check_affection_level_up(char_data, user_info):
     rewards = []
+    MAX_AFFECTION_LEVEL = 30  # 👈 なつき度の上限レベル
+
     while True:
+        # すでに上限レベルに達している場合はレベルアップを行わず、経験値をそのままストックする
+        if char_data["affection_level"] >= MAX_AFFECTION_LEVEL:
+            char_data["affection_level"] = MAX_AFFECTION_LEVEL
+            break
+
         req_exp = get_required_affection_exp(char_data["affection_level"])
         if char_data["affection_exp"] >= req_exp:
             char_data["affection_exp"] -= req_exp
             char_data["affection_level"] += 1
             lvl = char_data["affection_level"]
             
+            # 報酬の付与判定
             if lvl % 5 == 0:
                 rewards.append("🎫 ガチャチケ x1")
                 user_info["items"]["ガチャチケ"] = user_info["items"].get("ガチャチケ", 0) + 1
@@ -401,6 +411,7 @@ def check_affection_level_up(char_data, user_info):
                 user_info["items"]["ご飯ランダムボックス"] = user_info["items"].get("ご飯ランダムボックス", 0) + 1
         else:
             break
+
     return rewards
 
 # --------------------------------------------------
