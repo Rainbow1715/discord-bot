@@ -304,7 +304,7 @@ GACHA_POOL = [
         "icon": "<:6006_roi:1476541556227047504>",
         "rarity": "★3",
         "hp": 95,
-        "max_hp":95,
+        "max_hp": 95,
         "atk": 22,
         "spd": 18,
         "rec": 8,
@@ -324,6 +324,37 @@ GACHA_POOL = [
         },
         "dislikes": {
             "クソデカステーキ": "普通のサイズのはないの？　と文句を言ってきた。"
+        },
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
+    },
+    {
+        "name": "折原和也",
+        "icon": "<:602602_orihara:1476550258627444747>",
+        "rarity": "★3",
+        "hp": 82,
+        "max_hp": 82,
+        "atk": 14,
+        "spd": 15,
+        "rec": 4,
+        "skill_name": "モルモットとの戯れ",
+        "skill_type": "buff_all_atk",
+        "skill_pow": 0.20
+        "skill_trigger": "interval_3",
+        "skill_rate": 100,
+        "element": "青",
+        "role": "アタッカー",
+        "atk_type": "物理",
+        "gender": "男",
+        "best_equip": "怪しい試験管",
+        "equip": None,
+        "likes": {
+            "紅茶": "偶然遊びに来ていた茉鈴に、怪しい錠剤を入れて飲ませようとしたので慌てて止めた。"
+        },
+        "dislikes": {
+            "酒": "研究が鈍るじゃないか、と怒ってきた。"
         },
         "affection_level": 1,
         "affection_exp": 0,
@@ -421,7 +452,7 @@ def check_affection_level_up(char_data, user_info):
 ALCOHOL_ITEMS = ["酒", "ビール", "ワイン", "ウイスキー", "日本酒"]
 
 ADULT_CHARACTERS = [
-    "折原和也", "橘柊人", "竹村しえら", "れーちゃん", "Gerânio", "レオ", "ロイ", "白黒レイ",
+    "折原和也", "橘柊人", "竹村しえら", "れーちゃん", "Gerânio", "レオ", "ロイ", "白黒レイ", "神明龍矢",
 ]
 
 # --------------------------------------------------
