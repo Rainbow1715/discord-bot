@@ -162,32 +162,33 @@ class PartySelectView(discord.ui.View):
 @bot.tree.command(name="profile", description="自分のプロフィールを確認します")
 async def profile(interaction: discord.Interaction):
     u_data = get_user_profile(interaction.user.id)
-    char_count = len(u_data["characters"])
+    characters = u_data.get("characters", [])
+    char_count = len(characters)
 
+    # ⭕️ 安全に総合力を計算する関数
     def get_total_power(data):
+        chars = data.get("characters", [])
         return sum(
-            c["level"] * 10 + c["atk"] + c["hp"] for c in data["characters"]
+            c.get("level", 1) * 10 + c.get("atk", 0) + c.get("hp", 0) for c in chars
         )
 
     all_users = list(user_data.items())
 
+    # 強さ順位の計算
     sorted_by_power = sorted(
         all_users, key=lambda x: get_total_power(x[1]), reverse=True
     )
     power_rank = (
-        [i for i, u in enumerate(sorted_by_power) if u[0] == interaction.user.id][
-            0
-        ]
+        [i for i, u in enumerate(sorted_by_power) if u[0] == interaction.user.id][0]
         + 1
     )
 
+    # 所持キャラ数順位の計算（⭕️ .get("characters", []) で安全に取得）
     sorted_by_chars = sorted(
-        all_users, key=lambda x: len(x[1]["characters"]), reverse=True
+        all_users, key=lambda x: len(x[1].get("characters", [])), reverse=True
     )
     char_rank = (
-        [i for i, u in enumerate(sorted_by_chars) if u[0] == interaction.user.id][
-            0
-        ]
+        [i for i, u in enumerate(sorted_by_chars) if u[0] == interaction.user.id][0]
         + 1
     )
 
@@ -195,7 +196,7 @@ async def profile(interaction: discord.Interaction):
         title=f"👤 {interaction.user.display_name} のプロフィール",
         color=0x3498DB,
     )
-    embed.add_field(name="💰 所持金", value=f"{u_data['gold']} G", inline=True)
+    embed.add_field(name="💰 所持金", value=f"{u_data.get('gold', 0)} G", inline=True)
     embed.add_field(
         name="👥 所持キャラ種類", value=f"{char_count} 種", inline=True
     )
@@ -522,6 +523,7 @@ async def mailbox(interaction: discord.Interaction):
 
         # 👤 添付キャラの処理
         char_name = m.get("char_name")
+        char_count = m.get("char_count", 1)  # 👈 メールに個数が指定されていれば取得（無ければ1体）
         if char_name:
             template = next(
                 (c for c in GACHA_POOL if c["name"] == char_name), None
@@ -533,16 +535,19 @@ async def mailbox(interaction: discord.Interaction):
                 )
 
                 if existing_char:
-                    existing_char["count"] = existing_char.get("count", 1) + 1
-                    received_chars.append(f"{char_name} (所持数 +1)")
+                    # すでに所持している場合：純粋に所持数(count)のみを加算
+                    # ※ limit_break（限界突破数）は変更せず独立して維持
+                    existing_char["count"] = existing_char.get("count", 1) + char_count
+                    received_chars.append(f"{char_name} ×{char_count} (所持数: {existing_char['count']})")
                 else:
+                    # 未所持の場合：新規作成
                     new_char = copy.deepcopy(template)
-                    new_char["count"] = 1
+                    new_char["count"] = char_count
                     new_char["level"] = 1
                     new_char["exp"] = 0
-                    new_char["limit_break"] = 0  # 👈 新規獲得時も無凸(0)で初期化
+                    new_char["limit_break"] = 0  # 👈 限界突破は0で初期化
                     user_chars.append(new_char)
-                    received_chars.append(f"{char_name} (新規獲得!)")
+                    received_chars.append(f"{char_name} ×{char_count} (新規獲得!)")
 
         m["claimed"] = True
         mail_titles.append(m.get("title", "無題のメール"))
