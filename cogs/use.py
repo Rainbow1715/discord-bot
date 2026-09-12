@@ -1,4 +1,5 @@
 import random
+from collections import Counter
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -15,7 +16,8 @@ class UseCog(commands.Cog):
     # 📦 直接使用可能なアイテムの定義リスト
     # --------------------------------------------------
     USABLE_ITEMS = [
-        "ご飯ランダムボックス",  # 今後追加したい使用可能アイテムがあればここに追加
+        "ランダムご飯ボックス",  # 今後追加したい使用可能アイテムがあればここに追加
+        "ご飯ランダムボックス"
     ]
 
     # オートコンプリート（ユーザーが持っている「使用可能アイテム」のみ補完表示）
@@ -27,7 +29,6 @@ class UseCog(commands.Cog):
 
         choices = []
         for item_name, count in items.items():
-            # 💡 条件に「使用可能なアイテムリストに含まれているか」を追加
             if count > 0 and item_name in self.USABLE_ITEMS and current.lower() in item_name.lower():
                 choices.append(app_commands.Choice(name=f"{item_name} (所持: {count})", value=item_name))
 
@@ -48,14 +49,13 @@ class UseCog(commands.Cog):
             return
 
         # ==================================================
-        # 🎁 「ごはんランダムボックス」の開封処理
+        # 🎁 「ごはんランダムボックス」の開封処理（10連抽選）
         # ==================================================
-        if item_name == "ご飯ランダムボックス":
+        if item_name in ("ランダムご飯ボックス", "ご飯ランダムボックス"):
             # 外部参照した FOOD_ITEMS がリスト形式か辞書形式かで判定
             if isinstance(FOOD_ITEMS, list):
                 food_list = FOOD_ITEMS
             elif isinstance(FOOD_ITEMS, dict):
-                # 辞書型（{"高級なお肉": {"bond_exp": 50, "weight": 10}, ...} のような構造）の場合
                 food_list = [{"name": k, **v} for k, v in FOOD_ITEMS.items()]
             else:
                 await interaction.response.send_message(
@@ -74,33 +74,46 @@ class UseCog(commands.Cog):
             if user_items[item_name] <= 0:
                 del user_items[item_name]
 
-            # 2. FOOD_ITEMS 内の weight（重み/確率）を参照して抽選
-            # ※ weight 設定がない場合は一律 1（均等確率）として扱います
+            # 2. FOOD_ITEMS 内の weight（確率）を参照して 10個 抽選
             weights = [item.get("weight", 1) for item in food_list]
-            obtained_item = random.choices(food_list, weights=weights, k=1)[0]
+            obtained_items = random.choices(food_list, weights=weights, k=10)
 
-            obtained_name = obtained_item.get("name", "謎のごはん")
-            # 「bond_exp」「exp」「value」など、定義されているキーに合わせて参照
-            obtained_exp = obtained_item.get("bond_exp", obtained_item.get("exp", 10))
+            # 3. 獲得アイテムの集計（例: {"高級なお肉": 2, "普通のおにぎり": 8}）
+            obtained_counts = Counter()
+            max_exp_in_session = 0
 
-            # 3. インベントリに獲得アイテムを追加
-            user_items[obtained_name] = user_items.get(obtained_name, 0) + 1
+            for obtained_item in obtained_items:
+                name = obtained_item.get("name", "謎のごはん")
+                exp = obtained_item.get("bond_exp", obtained_item.get("exp", 10))
+
+                obtained_counts[name] += 1
+                if exp > max_exp_in_session:
+                    max_exp_in_session = exp
+
+                # ユーザーのインベントリに追加
+                user_items[name] = user_items.get(name, 0) + 1
+
             save_data()
 
-            # レア度演出（上昇値に応じて色を変更）
+            # 表示用の文字列を作成（例: "・**高級なお肉** × 2\n・**普通のおにぎり** × 8"）
+            result_text_lines = [f"・**{name}** × {count}" for name, count in obtained_counts.items()]
+            result_text = "\n".join(result_text_lines)
+
+            # レア度演出（出た中で一番高価/効果が高い食べ物に応じて色を変更）
             color = 0x3498DB
-            if obtained_exp >= 100:
+            if max_exp_in_session >= 100:
                 color = 0xE67E22
-            elif obtained_exp >= 40:
+            elif max_exp_in_session >= 40:
                 color = 0x9B59B6
 
             embed = discord.Embed(
-                title="🎁 ボックスを開封しました！",
-                description=f"**{item_name}** から以下のアイテムが出てきました！",
+                title="🎁 ボックスを開封しました！（10連）",
+                description=f"**{item_name}** から10個のアイテムが出てきました！",
                 color=color
             )
             embed.add_field(
-                name="🍱 入手アイテム",
+                name="🍱 入手した食べ物一覧",
+                value=result_text,
                 inline=False
             )
             embed.set_footer(text=f"残り {item_name}: {user_items.get(item_name, 0)}個")
