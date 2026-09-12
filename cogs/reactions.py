@@ -16,7 +16,7 @@ class ReactionsCog(commands.Cog):
 
         embed = discord.Embed(
             title="📖 判明済み・食べ物の反応図鑑",
-            description="これまでに食べ物をあげて判明した反応の一覧です。",
+            description="これまでに食べ物をあげて判明した反応の一覧です。\n",
             color=discord.Color.orange()
         )
 
@@ -32,7 +32,7 @@ class ReactionsCog(commands.Cog):
             if not u_char:
                 embed.add_field(
                     name="❔ ？？？",
-                    value="【まだこのキャラを持っていません】",
+                    value="【まだこのキャラを持っていません】\n\u200b", # \u200b で次のキャラとの間に余白を作る
                     inline=False
                 )
                 continue
@@ -42,7 +42,7 @@ class ReactionsCog(commands.Cog):
             # --------------------------------------------------
             known_likes = u_char.get("known_likes", [])
             known_dislikes = u_char.get("known_dislikes", [])
-            known_special = u_char.get("known_special", [])  # 特殊反応の判明フラグ用
+            known_special = u_char.get("known_special", [])
 
             master_likes = master_char.get("likes", {})
             master_dislikes = master_char.get("dislikes", {})
@@ -69,28 +69,33 @@ class ReactionsCog(commands.Cog):
                 dislikes_display = "まだわかりません"
 
             # --------------------------------------------------
-            # 🍖 怪しい肉の判定（対象キャラ＆獲得済みのみ表示）
+            # 🍖 怪しい肉の判定（一番上に配置）
             # --------------------------------------------------
-            # 1. そもそもこのキャラが「怪しい肉」に対する特殊反応を持っているかチェック
             has_meat_reaction = "怪しい肉" in master_special
-
-            # 2. プレイヤーがすでに「怪しい肉」をあげて反応を解放したかチェック
             is_meat_revealed = (
                 "怪しい肉" in known_special or 
                 "怪しい肉" in known_likes or 
                 "怪しい肉" in known_dislikes
             )
 
-            # 表示テキストのベース作成
-            field_value = (
-                f"**【好きな食べ物】**\n{likes_display}\n\n"
-                f"**【嫌いな食べ物】**\n{dislikes_display}"
-            )
+            sections = []
 
-            # 条件を満たした場合のみ「怪しい肉」の項目を追加
+            # 1. 条件を満たしていれば「怪しい肉」を最優先で追加
             if has_meat_reaction and is_meat_revealed:
                 meat_reaction = master_special.get("怪しい肉", "「……これ、何の肉だ？」")
-                field_value += f"\n\n**【怪しい肉】**\n・{meat_reaction}"
+                sections.append(f"**【怪しい肉】**\n・{meat_reaction}")
+
+            # 2. 好きな食べ物
+            sections.append(f"**【好きな食べ物】**\n{likes_display}")
+
+            # 3. 嫌いな食べ物
+            sections.append(f"**【嫌いな食べ物】**\n{dislikes_display}")
+
+            # 各セクションを改行2つで結合
+            field_value = "\n\n".join(sections)
+
+            # 👇 Discordの仕様上、キャラ間の区切り用に末尾にゼロ幅スペース（\u200b）を入れて改行を確保
+            field_value += "\n\u200b"
 
             embed.add_field(
                 name=f"{char_icon} {char_name}",
