@@ -11,7 +11,14 @@ class UseCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # オートコンプリート（ユーザーが持っているアイテムのみ補完表示）
+    # --------------------------------------------------
+    # 📦 直接使用可能なアイテムの定義リスト
+    # --------------------------------------------------
+    USABLE_ITEMS = [
+        "ご飯ランダムボックス",  # 今後追加したい使用可能アイテムがあればここに追加
+    ]
+
+    # オートコンプリート（ユーザーが持っている「使用可能アイテム」のみ補完表示）
     async def item_autocomplete(
         self, interaction: discord.Interaction, current: str
     ) -> list[app_commands.Choice[str]]:
@@ -20,7 +27,8 @@ class UseCog(commands.Cog):
 
         choices = []
         for item_name, count in items.items():
-            if count > 0 and current.lower() in item_name.lower():
+            # 💡 条件に「使用可能なアイテムリストに含まれているか」を追加
+            if count > 0 and item_name in USABLE_ITEMS and current.lower() in item_name.lower():
                 choices.append(app_commands.Choice(name=f"{item_name} (所持: {count})", value=item_name))
 
         return choices[:25]
