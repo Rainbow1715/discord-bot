@@ -108,6 +108,7 @@ async def admin_mail(
     rainbow: int = 0,
     ticket: int = 0,
     char_name: str = None  # 👈 添付キャラ名（任意）
+    char_count: int = 1  # 👈 送信個数を追加（デフォルト1）
 ):
     if char_name:
         char_exists = any(c.get("name") == char_name for c in GACHA_POOL)
@@ -132,6 +133,7 @@ async def admin_mail(
                 "rainbow": rainbow,
                 "ticket": ticket,
                 "char_name": char_name,
+                "char_count": char_count,
                 "claimed": False
             })
             count += 1
