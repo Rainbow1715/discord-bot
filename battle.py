@@ -59,7 +59,7 @@ class Character:
         
         # スキル関連パラメータ
         self.skill_name = data_dict.get("skill_name", "通常攻撃")
-        self.skill_pow = data_dict.get("skill_pow", 20)
+        self.skill_pow = data_dict.get("skill_pow", 1.0)
         self.skill_type = data_dict.get("skill_type", "normal")
         
         # 💖 魅了の対象（"女", "男", "ALL" など。未設定なら "ALL"）
@@ -110,7 +110,8 @@ class Character:
 
             # ② 物理特化ダメージ
             elif self.skill_type == "physical":
-                dmg = self.skill_pow + int(self.atk * 0.5)
+                dmg = int(self.skill_pow + (self.atk * 0.5))
+                dmg = max(1, dmg)
                 target.hp = max(0, target.hp - dmg)
                 return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
 
@@ -121,17 +122,17 @@ class Character:
 
             # ④ 💖 魅了（対象の性別判定を追加）
             elif self.skill_type == "charm":
-                # 対象の性別が指定された標的と一致するか、または標的が"ALL"の場合のみ成功
                 if self.charm_target == "ALL" or target.gender == self.charm_target:
                     target_state["charm"] = 3
                     return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は魅了されて **3ターン行動不能** になった！"
                 else:
-                    # 性別が合致しなかった場合は効かない
                     return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし **{target.name}** には効かなかった！"
 
             # ⑤ 通常の単体攻撃スキル
             else:
-                dmg = self.skill_pow + self.atk + random.randint(-3, 3)
+                pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15
+                dmg = int(pow_val + self.atk + random.randint(-3, 3))
+                dmg = max(1, dmg)
                 target.hp = max(0, target.hp - dmg)
                 return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
         else:
@@ -171,7 +172,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             "name": f"【Lv.{boss_lvl}】{candidate['name']}",
             "icon": candidate.get("icon", "👹"),
             "element": candidate.get("element", "無"),
-            "gender": candidate.get("gender", "？"), # 元キャラの性別を使用（未設定なら「？」）
+            "gender": candidate.get("gender", "？"),
             "atk_type": candidate.get("atk_type", random.choice(["物理", "魔法"])),
             "level": boss_lvl,
             "hp": calculated_hp,
@@ -248,7 +249,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
                 else:
                     turn_log += p.action(boss, party, turn, states[boss]) + "\n"
 
-        # 2. ボスのターン
+        # 2. ボスのターン（ボスの回復対象はボス自身のみ）
         if boss.hp > 0:
             boss_state = states[boss]
 
@@ -297,22 +298,30 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
         await on_battle_win(interaction, u_data)
 
+        # --------------------------------------------------
+        # 📈 安全なレベルアップ処理（無限ループ防止）
+        # --------------------------------------------------
         lvl_up_msgs = []
         for p in party:
             c_data = p.data
             c_data["exp"] = c_data.get("exp", 0) + exp_gained
+            leveled_up = False
             
-            while True:
+            # 安全のため、1回のバトルでのレベル上昇回数を最大100回に制限
+            for _ in range(100):
                 next_exp = c_data["level"] * 100
                 if c_data["exp"] >= next_exp:
                     c_data["exp"] -= next_exp
                     c_data["level"] += 1
                     c_data["hp"] += 8
+                    c_data["max_hp"] = c_data.get("max_hp", c_data["hp"]) + 8
                     c_data["atk"] += 3
-                    if f"🎉 **{c_data['name']}**" not in "".join(lvl_up_msgs):
-                        lvl_up_msgs.append(f"🎉 **{c_data['name']}** (Lv.{c_data['level']} にUP!)")
+                    leveled_up = True
                 else:
                     break
+            
+            if leveled_up:
+                lvl_up_msgs.append(f"🎉 **{c_data['name']}** (Lv.{c_data['level']} にUP!)")
 
         save_data()
         lvl_str = "\n" + "\n".join(lvl_up_msgs) if lvl_up_msgs else ""
