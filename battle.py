@@ -51,7 +51,7 @@ class Character:
         self.atk_type = data_dict.get("atk_type", "物理")
         
         self.level = data_dict.get("level", 1)
-        self.max_hp = data_dict.get("hp", 100)
+        self.max_hp = data_dict.get("max_hp", data_dict.get("hp", 100))
         self.hp = self.max_hp
         self.atk = data_dict.get("atk", 15)
         self.spd = data_dict.get("spd", 10)
