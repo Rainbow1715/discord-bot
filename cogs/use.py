@@ -101,7 +101,6 @@ class UseCog(commands.Cog):
             )
             embed.add_field(
                 name="🍱 入手アイテム",
-                value=f"**{obtained_name}** × 1\n（なつき度上昇値: +{obtained_exp}）",
                 inline=False
             )
             embed.set_footer(text=f"残り {item_name}: {user_items.get(item_name, 0)}個")
