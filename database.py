@@ -50,7 +50,7 @@ PICKUP_CHARACTERS = ["竹村しえら", "レオ", "Gerânio"]
 PICKUP_BOOST_RATE = 0.40  # バースデーキャラ全体の排出補正率
 
 # 🆕 新キャラ実装・ピックアップ設定
-NEW_PICKUP_CHARACTERS = []  # 実装時に ["新キャラ名"] を指定
+NEW_PICKUP_CHARACTERS = ["ロイ"]  # 実装時に ["新キャラ名"] を指定
 NEW_PICKUP_BOOST_RATE = 0.50 # 新キャラ全体の排出補正率
 
 # 🎰 ガチャ排出キャラクタープール（兼マスターデータ）
@@ -67,7 +67,7 @@ GACHA_POOL = [
         "spd": 11,
         "rec": 6,
         "skill_name": "どけ！ 大天災しえらさんのお通りだぞ！",
-        "skill_type" "physical",
+        "skill_type": "physical",
         "skill_pow": 1.1,
         "element": "紫",
         "role": "アタッカー",
@@ -130,7 +130,7 @@ GACHA_POOL = [
         "spd": 16,
         "rec": 3,
         "skill_name": "ブッ殺してやる!",
-        "skill_type" "physical",
+        "skill_type": "physical",
         "skill_pow": 25,
         "element": "赤",
         "role": "アタッカー",
@@ -161,7 +161,7 @@ GACHA_POOL = [
         "spd": 17,
         "rec": 8,
         "skill_name": "一斉掃射",
-        "skill_type" "physical",
+        "skill_type": "physical",
         "skill_pow": 1.2,
         "element": "紫",
         "role": "アタッカー",
@@ -297,6 +297,37 @@ GACHA_POOL = [
         "affection_exp": 0,
         "known_likes": [],
         "known_dislikes": []
+    },
+    {
+        "name": "ロイ",
+        "icon": "<:6006_roi:1476541556227047504>",
+        "rarity": "★3",
+        "hp": 95,
+        "max_hp":95,
+        "atk": 22,
+        "spd": 18,
+        "rec": 8,
+        "skill_name": "うっふ〜ん♡激エロお兄さんだよ〜♡",
+        "skill_type": "charm",
+        "charm_target": "女",
+        "skill_trigger": "interval_3",
+        "skill_rate": 95,
+        "element": "赤",
+        "role": "サポーター",
+        "atk_type": "魔法",
+        "gender": "男",
+        "best_equip": "鏡",
+        "equip": None,
+        "likes": {
+            "ブルーベリージャムパン": "ジャムを大量に塗りたくってやったのに、手も口元も汚さず完食しやがった。"
+        },
+        "dislikes": {
+            "クソデカステーキ": "普通のサイズのはないの？　と文句を言ってきた。"
+        },
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
     }
 ]
 
@@ -378,7 +409,7 @@ def check_affection_level_up(char_data, user_info):
 ALCOHOL_ITEMS = ["酒", "ビール", "ワイン", "ウイスキー", "日本酒"]
 
 ADULT_CHARACTERS = [
-    "折原和也", "橘柊人", "竹村しえら", "れーちゃん", "Gerânio", "レオ",
+    "折原和也", "橘柊人", "竹村しえら", "れーちゃん", "Gerânio", "レオ", "ロイ",
 ]
 
 # --------------------------------------------------
