@@ -71,6 +71,17 @@ class Character:
 
         self.is_boss = is_boss
 
+        # ⭕️ バフ保持用のリストを追記
+        self.buffs = []
+
+    # ⭕️ バフ込みの攻撃力を計算するメソッドを追加
+    def get_effective_atk(self):
+        atk_multiplier = 1.0
+        for buff in self.buffs:
+            if buff.get("type") == "atk_up":
+                atk_multiplier += buff.get("value", 0.0)
+        return int(self.atk * atk_multiplier)
+
     def should_use_skill(self, current_turn):
         """キャラ設定に基づいてスキルを発動するかどうか判定する"""
         trigger = self.skill_trigger
@@ -94,6 +105,7 @@ class Character:
 
     def action(self, target, party, current_turn, target_state):
         type_icon = "⚔️" if self.atk_type == "物理" else "🔮"
+        current_atk = self.get_effective_atk() # ⭕️ バフ込みの攻撃力を取得
 
         # スキル発動判定
         if self.should_use_skill(current_turn):
@@ -108,9 +120,21 @@ class Character:
                     return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(healed_names)}** のHPが回復した！"
                 return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし効果がなかった！"
 
+            # ⭕️ 新規追加：全体攻撃力バフスキル
+            elif self.skill_type == "buff_all_atk":
+                boost_rate = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 0.20
+                buff_target_party = party if not self.is_boss else [self]
+                buffed_names = []
+                for member in buff_target_party:
+                    if member.hp > 0:
+                        member.buffs.append({"type": "atk_up", "value": boost_rate, "duration": 3})
+                        buffed_names.append(member.name)
+                percent = int(boost_rate * 100)
+                return f"🔥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(buffed_names)}** の攻撃力が3ターンの間 **{percent}%** アップ！"
+            
             # ② 物理特化ダメージ
             elif self.skill_type == "physical":
-                dmg = int(self.skill_pow + (self.atk * 0.5))
+                dmg = int(self.skill_pow + (current_atk * 0.5))
                 dmg = max(1, dmg)
                 target.hp = max(0, target.hp - dmg)
                 return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
@@ -131,13 +155,13 @@ class Character:
             # ⑤ 通常の単体攻撃スキル
             else:
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15
-                dmg = int(pow_val + self.atk + random.randint(-3, 3))
+                dmg = int(pow_val + current_atk + random.randint(-3, 3))
                 dmg = max(1, dmg)
                 target.hp = max(0, target.hp - dmg)
                 return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
         else:
             # 通常攻撃
-            dmg = max(1, self.atk + random.randint(-2, 2))
+            dmg = max(1, current_atk + random.randint(-2, 2))
             target.hp = max(0, target.hp - dmg)
             return f"{type_icon} {self.icon} **{self.name}** の{self.atk_type}攻撃！ **{target.name}** に **{dmg}** ダメージ！"
 
@@ -267,6 +291,18 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
                     target = random.choice(alive_party)
                     turn_log += boss.action(target, [boss], turn, states[target]) + "\n"
 
+        # ⭕️ 各ターンの最後にバフの持続時間を減らし、期限切れを削除する
+        all_units = party + [boss]
+        for unit in all_units:
+            active_buffs = []
+            for buff in unit.buffs:
+                buff["duration"] -= 1
+                if buff["duration"] > 0:
+                    active_buffs.append(buff)
+                else:
+                    turn_log += f"⌛ **{unit.name}** の攻撃力アップ効果が切れた。\n"
+            unit.buffs = active_buffs
+        
         logs.append(turn_log)
         if len(logs) > 2:
             logs.pop(0)
@@ -294,7 +330,8 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         exp_gained = random.randint(e_min, e_max)
 
         u_data["gold"] = u_data.get("gold", 0) + gold_gained
-        u_data["items"]["虹の欠片"] = u_data["items"].get("虹の欠片", 0) + rainbow_gained
+        user_items = u_data.setdefault("items", {})
+        user_items["虹の欠片"] = user_items.get("虹の欠片", 0) + rainbow_gained
 
         await on_battle_win(interaction, u_data)
 
@@ -324,9 +361,9 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
                 if c_data["exp"] >= next_exp:
                     c_data["exp"] -= next_exp
                     c_data["level"] += 1
-                    c_data["hp"] += 8
-                    c_data["max_hp"] = c_data.get("max_hp", c_data["hp"]) + 8
-                    c_data["atk"] += 3
+                    c_data["max_hp"] = c_data.get("max_hp", 100) + 8
+                    c_data["hp"] = c_data["max_hp"]
+                    c_data["atk"] = c_data.get("atk", 15) + 3  # ← 安全に加算する
                     leveled_up = True
                 else:
                     break
