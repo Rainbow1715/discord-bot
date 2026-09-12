@@ -407,8 +407,8 @@ def check_affection_level_up(char_data, user_info):
                 rewards.append("💎 虹の欠片 x300")
                 user_info["items"]["虹の欠片"] = user_info["items"].get("虹の欠片", 0) + 300
             else:
-                rewards.append("🎁 ご飯ランダムボックス x1")
-                user_info["items"]["ご飯ランダムボックス"] = user_info["items"].get("ご飯ランダムボックス", 0) + 1
+                rewards.append("🎁 ランダムご飯ボックス x1")
+                user_info["items"]["ランダムご飯ボックス"] = user_info["items"].get("ランダムご飯ボックス", 0) + 1
         else:
             break
 
