@@ -462,7 +462,16 @@ def feed_character(user_info, char_data, food_name):
     if "known_dislikes" not in char_data:
         char_data["known_dislikes"] = []
 
-    is_first_time = (food_name not in char_data["known_likes"]) and (food_name not in char_data["known_dislikes"])
+    # ⭕️ 食べたことのある全履歴リストを初期化
+    if "eaten_foods" not in char_data:
+        char_data["eaten_foods"] = []
+
+    # ⭕️ 「一度でも食べたことがあるか」で初めて判定を行う
+    is_first_time = food_name not in char_data["eaten_foods"]
+
+    # ⭕️ 食べた履歴に保存（これで次回以降は False になる）
+    if is_first_time:
+        char_data["eaten_foods"].append(food_name)
     
     # 辞書・リストのどちらの形式でも安全に判定
     is_like = food_name in master_likes
