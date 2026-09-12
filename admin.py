@@ -107,7 +107,7 @@ async def admin_mail(
     gold: int = 0,
     rainbow: int = 0,
     ticket: int = 0,
-    char_name: str = None  # 👈 添付キャラ名（任意）
+    char_name: str = None,  # 👈 添付キャラ名（任意）
     char_count: int = 1  # 👈 送信個数を追加（デフォルト1）
 ):
     if char_name:
