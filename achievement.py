@@ -72,6 +72,16 @@ ACHIEVEMENTS = {
         "desc": "レオ と ロイ を編成してバトルに勝利する",
         "reward_rainbow": 500,
     },
+    "win_roi_orihara_tatuya": {
+        "title": "😟 カス三人衆を連れてきたよ①",
+        "desc": "ロイ 折原和也 神明龍矢 を編成してバトルに勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_roi_sara_tatuya": {
+        "title": "😟 カス三人衆を連れてきたよ②",
+        "desc": "ロイ サラ 神明龍矢 を編成してバトルに勝利する",
+        "reward_rainbow": 500,
+    },
     # 👤 特定キャラ入手実績
     "get_kami": {
         "title": "❔ なんで？",
@@ -166,6 +176,14 @@ async def on_battle_win(interaction: discord.Interaction, u_data: dict):
     # 5. レオ ＆ ロイ
     if {"レオ", "ロイ"}.issubset(party_names_set):
         await check_and_unlock_achievement(interaction, "win_reo_roi")
+
+    # カス①（ロイ折原龍也）
+    if {"ロイ", "折原和也", "神明龍矢"}.issubset(party_names_set):
+        await check_and_unlock_achievement(interaction, "win_roi_orihara_tatuya")
+
+    # カス①（ロイサラ龍也）
+    if {"ロイ", "サラ", "神明龍矢"}.issubset(party_names_set):
+        await check_and_unlock_achievement(interaction, "win_roi_sara_tatuya")
 
 
 # --------------------------------------------------
