@@ -341,7 +341,7 @@ GACHA_POOL = [
         "rec": 4,
         "skill_name": "モルモットとの戯れ",
         "skill_type": "buff_all_atk",
-        "skill_pow": 0.20
+        "skill_pow": 0.20,
         "skill_trigger": "interval_3",
         "skill_rate": 100,
         "element": "青",
