@@ -18,6 +18,81 @@ def is_admin():
 
 
 # --------------------------------------------------
+# 🔄 キャラクターデータ再計算ロジック
+# --------------------------------------------------
+def recalculate_all_characters() -> tuple[int, int]:
+    """全ユーザーのキャラクターデータを再計算する処理"""
+    updated_users = 0
+    updated_chars = 0
+
+    for user_id, u_data in user_data.items():
+        characters = u_data.get("characters", [])
+        if not characters:
+            continue
+
+        for char in characters:
+            # GACHA_POOL から基礎データを取得
+            template = next((c for c in GACHA_POOL if c["name"] == char["name"]), None)
+            if not template:
+                continue
+
+            # 1. レベルによる上昇分（※プロジェクトの成長計算式に合わせて調整してください）
+            level = char.get("level", 1)
+            level_hp_bonus = (level - 1) * 10
+            level_atk_bonus = (level - 1) * 2
+
+            # 2. ランクアップ（★）による上昇分
+            base_rarity = template.get("rarity", "★3")
+            current_rarity = char.get("rarity", base_rarity)
+
+            rarity_map = {"★1": 1, "★2": 2, "★3": 3, "★4": 4, "★5": 5}
+            rank_diff = max(0, rarity_map.get(current_rarity, 3) - rarity_map.get(base_rarity, 3))
+
+            base_hp = template.get("hp", 100)
+            base_atk = template.get("atk", 10)
+
+            rank_hp_bonus = int(base_hp * 0.20) * rank_diff
+            rank_atk_bonus = int(base_atk * 0.20) * rank_diff
+
+            # 3. 再計算して上書き
+            correct_hp = base_hp + level_hp_bonus + rank_hp_bonus
+            correct_atk = base_atk + level_atk_bonus + rank_atk_bonus
+
+            char["hp"] = correct_hp
+            if "max_hp" in char:
+                char["max_hp"] = correct_hp
+            char["atk"] = correct_atk
+
+            updated_chars += 1
+        updated_users += 1
+
+    save_data()
+    return updated_users, updated_chars
+
+
+# --------------------------------------------------
+# 🔄 4. キャラステータス一括再計算コマンド
+# --------------------------------------------------
+@app_commands.command(name="admin_recalculate", description="【管理者】全ユーザーのキャラステータスを再計算・修正します")
+@is_admin()
+async def admin_recalculate(interaction: discord.Interaction):
+    # 処理が長引く可能性があるため応答を保留
+    await interaction.response.defer(ephemeral=True)
+
+    users_cnt, chars_cnt = recalculate_all_characters()
+
+    embed = discord.Embed(
+        title="🔄 キャラクターデータ再計算完了",
+        description="全ユーザーのステータス再計算とデータの保存が正常に完了しました！",
+        color=0x2ECC71
+    )
+    embed.add_field(name="対象ユーザー数", value=f"**{users_cnt}** 人", inline=True)
+    embed.add_field(name="更新キャラ数", value=f"**{chars_cnt}** 体", inline=True)
+
+    await interaction.followup.send(embed=embed, ephemeral=True)
+
+
+# --------------------------------------------------
 # ✉️ メール配布機能（全体送信・個別送信・全取消）
 # --------------------------------------------------
 
@@ -34,7 +109,6 @@ async def admin_mail(
     ticket: int = 0,
     char_name: str = None  # 👈 添付キャラ名（任意）
 ):
-    # キャラ名が指定されている場合、ガチャプールに存在するかチェック
     if char_name:
         char_exists = any(c.get("name") == char_name for c in GACHA_POOL)
         if not char_exists:
@@ -57,14 +131,13 @@ async def admin_mail(
                 "gold": gold,
                 "rainbow": rainbow,
                 "ticket": ticket,
-                "char_name": char_name,  # 👈 キャラ添付
+                "char_name": char_name,
                 "claimed": False
             })
             count += 1
 
     save_data()
 
-    # 🎁 添付表示文の作成
     attachments = []
     if gold > 0:
         attachments.append(f"{gold}G")
@@ -100,7 +173,6 @@ async def admin_direct_mail(
     ticket: int = 0,
     char_name: str = None
 ):
-    # キャラ名チェック
     if char_name:
         char_exists = any(c.get("name") == char_name for c in GACHA_POOL)
         if not char_exists:
@@ -110,7 +182,6 @@ async def admin_direct_mail(
             )
             return
 
-    # 対象ユーザーのデータ取得
     u_info = user_data.get(target.id)
     if not u_info:
         await interaction.response.send_message("❌ 指定されたユーザーのデータが見つかりませんでした。", ephemeral=True)
@@ -119,7 +190,6 @@ async def admin_direct_mail(
     if "mails" not in u_info:
         u_info["mails"] = []
 
-    # 一意のメールIDを自動生成
     auto_mail_id = f"DM_{int(time.time())}"
 
     u_info["mails"].append({
@@ -186,9 +256,8 @@ async def set_char_count(
     interaction: discord.Interaction, 
     char_name: str, 
     count: int,
-    target: discord.User = None  # 👈 対象ユーザー（未指定なら自分）
+    target: discord.User = None
 ):
-    # targetが指定されていなければ、コマンド実行者を対象にする
     target_user = target or interaction.user
     
     u_data = get_user_profile(target_user.id)
@@ -205,7 +274,6 @@ async def set_char_count(
 
     old_count = target_char.get("count", 1)
     
-    # 所持数と限界突破数を更新
     target_char["count"] = max(1, count)
     target_char["limit_break"] = max(0, count - 1)
     target_char.pop("rank_up", None)
@@ -219,6 +287,7 @@ async def set_char_count(
         f"・限界突破: `{lb_str}`",
         ephemeral=True
     )
+
 
 # 🛠 レア度（★の数）を直接変更するコマンド
 @app_commands.command(name="set_char_rarity", description="【管理者用】指定ユーザーのキャラのベースレア度（★）を変更します")
@@ -244,7 +313,6 @@ async def set_char_rarity(
 
     old_rarity = target_char.get("rarity")
     
-    # レア度を数値で上書き（1〜5などに設定）
     target_char["rarity"] = rarity
 
     save_data()
@@ -255,6 +323,7 @@ async def set_char_rarity(
         f"・変更後: `★{rarity}`",
         ephemeral=True
     )
+
 
 # --------------------------------------------------
 # ⚔️ テストバトル機能
@@ -267,9 +336,10 @@ async def admin_test_battle(interaction: discord.Interaction):
 
 async def setup(bot):
     # コマンドをボットのツリーに登録
+    bot.tree.add_command(admin_recalculate)  # 👈 再計算コマンドを追加
     bot.tree.add_command(admin_mail)
     bot.tree.add_command(admin_direct_mail)
     bot.tree.add_command(admin_cancel_mail)
-    bot.tree.add_command(set_char_count)  # 👈 ここに追加
+    bot.tree.add_command(set_char_count)
     bot.tree.add_command(set_char_rarity)
     bot.tree.add_command(admin_test_battle)
