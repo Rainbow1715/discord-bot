@@ -626,14 +626,23 @@ def get_user_profile(user_id):
     if user_id not in user_data:
         user_data[user_id] = {
             "gold": 1000,
-            "items": {"虹の欠片": 100, "ガチャチケ": 100, "おにぎり": 5, "ショートケーキ": 2, "激辛ラーメン": 2},
+            "items": {"虹の欠片": 100, "ガチャチケ": 100, "装備ガチャチケット": 10, "おにぎり": 5, "ショートケーキ": 2, "激辛ラーメン": 2},
             "characters": [copy.deepcopy(c) for c in DEFAULT_CHARACTERS if c],
+            "equipments": [],
             "party_indices": [0, 1, 2],
             "mails": []
         }
         save_data()
 
     u_info = user_data[user_id]
+
+    # ★既存ユーザー向けのデータ補完処理（データが無い場合に自動追加）
+    items = u_info.setdefault("items", {})
+    if "装備ガチャチケット" not in items:
+        items["装備ガチャチケット"] = 0  # ★追記：未所持なら0枚で初期化
+
+    if "equipments" not in u_info:
+        u_info["equipments"] = []  # ★追記：未作成なら空リストで初期化
 
     all_master_chars = {c["name"]: c for c in GACHA_POOL if c}
 
