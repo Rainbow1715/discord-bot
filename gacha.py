@@ -226,8 +226,7 @@ class SoubiGachaView(discord.ui.View):
         super().__init__(timeout=60)
         self.user_id = user_id
 
-    @discord.ui.button(label="装備ガチャチケ 10枚で10連", style=discord.ButtonStyle.success, emoji="🎟️")
-    async def draw_equipment_10(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def process_gacha(self, interaction: discord.Interaction, cost_type: str):
         # 1. ユーザーチェック
         if interaction.user.id != self.user_id:
             await interaction.response.send_message("❌ 他のユーザーのガチャ画面です。", ephemeral=True)
@@ -239,7 +238,7 @@ class SoubiGachaView(discord.ui.View):
         u_data = get_user_profile(self.user_id)
         items = u_data.setdefault("items", {})
 
-        # 3. コストチェックと消費（虹の欠片 1000個 OR 装備ガチャチケット 10枚）
+        # 3. コストチェックと消費
         if cost_type == "rainbow":
             if items.get("虹の欠片", 0) < 1000:
                 await interaction.followup.send("❌ 虹の欠片が足りません！（必要: 1000個）", ephemeral=True)
@@ -255,10 +254,7 @@ class SoubiGachaView(discord.ui.View):
                 return
             items["装備ガチャチケット"] -= 10
 
-        # 4. チケット消費
-        items["装備ガチャチケット"] -= 10
-
-        # 5. 装備10連の実行
+        # 4. 装備10連の実行
         drawn_equipments = draw_10_equipment_gacha()
         user_equipments = u_data.setdefault("equipments", [])
 
@@ -287,13 +283,13 @@ class SoubiGachaView(discord.ui.View):
 
             result_lines.append(f"`{idx:2d}.` {icon} **[{rarity_str}] {name}** ({rarity_tag})")
 
-        # 6. ガチャカウント加算・データ保存・実績呼び出し
+        # 5. ガチャカウント加算・データ保存・実績呼び出し
         u_data["gacha_count"] = u_data.get("gacha_count", 0) + 1
         save_data()
 
         await on_gacha_draw(interaction, u_data)
 
-        # 7. Embed表示
+        # 6. Embed表示
         embed = discord.Embed(
             title="🗡️ 10連装備ガチャ結果！",
             description="\n".join(result_lines),
