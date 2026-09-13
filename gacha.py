@@ -13,12 +13,6 @@ from database import (
 from achievement import on_gacha_draw, check_character_achievements
 from cogs.soubi import EQUIPMENT_MASTER
 
-# ★ 装備ガチャ用データの読み込み（database.py側に未定義の場合の安全対策付き）
-try:
-    from database import EQUIPMENT_GACHA_POOL
-except ImportError:
-    EQUIPMENT_GACHA_POOL = []
-
 # --------------------------------------------------
 # ⚙️ ピックアップ率の設定（database.py側に定義があればそちらを優先）
 # --------------------------------------------------
@@ -201,14 +195,17 @@ class GachaView(discord.ui.View):
 # ==================================================
 
 def draw_10_equipment_gacha():
-    """装備ガチャを10連分抽選する処理"""
-    if not EQUIPMENT_GACHA_POOL:
+    """EQUIPMENT_MASTER から直接10連分抽選し、ユーザー保存用のデータ形式で返す"""
+    if not EQUIPMENT_MASTER:
         return []
 
-    # レアリティに応じた確率の重み付け（★5:5%, ★4:25%, ★3:70%）
+    equip_names = list(EQUIPMENT_MASTER.keys())
     weights = []
-    for equip in EQUIPMENT_GACHA_POOL:
-        rarity = equip.get("rarity", 3)
+
+    # レアリティに応じた確率の重み付け（★5:5%, ★4:25%, ★3:70%）
+    for name in equip_names:
+        data = EQUIPMENT_MASTER[name]
+        rarity = data.get("rarity", 3)
         if rarity == 5 or rarity == "★5":
             weights.append(5)
         elif rarity == 4 or rarity == "★4":
@@ -216,9 +213,17 @@ def draw_10_equipment_gacha():
         else:
             weights.append(70)
 
-    # 重み付きランダムで10個選択（元の辞書を壊さないようcopyする）
-    selected_items = random.choices(EQUIPMENT_GACHA_POOL, weights=weights, k=10)
-    return [item.copy() for item in selected_items]
+    # 重み付きランダムで装備名を10個選択
+    chosen_names = random.choices(equip_names, weights=weights, k=10)
+
+    # 所持データ・表示用に辞書オブジェクト化
+    drawn_items = []
+    for name in chosen_names:
+        master_info = EQUIPMENT_MASTER[name].copy()
+        master_info["name"] = name
+        drawn_items.append(master_info)
+
+    return drawn_items
 
 
 class SoubiGachaView(discord.ui.View):
