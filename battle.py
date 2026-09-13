@@ -7,7 +7,6 @@ from database import get_user_profile, save_data, GACHA_POOL
 from achievement import on_battle_win, on_battle_lose
 
 EVENT_CONFIG = {
-    "name": "【特別イベント】星々の試練",
     # ── 👤 1体モード（単体ボス）の設定 ──
     "single_mode": {
         "title": "【単体】vsカス",
