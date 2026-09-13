@@ -12,6 +12,12 @@ from database import (
 )
 from achievement import on_gacha_draw, check_character_achievements
 
+# ★ 装備ガチャ用データの読み込み（database.py側に未定義の場合の安全対策付き）
+try:
+    from database import EQUIPMENT_GACHA_POOL
+except ImportError:
+    EQUIPMENT_GACHA_POOL = []
+
 # --------------------------------------------------
 # ⚙️ ピックアップ率の設定（database.py側に定義があればそちらを優先）
 # --------------------------------------------------
@@ -22,6 +28,10 @@ except ImportError:
     NEW_PICKUP_BOOST_RATE = 0.30
     BIRTHDAY_PICKUP_BOOST_RATE = 0.30
 
+
+# ==================================================
+# 👤 キャラガチャ用処理
+# ==================================================
 
 def select_character_by_rarity():
     """レア度確率に基づいてキャラを1体抽選する（ピックアップ枠を分離）"""
@@ -47,7 +57,6 @@ def select_character_by_rarity():
     # --------------------------------------------------
     # 4. 🎯 ピックアップ判定（枠を分離）
     # --------------------------------------------------
-    # 当該レア度プール内に存在するピックアップ対象を抽出
     new_pickups_in_pool = [c for c in pool if c.get("name") in NEW_PICKUP_CHARACTERS]
     birthday_pickups_in_pool = [c for c in pool if c.get("name") in PICKUP_CHARACTERS]
 
@@ -58,7 +67,6 @@ def select_character_by_rarity():
         return random.choice(new_pickups_in_pool)
 
     # 🎂 B) バースデーピックアップ判定
-    # （新キャラ判定に漏れた後、次の確率帯でチェック）
     if birthday_pickups_in_pool and rand_val < (NEW_PICKUP_BOOST_RATE + BIRTHDAY_PICKUP_BOOST_RATE):
         return random.choice(birthday_pickups_in_pool)
 
@@ -67,7 +75,7 @@ def select_character_by_rarity():
 
 
 def draw_10_gacha():
-    """10連ガチャを引く処理"""
+    """10連キャラガチャを引く処理"""
     results = []
     for _ in range(10):
         results.append(select_character_by_rarity())
@@ -75,6 +83,7 @@ def draw_10_gacha():
 
 
 class GachaView(discord.ui.View):
+    """キャラガチャ用 View"""
     def __init__(self, user_id):
         super().__init__(timeout=60)
         self.user_id = user_id
@@ -114,7 +123,7 @@ class GachaView(discord.ui.View):
 
             char_name = template.get("name", "")
             
-            # 🎯 ピックアップマークの作成（新実装 🆕 / バースデー 🎂）
+            # 🎯 ピックアップマークの作成
             pickup_marks = ""
             if char_name in NEW_PICKUP_CHARACTERS:
                 pickup_marks += "🆕"
@@ -123,7 +132,7 @@ class GachaView(discord.ui.View):
             if pickup_marks:
                 pickup_marks += " "
 
-            # キャラ固有のiconが設定されていればそれを優先
+            # アイコン指定
             char_icon = template.get("icon")
             if char_icon:
                 rarity_icon = char_icon
@@ -134,13 +143,12 @@ class GachaView(discord.ui.View):
 
             if existing_char:
                 existing_char["count"] = existing_char.get("count", 1) + 1
-                   # 🔴 ステータス加算処理（max_hp, hp, atk）を削除しました
                 status_note = f"[所持数: {existing_char['count']}]"
             else:
                 new_char = {
                     "name": template["name"],
                     "rarity": template.get("rarity", "★3"),
-                      "icon": template.get("icon"),
+                    "icon": template.get("icon"),
                     "count": 1,
                     "level": 1,
                     "exp": 0,
@@ -158,9 +166,7 @@ class GachaView(discord.ui.View):
             # 表示テキストの作成
             result_lines.append(f"{idx}. {pickup_marks}{rarity_icon} **[{template.get('rarity', '★3')}] {char_name}** {status_note}")
 
-        # --------------------------------------------------
         # 🎰 ガチャ実行回数の加算 ＆ 実績チェック
-        # --------------------------------------------------
         u_data["gacha_count"] = u_data.get("gacha_count", 0) + 1
         obtained_names = [t.get("name") for t in drawn_templates if t and t.get("name")]
         
@@ -170,7 +176,7 @@ class GachaView(discord.ui.View):
         await check_character_achievements(interaction, u_data, obtained_names)
 
         embed = discord.Embed(
-            title="🎰 10連ガチャ結果！",
+            title="🎰 10連キャラガチャ結果！",
             description="\n".join(result_lines),
             color=0xFFD700
         )
@@ -187,3 +193,107 @@ class GachaView(discord.ui.View):
     @discord.ui.button(label="ガチャチケ 10枚で10連", style=discord.ButtonStyle.success, emoji="🎫")
     async def draw_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.process_gacha(interaction, "ticket")
+
+
+# ==================================================
+# 🗡️ 装備ガチャ用処理（※単発なし・10連のみ）
+# ==================================================
+
+def draw_10_equipment_gacha():
+    """装備ガチャを10連分抽選する処理"""
+    if not EQUIPMENT_GACHA_POOL:
+        return []
+
+    # レアリティに応じた確率の重み付け（★5:5%, ★4:25%, ★3:70%）
+    weights = []
+    for equip in EQUIPMENT_GACHA_POOL:
+        rarity = equip.get("rarity", 3)
+        if rarity == 5 or rarity == "★5":
+            weights.append(5)
+        elif rarity == 4 or rarity == "★4":
+            weights.append(25)
+        else:
+            weights.append(70)
+
+    # 重み付きランダムで10個選択（元の辞書を壊さないようcopyする）
+    selected_items = random.choices(EQUIPMENT_GACHA_POOL, weights=weights, k=10)
+    return [item.copy() for item in selected_items]
+
+
+class SoubiGachaView(discord.ui.View):
+    """装備ガチャ用 View（10連のみ）"""
+    def __init__(self, user_id):
+        super().__init__(timeout=60)
+        self.user_id = user_id
+
+    @discord.ui.button(label="装備ガチャチケ 10枚で10連", style=discord.ButtonStyle.success, emoji="🎟️")
+    async def draw_equipment_10(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # 1. ユーザーチェック
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message("❌ 他のユーザーのガチャ画面です。", ephemeral=True)
+            return
+
+        # 2. 応答の保留
+        await interaction.response.defer()
+
+        u_data = get_user_profile(self.user_id)
+        items = u_data.setdefault("items", {})
+
+        # 3. コストチェック（10枚必要）
+        ticket_count = items.get("装備ガチャチケット", 0)
+        if ticket_count < 10:
+            await interaction.followup.send(
+                f"❌ 装備ガチャチケットが足りません！（所持: {ticket_count}枚 / 必要: 10枚）", 
+                ephemeral=True
+            )
+            return
+
+        # 4. チケット消費
+        items["装備ガチャチケット"] -= 10
+
+        # 5. 装備10連の実行
+        drawn_equipments = draw_10_equipment_gacha()
+        user_equipments = u_data.setdefault("equipments", [])
+
+        result_lines = []
+        has_ur = False
+
+        for idx, equip in enumerate(drawn_equipments, start=1):
+            name = equip.get("name", "謎の装備")
+            rarity = equip.get("rarity", 3)
+            icon = equip.get("icon", "⚔️")
+
+            # レア度別のテキスト表示調整
+            if rarity == 5 or rarity == "★5":
+                rarity_str = "⭐⭐⭐⭐⭐"
+                rarity_tag = "✨**UR**✨"
+                has_ur = True
+            elif rarity == 4 or rarity == "★4":
+                rarity_str = "⭐⭐⭐⭐"
+                rarity_tag = "🌟SR"
+            else:
+                rarity_str = "⭐⭐⭐"
+                rarity_tag = "R"
+
+            # ユーザーの所持装備リストに追加
+            user_equipments.append(equip)
+
+            result_lines.append(f"`{idx:2d}.` {icon} **[{rarity_str}] {name}** ({rarity_tag})")
+
+        # 6. ガチャカウント加算・データ保存・実績呼び出し
+        u_data["gacha_count"] = u_data.get("gacha_count", 0) + 1
+        save_data()
+
+        await on_gacha_draw(interaction, u_data)
+
+        # 7. Embed表示
+        embed = discord.Embed(
+            title="🗡️ 10連装備ガチャ結果！",
+            description="\n".join(result_lines),
+            color=0xFFD700 if has_ur else 0x3498DB
+        )
+        embed.set_footer(
+            text=f"残高 ｜ 装備ガチャチケット: {items.get('装備ガチャチケット', 0)}枚"
+        )
+
+        await interaction.edit_original_response(embed=embed, view=None)
