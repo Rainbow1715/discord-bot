@@ -119,6 +119,24 @@ ACHIEVEMENTS = {
         "desc": "累計10回バトルで敗北する",
         "reward_rainbow": 350,
     },
+    # --------------------------------------------------
+    # 👹 イベントボス撃破実績
+    # --------------------------------------------------
+    "kill_roi": {
+        "title": "⚔️ カス討伐：ロイ",
+        "desc": "イベント戦で ロイ を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_orihara": {
+        "title": "⚔️ カス討伐：折原和也",
+        "desc": "イベント戦で 折原和也 を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_tatsuya": {
+        "title": "⚔️ カス討伐：神明龍矢",
+        "desc": "イベント戦で 神明龍矢 を撃破する",
+        "reward_rainbow": 1000,
+    },
 }
 
 LOG_CHANNEL_ID = 1547122457062940712
@@ -197,6 +215,24 @@ async def on_battle_lose(interaction: discord.Interaction, u_data: dict):
     await check_and_unlock_achievement(interaction, "first_lose")
     if lose_count >= 10:
         await check_and_unlock_achievement(interaction, "lose_10")
+
+# --------------------------------------------------
+# 👹 イベントボス撃破時の自動実績チェック
+# --------------------------------------------------
+async def check_boss_kill_achievements(interaction: discord.Interaction, defeated_enemy_names: list):
+    """撃破した敵の名前リストを受け取り、ボスごとの実績解除を行う関数"""
+    
+    # ボス名と実績IDのマッピング（敵名の一部が含まれているか判定）
+    boss_mapping = {
+        "ロイ": "kill_roi",
+        "折原和也": "kill_orihara",
+        "神明龍矢": "kill_tatsuya",
+    }
+
+    for boss_name, ach_id in boss_mapping.items():
+        # 今回倒した敵の中にボスの名前が含まれているか
+        if any(boss_name in enemy_name for enemy_name in defeated_enemy_names):
+            await check_and_unlock_achievement(interaction, ach_id)
 
 
 # --------------------------------------------------
