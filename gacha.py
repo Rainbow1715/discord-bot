@@ -239,14 +239,21 @@ class SoubiGachaView(discord.ui.View):
         u_data = get_user_profile(self.user_id)
         items = u_data.setdefault("items", {})
 
-        # 3. コストチェック（10枚必要）
-        ticket_count = items.get("装備ガチャチケット", 0)
-        if ticket_count < 10:
-            await interaction.followup.send(
-                f"❌ 装備ガチャチケットが足りません！（所持: {ticket_count}枚 / 必要: 10枚）", 
-                ephemeral=True
-            )
-            return
+        # 3. コストチェックと消費（虹の欠片 1000個 OR 装備ガチャチケット 10枚）
+        if cost_type == "rainbow":
+            if items.get("虹の欠片", 0) < 1000:
+                await interaction.followup.send("❌ 虹の欠片が足りません！（必要: 1000個）", ephemeral=True)
+                return
+            items["虹の欠片"] -= 1000
+            
+        elif cost_type == "ticket":
+            if items.get("装備ガチャチケット", 0) < 10:
+                await interaction.followup.send(
+                    f"❌ 装備ガチャチケットが足りません！（所持: {items.get('装備ガチャチケット', 0)}枚 / 必要: 10枚）", 
+                    ephemeral=True
+                )
+                return
+            items["装備ガチャチケット"] -= 10
 
         # 4. チケット消費
         items["装備ガチャチケット"] -= 10
