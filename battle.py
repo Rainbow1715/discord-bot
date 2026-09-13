@@ -77,7 +77,7 @@ class Character:
         if equip_name and equip_name in EQUIPMENT_MASTER:
             self.p_hp = EQUIPMENT_MASTER[equip_name].get("p_hp", 0)
 
-    def process_turn_start(() -> str:
+    def process_turn_start(self) -> str:
         """ターン開始時のリジェネ（装備による自動回復）処理"""
         if self.hp > 0 and self.p_hp > 0:
             if self.hp < self.max_hp:
