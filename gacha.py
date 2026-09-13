@@ -11,6 +11,7 @@ from database import (
     save_data
 )
 from achievement import on_gacha_draw, check_character_achievements
+from cogs.soubi import EQUIPMENT_MASTER
 
 # ★ 装備ガチャ用データの読み込み（database.py側に未定義の場合の安全対策付き）
 try:
