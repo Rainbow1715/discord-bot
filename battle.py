@@ -165,28 +165,35 @@ class EventModeSelectView(discord.ui.View):
     @discord.ui.button(label="👤 1体モード（ランダム1体）", style=discord.ButtonStyle.primary, custom_id="mode_single")
     async def select_single(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.stop()
-        await interaction.response.edit_message(content="⚔️ **単体ボス戦** を開始します！", view=None)
-        await execute_battle(interaction, is_event=True, event_mode="single")
+        # ⭕️ 選択ボタンの応答としてDefer（処理中待ち）し、同じメッセージを書き換える
+        await interaction.response.defer()
+        await execute_battle(interaction, is_event=True, event_mode="single", target_message=interaction.message)
 
     @discord.ui.button(label="👹 強敵ラッシュ（最大3体）", style=discord.ButtonStyle.danger, custom_id="mode_multi")
     async def select_multi(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.stop()
-        await interaction.response.edit_message(content="🔥 **複数ボス戦** を開始します！", view=None)
-        await execute_battle(interaction, is_event=True, event_mode="multi")
+        # ⭕️ 選択ボタンの応答としてDefer（処理中待ち）し、同じメッセージを書き換える
+        await interaction.response.defer()
+        await execute_battle(interaction, is_event=True, event_mode="multi", target_message=interaction.message)
 
 
-# ⭕️ 引数に event_mode: str = "single" を追加
-async def execute_battle(interaction: discord.Interaction, is_event: bool = False, event_mode: str = "single"):
+# ⭕️ target_message を受け取るように追加
+async def execute_battle(interaction: discord.Interaction, is_event: bool = False, event_mode: str = "single", target_message: discord.Message = None):
     u_data = get_user_profile(interaction.user.id)
     party = [Character(u_data["characters"][i]) for i in u_data["party_indices"] if i < len(u_data["characters"])]
 
     if not party:
-        await interaction.response.send_message("❌ パーティメンバーがセットされていません。`/party` で編成してください！", ephemeral=True)
+        msg = "❌ パーティメンバーがセットされていません。`/party` で編成してください！"
+        if interaction.response.is_done():
+            await interaction.followup.send(msg, ephemeral=True)
+        else:
+            await interaction.response.send_message(msg, ephemeral=True)
         return
 
     avg_level = sum(p.level for p in party) // len(party)
     enemies = []
     
+    # 👹 敵の生成分岐
     if is_event:
         mode_config = EVENT_CONFIG.get(f"{event_mode}_mode", EVENT_CONFIG.get("single_mode"))
         target_names = mode_config.get("candidates", [])
@@ -274,20 +281,26 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
     enemy_desc = ", ".join([f"**{e.name}**" for e in enemies])
     party_desc = ', '.join([f"**{p.name}** [{p.atk_type}] (Lv.{p.level})" for p in party])
 
-    embed = discord.Embed(
+    start_embed = discord.Embed(
         title=f"⚔️ {title_name} 開始！",
         description=f"立ちはだかる敵: {enemy_desc}\n出撃メンバー: {party_desc}",
         color=0xE74C3C if is_event else 0x3498DB,
     )
-    # ボタン押下後のインタラクション（`edit_message` された応答）に対応するため followups や original_response を考慮
-    await interaction.followup.send(embed=embed)
-    battle_msg = await interaction.original_response()
+
+    # ⭕️ イベントで選択ボタンがある場合は、元のメッセージを更新（Viewも解除）
+    if target_message:
+        battle_msg = target_message
+        await battle_msg.edit(content=None, embed=start_embed, view=None)
+    else:
+        # 通常コマンド実行時は新規送信
+        await interaction.response.send_message(embed=start_embed)
+        battle_msg = await interaction.original_response()
 
     turn = 1
     logs = []
-    
     states = {unit: {"stun": 0, "charm": 0} for unit in party + enemies}
 
+    # ------------------ バトル進行ループ ------------------
     while any(e.hp > 0 for e in enemies) and any(p.hp > 0 for p in party):
         await asyncio.sleep(1.8)
         turn_log = f"**--- ターン {turn} ---**\n"
@@ -366,6 +379,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
     await asyncio.sleep(1.0)
     
+    # ------------------ 勝敗判定 ------------------
     if all(e.hp <= 0 for e in enemies):
         (g_min, g_max), (r_min, r_max), (e_min, e_max) = rewards
         gold_gained = random.randint(g_min, g_max) * enemy_multiplier
