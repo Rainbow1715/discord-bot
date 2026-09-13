@@ -167,7 +167,7 @@ class Character:
 
 
 # --------------------------------------------------
-# ⚔️ バトル共通処理
+# ⚔️ バトル共通処理（複数敵対応・レベル指定＆報酬倍増版）
 # --------------------------------------------------
 async def execute_battle(interaction: discord.Interaction, is_event: bool = False):
     u_data = get_user_profile(interaction.user.id)
@@ -177,10 +177,14 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         await interaction.response.send_message("❌ パーティメンバーがセットされていません。`/party` で編成してください！", ephemeral=True)
         return
 
+    # 平均レベルの算出
     avg_level = sum(p.level for p in party) // len(party)
 
-    # 👹 敵（ボス）の生成
+    enemies = []
+    
+    # 👹 敵の生成分岐
     if is_event:
+        # イベント時はこれまで通り単体強敵ボス
         target_name = EVENT_CONFIG.get("target_gacha_name")
         candidate = None
         if target_name:
@@ -189,8 +193,8 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             candidate = random.choice(GACHA_POOL)
 
         boss_lvl = EVENT_CONFIG.get("boss_level", 100)
-        calculated_hp = int((candidate["hp"] + (boss_lvl * 15)) * EVENT_CONFIG.get("hp_multiplier", 3.0))
-        calculated_atk = int((candidate["atk"] + (boss_lvl * 3)) * EVENT_CONFIG.get("atk_multiplier", 1.0))
+        calculated_hp = int((candidate.get("max_hp", candidate.get("hp", 100)) + (boss_lvl * 15)) * EVENT_CONFIG.get("hp_multiplier", 3.0))
+        calculated_atk = int((candidate.get("atk", 15) + (boss_lvl * 3)) * EVENT_CONFIG.get("atk_multiplier", 1.0))
 
         boss_data = {
             "name": f"【Lv.{boss_lvl}】{candidate['name']}",
@@ -199,6 +203,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             "gender": candidate.get("gender", "？"),
             "atk_type": candidate.get("atk_type", random.choice(["物理", "魔法"])),
             "level": boss_lvl,
+            "max_hp": calculated_hp,
             "hp": calculated_hp,
             "atk": calculated_atk,
             "spd": candidate.get("spd", 10),
@@ -210,37 +215,54 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             "skill_trigger": candidate.get("skill_trigger", "chance"),
             "skill_rate": candidate.get("skill_rate", 35),
         }
+        enemies.append(Character(boss_data, is_boss=True))
         title_name = EVENT_CONFIG["name"]
         rewards = (EVENT_CONFIG["reward_gold"], EVENT_CONFIG["reward_rainbow"], EVENT_CONFIG["reward_exp"])
+        enemy_multiplier = 1  # イベント報酬は倍率固定
     else:
+        # 通常クエスト：平均レベルで出現体を分岐
+        if avg_level >= 40:
+            enemy_count = 3
+        elif avg_level >= 25:
+            enemy_count = 2
+        else:
+            enemy_count = 1
+
         boss_lvl = max(1, avg_level)
-        boss_data = {
-            "name": f"【Lv.{boss_lvl}】野生のモンスター",
-            "icon": "👹",
-            "element": "無",
-            "gender": "？",
-            "atk_type": random.choice(["物理", "魔法"]),
-            "level": boss_lvl,
-            "hp": 80 + (boss_lvl * 25),
-            "atk": 10 + (boss_lvl * 4),
-            "spd": 10,
-            "rec": 0,
-            "skill_name": "なぎ払い",
-            "skill_pow": 15 + (boss_lvl * 2),
-            "skill_type": "normal",
-            "skill_trigger": "chance",
-            "skill_rate": 35
-        }
+        
+        for i in range(enemy_count):
+            enemy_name = "野生のモンスター" if enemy_count == 1 else f"野生のモンスター{chr(65+i)}"
+            enemy_data = {
+                "name": f"【Lv.{boss_lvl}】{enemy_name}",
+                "icon": "👹",
+                "element": "無",
+                "gender": "？",
+                "atk_type": random.choice(["物理", "魔法"]),
+                "level": boss_lvl,
+                "max_hp": 80 + (boss_lvl * 25),
+                "hp": 80 + (boss_lvl * 25),
+                "atk": 10 + (boss_lvl * 4),
+                "spd": 10,
+                "rec": 0,
+                "skill_name": "なぎ払い",
+                "skill_pow": 15 + (boss_lvl * 2),
+                "skill_type": "normal",
+                "skill_trigger": "chance",
+                "skill_rate": 35
+            }
+            enemies.append(Character(enemy_data, is_boss=True))
+            
         title_name = "通常クエスト"
         rewards = ((1000, 3000), (50, 100), (50, 100))
+        enemy_multiplier = enemy_count  # 敵の数だけ報酬倍率をかける！
 
-    boss = Character(boss_data, is_boss=True)
-
+    # 表示用テキストの作成
+    enemy_desc = ", ".join([f"**{e.name}**" for e in enemies])
     party_desc = ', '.join([f"**{p.name}** [{p.atk_type}] (Lv.{p.level})" for p in party])
 
     embed = discord.Embed(
         title=f"⚔️ {title_name} 開始！",
-        description=f"立ちはだかる敵: **{boss.name}** ({boss.gender}) [{boss.atk_type}]\n出撃メンバー: {party_desc}",
+        description=f"立ちはだかる敵: {enemy_desc}\n出撃メンバー: {party_desc}",
         color=0xE74C3C if is_event else 0x3498DB,
     )
     await interaction.response.send_message(embed=embed)
@@ -249,17 +271,19 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
     turn = 1
     logs = []
     
-    states = {boss: {"stun": 0, "charm": 0}}
-    for p in party:
-        states[p] = {"stun": 0, "charm": 0}
+    # 状態異常（魅了・スタン）の初期化
+    states = {}
+    for unit in party + enemies:
+        states[unit] = {"stun": 0, "charm": 0}
 
-    while boss.hp > 0 and any(p.hp > 0 for p in party):
+    # どちらかの陣営が全滅するまでループ
+    while any(e.hp > 0 for e in enemies) and any(p.hp > 0 for p in party):
         await asyncio.sleep(1.8)
         turn_log = f"**--- ターン {turn} ---**\n"
 
         # 1. 味方のターン
         for p in party:
-            if p.hp > 0 and boss.hp > 0:
+            if p.hp > 0 and any(e.hp > 0 for e in enemies):
                 p_state = states[p]
 
                 if p_state["stun"] > 0:
@@ -271,28 +295,32 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
                     p_state["charm"] -= 1
 
                 else:
-                    turn_log += p.action(boss, party, turn, states[boss]) + "\n"
+                    # 生きている敵の中からランダムにターゲット選択
+                    alive_enemies = [e for e in enemies if e.hp > 0]
+                    target_enemy = random.choice(alive_enemies)
+                    turn_log += p.action(target_enemy, party, turn, states[target_enemy]) + "\n"
 
-        # 2. ボスのターン（ボスの回復対象はボス自身のみ）
-        if boss.hp > 0:
-            boss_state = states[boss]
+        # 2. 敵のターン
+        for enemy in enemies:
+            if enemy.hp > 0 and any(p.hp > 0 for p in party):
+                enemy_state = states[enemy]
 
-            if boss_state["stun"] > 0:
-                turn_log += f"💫 **{boss.name}** は動けない！（残り {boss_state['stun']} ターン）\n"
-                boss_state["stun"] -= 1
+                if enemy_state["stun"] > 0:
+                    turn_log += f"💫 **{enemy.name}** は動けない！（残り {enemy_state['stun']} ターン）\n"
+                    enemy_state["stun"] -= 1
 
-            elif boss_state["charm"] > 0:
-                turn_log += f"💖 **{boss.name}** は魅了されてうっとりしている！（残り {boss_state['charm']} ターン）\n"
-                boss_state["charm"] -= 1
+                elif enemy_state["charm"] > 0:
+                    turn_log += f"💖 **{enemy.name}** は魅了されてうっとりしている！（残り {enemy_state['charm']} ターン）\n"
+                    enemy_state["charm"] -= 1
 
-            else:
-                alive_party = [p for p in party if p.hp > 0]
-                if alive_party:
-                    target = random.choice(alive_party)
-                    turn_log += boss.action(target, [boss], turn, states[target]) + "\n"
+                else:
+                    alive_party = [p for p in party if p.hp > 0]
+                    if alive_party:
+                        target_player = random.choice(alive_party)
+                        turn_log += enemy.action(target_player, enemies, turn, states[target_player]) + "\n"
 
-        # ⭕️ 各ターンの最後にバフの持続時間を減らし、期限切れを削除する
-        all_units = party + [boss]
+        # バフ減衰処理
+        all_units = party + enemies
         for unit in all_units:
             active_buffs = []
             for buff in unit.buffs:
@@ -307,8 +335,13 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         if len(logs) > 2:
             logs.pop(0)
 
-        boss_bar = create_smooth_bar(boss.hp / boss.max_hp)
-        status_text = f"\n{boss.icon} **{boss.name}**: HP {boss.hp}/{boss.max_hp} {boss_bar}\n"
+        # ステータス表示構築
+        status_text = "\n"
+        for enemy in enemies:
+            enemy_bar = create_smooth_bar(enemy.hp / enemy.max_hp)
+            status_text += f"{enemy.icon} **{enemy.name}**: HP {enemy.hp}/{enemy.max_hp} {enemy_bar}\n"
+
+        status_text += "-------------------\n"
 
         for p in party:
             p_bar = create_smooth_bar(p.hp / p.max_hp)
@@ -323,11 +356,14 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         turn += 1
 
     await asyncio.sleep(1.0)
-    if boss.hp <= 0:
+    
+    # 勝利判定（敵が全員倒れたか）
+    if all(e.hp <= 0 for e in enemies):
         (g_min, g_max), (r_min, r_max), (e_min, e_max) = rewards
-        gold_gained = random.randint(g_min, g_max)
-        rainbow_gained = random.randint(r_min, r_max)
-        exp_gained = random.randint(e_min, e_max)
+        # 敵の数に応じた倍率 multiplier をかける
+        gold_gained = random.randint(g_min, g_max) * enemy_multiplier
+        rainbow_gained = random.randint(r_min, r_max) * enemy_multiplier
+        exp_gained = random.randint(e_min, e_max) * enemy_multiplier
 
         u_data["gold"] = u_data.get("gold", 0) + gold_gained
         user_items = u_data.setdefault("items", {})
@@ -335,49 +371,45 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
         await on_battle_win(interaction, u_data)
 
-        # --------------------------------------------------
-        # 📈 安全なレベルアップ処理（無限ループ防止）
-        # --------------------------------------------------
-        MAX_LEVEL = 99  # お好みの最大レベルに設定
-
+        # レベルアップ処理
+        MAX_LEVEL = 99
         lvl_up_msgs = []
         for p in party:
             c_data = p.data
-    
-            # すでにカンストしている場合は経験値を加算しない（またはそのまま溜める）
-            if c_data["level"] >= MAX_LEVEL:
+
+            if c_data.get("level", 1) >= MAX_LEVEL:
                 continue
 
             c_data["exp"] = c_data.get("exp", 0) + exp_gained
             leveled_up = False
-    
+
             for _ in range(100):
-                # カンストに達したら即終了
-                if c_data["level"] >= MAX_LEVEL:
-                    c_data["exp"] = 0  # カンスト後の経験値を0にする場合
+                if c_data.get("level", 1) >= MAX_LEVEL:
+                    c_data["exp"] = 0
                     break
 
-                next_exp = c_data["level"] * 100
+                next_exp = c_data.get("level", 1) * 100
                 if c_data["exp"] >= next_exp:
                     c_data["exp"] -= next_exp
-                    c_data["level"] += 1
-                    c_data["max_hp"] = c_data.get("max_hp", 100) + 8
+                    c_data["level"] = c_data.get("level", 1) + 1
+                    c_data["max_hp"] = c_data.get("max_hp", c_data.get("hp", 100)) + 8
                     c_data["hp"] = c_data["max_hp"]
-                    c_data["atk"] = c_data.get("atk", 15) + 3  # ← 安全に加算する
+                    c_data["atk"] = c_data.get("atk", 15) + 3
                     leveled_up = True
                 else:
                     break
-    
+
             if leveled_up:
                 lvl_up_msgs.append(f"🎉 **{c_data['name']}** (Lv.{c_data['level']} にUP!)")
 
         save_data()
         lvl_str = "\n" + "\n".join(lvl_up_msgs) if lvl_up_msgs else ""
+        bonus_str = f" (敵{enemy_multiplier}体討伐ボーナス!)" if enemy_multiplier > 1 else ""
 
         result_embed = discord.Embed(
             title="🎉 VICTORY!",
             description=(
-                f"**{boss.name}** を撃破した！\n\n"
+                f"敵を全滅させた！{bonus_str}\n\n"
                 f"💰 **獲得金**: {gold_gained} G\n"
                 f"💎 **獲得虹の欠片**: {rainbow_gained} 個\n"
                 f"✨ **獲得経験値**: 出撃メンバー全員に {exp_gained} EXP"
