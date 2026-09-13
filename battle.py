@@ -7,7 +7,7 @@ from database import get_user_profile, save_data, GACHA_POOL
 from achievement import on_battle_win, on_battle_lose
 
 EVENT_CONFIG = {
-    "name": "【特別イベント】vsカス",  # ⭕️ キーを追加して KeyError を防止
+    "name": "【特別イベント】vsカス",
     # ── 👤 1体モード（単体ボス）の設定 ──
     "single_mode": {
         "title": "【単体】vsカス",
@@ -34,7 +34,7 @@ EVENT_CONFIG = {
 }
 
 
-def create_smooth_bar(ratio, length=10):
+def create_smooth_bar(ratio: float, length: int = 10) -> str:
     ratio = max(0.0, min(1.0, ratio))
     filled_length = int(length * ratio)
     if ratio > 0 and filled_length == 0:
@@ -45,7 +45,7 @@ def create_smooth_bar(ratio, length=10):
 
 
 class Character:
-    def __init__(self, data_dict, is_boss=False):
+    def __init__(self, data_dict: dict, is_boss: bool = False):
         self.data = data_dict
         self.name = data_dict.get("name", "謎の敵")
         self.icon = data_dict.get("icon", "👤")
@@ -70,14 +70,14 @@ class Character:
         self.is_boss = is_boss
         self.buffs = []
 
-    def get_effective_atk(self):
+    def get_effective_atk(self) -> int:
         atk_multiplier = 1.0
         for buff in self.buffs:
             if buff.get("type") == "atk_up":
                 atk_multiplier += buff.get("value", 0.0)
         return int(self.atk * atk_multiplier)
 
-    def should_use_skill(self, current_turn):
+    def should_use_skill(self, current_turn: int) -> bool:
         trigger = self.skill_trigger
         if trigger == "always":
             return True
@@ -96,7 +96,7 @@ class Character:
         else:
             return random.randint(1, 100) <= self.skill_rate
 
-    def action(self, target, party, current_turn, target_state):
+    def action(self, target, party, current_turn: int, target_state: dict) -> str:
         type_icon = "⚔️" if self.atk_type == "物理" else "🔮"
         current_atk = self.get_effective_atk()
 
@@ -140,7 +140,7 @@ class Character:
                     return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし **{target.name}** には効かなかった！"
 
             else:
-                pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15
+                pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15.0
                 dmg = int(pow_val + current_atk + random.randint(-3, 3))
                 dmg = max(1, dmg)
                 target.hp = max(0, target.hp - dmg)
@@ -165,19 +165,16 @@ class EventModeSelectView(discord.ui.View):
     @discord.ui.button(label="👤 1体モード（ランダム1体）", style=discord.ButtonStyle.primary, custom_id="mode_single")
     async def select_single(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.stop()
-        # ⭕️ 選択ボタンの応答としてDefer（処理中待ち）し、同じメッセージを書き換える
         await interaction.response.defer()
         await execute_battle(interaction, is_event=True, event_mode="single", target_message=interaction.message)
 
     @discord.ui.button(label="👹 強敵ラッシュ（最大3体）", style=discord.ButtonStyle.danger, custom_id="mode_multi")
     async def select_multi(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.stop()
-        # ⭕️ 選択ボタンの応答としてDefer（処理中待ち）し、同じメッセージを書き換える
         await interaction.response.defer()
         await execute_battle(interaction, is_event=True, event_mode="multi", target_message=interaction.message)
 
 
-# ⭕️ target_message を受け取るように追加
 async def execute_battle(interaction: discord.Interaction, is_event: bool = False, event_mode: str = "single", target_message: discord.Message = None):
     u_data = get_user_profile(interaction.user.id)
     party = [Character(u_data["characters"][i]) for i in u_data["party_indices"] if i < len(u_data["characters"])]
@@ -287,12 +284,11 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         color=0xE74C3C if is_event else 0x3498DB,
     )
 
-    # ⭕️ イベントで選択ボタンがある場合は、元のメッセージを更新（Viewも解除）
+    # ⭕️ メッセージの取得/送信用ハンドリング
     if target_message:
         battle_msg = target_message
         await battle_msg.edit(content=None, embed=start_embed, view=None)
     else:
-        # 通常コマンド実行時は新規送信
         await interaction.response.send_message(embed=start_embed)
         battle_msg = await interaction.original_response()
 
@@ -447,9 +443,9 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             description="全滅してしまった...",
             color=0xFF0000,
         )
-
-    # ⭕️ 既存メッセージの上書きではなく、新規メッセージとして送信
-    await interaction.followup.send(embed=result_embed)
+        
+    await asyncio.sleep(0.5)
+    await interaction.channel.send(embed=result_embed)
 
 
 class BattleCog(commands.Cog):
@@ -460,8 +456,7 @@ class BattleCog(commands.Cog):
     async def battle(self, interaction: discord.Interaction):
         await execute_battle(interaction, is_event=False)
 
-    # ⭕️ クラス内のメソッド定義とインデントを修正（selfを追加）
-    @app_commands.command(name="battle_event", description="【9月イベ vsカス】強力なカスに挑みます！")
+    @app_commands.command(name="battle_event", description="【特別イベント】強力な敵に挑みます！")
     async def event_battle_cmd(self, interaction: discord.Interaction):
         view = EventModeSelectView(user_id=interaction.user.id)
         embed = discord.Embed(
