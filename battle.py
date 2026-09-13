@@ -53,6 +53,7 @@ class Character:
         self.element = data_dict.get("element", "無")
         self.gender = data_dict.get("gender", "不明")
         self.atk_type = data_dict.get("atk_type", "物理")
+        self.role = data_dict.get("role", "アタッカー")
         
         self.level = data_dict.get("level", 1)
         self.max_hp = data_dict.get("max_hp", data_dict.get("hp", 100))
@@ -76,6 +77,23 @@ class Character:
         equip_name = data_dict.get("equip")
         if equip_name and equip_name in EQUIPMENT_MASTER:
             self.p_hp = EQUIPMENT_MASTER[equip_name].get("p_hp", 0)
+
+    # 🛡️ ヘイト（狙われやすさ）を考慮したターゲット選択
+    def select_target(self, candidates: list):
+        """生存している対象から、ディフェンダーを優先して1体選ぶ"""
+        if not candidates:
+            return None
+
+        # 重み付けリストの作成（ディフェンダーは確率5倍、その他は1）
+        weights = []
+        for target in candidates:
+            if target.role in ["ディフェンダー", "defender"]:
+                weights.append(6)  # 狙われやすさ倍率（好みに応じて変更可能）
+            else:
+                weights.append(1)
+
+        # 重みに基づいてランダム選択
+        return random.choices(candidates, weights=weights, k=1)[0]
 
     def process_turn_start(self) -> str:
         """ターン開始時のリジェネ（装備による自動回復）処理"""
