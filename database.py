@@ -416,8 +416,8 @@ DEFAULT_CHARACTERS = [
 ]
 
 # 装備！！！！！
-EQUIPMENT_GACHA_POOL = {
-    "name": "鉄の剣", "rarity": 3, "icon": "🗡️", "atk_bonus": 15, "hp_bonus": 0, "desc": "一般的な鉄製の剣。"},
+# EQUIPMENT_GACHA_POOL = {
+#     "name": "鉄の剣", "rarity": 3, "icon": "🗡️", "atk_bonus": 15, "hp_bonus": 0, "desc": "一般的な鉄製の剣。"},
 
 EQUIPMENT_GACHA_POOL = {
     "なんか強そうな棒": {"icon": ""},
@@ -428,7 +428,10 @@ EQUIPMENT_GACHA_POOL = {
     "子供用カメラ": {"icon": ""},
     "ハリセン": {"icon": ""},
     "学校の箒": {"icon": ""},
-    
+    "鏡": {"icon": ""},
+    "怪しい試験管": {"icon": ""},
+    "酒瓶": {"icon": ""},
+}
 
 
 
