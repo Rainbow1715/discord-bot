@@ -6,9 +6,11 @@ from discord.ext import commands
 from database import get_user_profile, save_data, GACHA_POOL
 from achievement import on_battle_win, on_battle_lose
 
+# 🗡️ 装備マスタをインポート
+from cogs.soubi import EQUIPMENT_MASTER
+
 EVENT_CONFIG = {
     "name": "【特別イベント】vsカス",
-    # ── 👤 1体モード（単体ボス）の設定 ──
     "single_mode": {
         "title": "【単体】vsカス",
         "candidates": ["ロイ", "折原和也", "神明龍矢"],
@@ -19,7 +21,6 @@ EVENT_CONFIG = {
         "reward_rainbow": (2000, 3000),
         "reward_exp": (2000, 3000),
     },
-    # ── 👹 複数体モード（ラッシュボス）の設定 ──
     "multi_mode": {
         "title": "【狂乱】カス三人衆を連れてきたよ。",
         "candidates": ["ロイ", "折原和也", "神明龍矢"],
@@ -69,6 +70,22 @@ class Character:
 
         self.is_boss = is_boss
         self.buffs = []
+
+        # 🗡️ 装備品から p_hp (毎ターン回復量) を読み込み
+        self.p_hp = 0
+        equip_name = data_dict.get("equip")
+        if equip_name and equip_name in EQUIPMENT_MASTER:
+            self.p_hp = EQUIPMENT_MASTER[equip_name].get("p_hp", 0)
+
+    def process_turn_start(() -> str:
+        """ターン開始時のリジェネ（装備による自動回復）処理"""
+        if self.hp > 0 and self.p_hp > 0:
+            if self.hp < self.max_hp:
+                old_hp = self.hp
+                self.hp = min(self.max_hp, self.hp + self.p_hp)
+                healed = self.hp - old_hp
+                return f"💚 **{self.name}** は装備効果で HP が **{healed}** 回復した！\n"
+        return ""
 
     def get_effective_atk(self) -> int:
         atk_multiplier = 1.0
@@ -284,7 +301,6 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         color=0xE74C3C if is_event else 0x3498DB,
     )
 
-    # ⭕️ メッセージの取得/送信用ハンドリング
     if target_message:
         battle_msg = target_message
         await battle_msg.edit(content=None, embed=start_embed, view=None)
@@ -304,6 +320,9 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         # 1. 味方のターン
         for p in party:
             if p.hp > 0 and any(e.hp > 0 for e in enemies):
+                # 💚 ターン開始時のリジェネ（自動回復）処理を追加
+                turn_log += p.process_turn_start()
+
                 p_state = states[p]
 
                 if p_state["stun"] > 0:
@@ -322,6 +341,9 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         # 2. 敵のターン
         for enemy in enemies:
             if enemy.hp > 0 and any(p.hp > 0 for p in party):
+                # 💚 敵側の自動回復（装備している場合）
+                turn_log += enemy.process_turn_start()
+
                 enemy_state = states[enemy]
 
                 if enemy_state["stun"] > 0:
