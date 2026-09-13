@@ -410,6 +410,12 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
         await on_battle_win(interaction, u_data)
 
+        # 👑 イベント戦かつ勝利した場合、撃破したボスの実績チェックを実行
+        if is_event:
+            defeated_names = [e.name for e in enemies]
+            await check_boss_kill_achievements(interaction, defeated_names)
+
+
         MAX_LEVEL = 99
         lvl_up_msgs = []
         for p in party:
