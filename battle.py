@@ -456,7 +456,7 @@ class BattleCog(commands.Cog):
     async def battle(self, interaction: discord.Interaction):
         await execute_battle(interaction, is_event=False)
 
-    @app_commands.command(name="battle_event", description="【特別イベント】強力な敵に挑みます！")
+    @app_commands.command(name="battle_event", description="【9月イベ vsカス】強力なカスに挑みます！")
     async def event_battle_cmd(self, interaction: discord.Interaction):
         view = EventModeSelectView(user_id=interaction.user.id)
         embed = discord.Embed(
