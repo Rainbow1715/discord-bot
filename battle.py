@@ -6,18 +6,31 @@ from discord.ext import commands
 from database import get_user_profile, save_data, GACHA_POOL
 from achievement import on_battle_win, on_battle_lose
 
-# --------------------------------------------------
-# 🎪 イベントステージ設定
-# --------------------------------------------------
 EVENT_CONFIG = {
-    "name": "【特別イベント】強敵襲来！",
-    "target_gacha_name": "ロイ",
-    "boss_level": 100,
-    "hp_multiplier": 5.0,
-    "atk_multiplier": 1.2,
-    "reward_gold": (5000, 10000),
-    "reward_rainbow": (200, 500),
-    "reward_exp": (200, 400),
+    "name": "【特別イベント】星々の試練",
+    # ── 👤 1体モード（単体ボス）の設定 ──
+    "single_mode": {
+        "title": "【単体】vsカス",
+        "candidates": ["ロイ", "折原和也", "神明龍矢"],  # この中から1体ランダム
+        "boss_level": 80,
+        "hp_multiplier": 3.0,
+        "atk_multiplier": 1.0,
+        "reward_gold": (5000, 8000),
+        "reward_rainbow": (2000, 3000),
+        "reward_exp": (2000, 3000),
+    },
+    # ── 👹 複数体モード（ラッシュボス）の設定 ──
+    "multi_mode": {
+        "title": "【狂乱】カス三人衆を連れてきたよ。",
+        "candidates": ["ロイ", "折原和也", "神明龍矢"], # 4体以上あればランダム3体選出
+        "max_spawn": 3,  # 出現させる数（3〜4体など）
+        "boss_level": 100,
+        "hp_multiplier": 2.5,
+        "atk_multiplier": 1.1,
+        "reward_gold": (8000, 15000),
+        "reward_rainbow": (3000, 6000),
+        "reward_exp": (3000, 5000),
+    }
 }
 
 
