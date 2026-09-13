@@ -323,3 +323,57 @@ class SoubiGachaView(discord.ui.View):
     @discord.ui.button(label="装備ガチャチケ 10枚で10連", style=discord.ButtonStyle.success, emoji="🎟️")
     async def draw_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.process_gacha(interaction, "ticket")
+
+# ==================================================
+# 🎰 ガチャ選択用メイン View
+# ==================================================
+
+class GachaMainView(discord.ui.View):
+    """キャラガチャ・装備ガチャを選択する画面"""
+    def __init__(self, user_id: int):
+        super().__init__(timeout=120)
+        self.user_id = user_id
+
+    @discord.ui.button(label="👤 キャラガチャへ", style=discord.ButtonStyle.primary, emoji="🎰")
+    async def go_chara_gacha(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message("❌ 他のユーザーの操作画面です。", ephemeral=True)
+            return
+        
+        u_data = get_user_profile(self.user_id)
+        items = u_data.get("items", {})
+
+        view = GachaView(self.user_id)
+        embed = discord.Embed(
+            title="🎰 キャラクター召喚（10連ガチャ）",
+            description=(
+                "10連ガチャを回して新しい仲間を獲得できます！\n\n"
+                f"💎 **所持 虹の欠片**: {items.get('虹の欠片', 0)} 個 (必要: 1000個)\n"
+                f"🎫 **所持 ガチャチケ**: {items.get('ガチャチケ', 0)} 枚 (必要: 10枚)\n\n"
+                "👇 下のボタンを押してガチャを回してください。"
+            ),
+            color=0x9B59B6
+        )
+        await interaction.response.edit_message(embed=embed, view=view)
+
+    @discord.ui.button(label="🗡️ 装備ガチャへ", style=discord.ButtonStyle.success, emoji="⚔️")
+    async def go_soubi_gacha(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message("❌ 他のユーザーの操作画面です。", ephemeral=True)
+            return
+        
+        u_data = get_user_profile(self.user_id)
+        items = u_data.get("items", {})
+
+        view = SoubiGachaView(self.user_id)
+        embed = discord.Embed(
+            title="🗡️ 装備召喚（10連ガチャ）",
+            description=(
+                "10連ガチャを回して強力な装備を獲得できます！\n\n"
+                f"💎 **所持 虹の欠片**: {items.get('虹の欠片', 0)} 個 (必要: 1000個)\n"
+                f"🎟️ **所持 装備ガチャチケ**: {items.get('装備ガチャチケット', 0)} 枚 (必要: 10枚)\n\n"
+                "👇 下のボタンを押してガチャを回してください。"
+            ),
+            color=0x3498DB
+        )
+        await interaction.response.edit_message(embed=embed, view=view)
