@@ -285,7 +285,14 @@ class SoubiGachaView(discord.ui.View):
                 rarity_tag = "R"
 
             # ユーザーの所持装備リストに追加
-            user_equipments.append(equip)
+            user_equipments.append({
+                "name": name,
+                "rarity": rarity,
+                "icon": icon,
+                "atk": equip.get("atk", 0),
+                "description": equip.get("description", ""),
+                # 必要に応じて level: 1 や exp: 0 などを初期化
+            })
 
             result_lines.append(f"`{idx:2d}.` {icon} **[{rarity_str}] {name}** ({rarity_tag})")
 
