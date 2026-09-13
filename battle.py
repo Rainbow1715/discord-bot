@@ -446,7 +446,7 @@ class BattleCog(commands.Cog):
         await execute_battle(interaction, is_event=False)
 
     # ⭕️ クラス内のメソッド定義とインデントを修正（selfを追加）
-    @app_commands.command(name="battle_event", description="【9月イベ/vsカス】強力なボスに挑みます！")
+    @app_commands.command(name="battle_event", description="【9月イベ vsカス】強力なカスに挑みます！")
     async def event_battle_cmd(self, interaction: discord.Interaction):
         view = EventModeSelectView(user_id=interaction.user.id)
         embed = discord.Embed(
