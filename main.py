@@ -54,6 +54,7 @@ class MyBot(commands.Bot):
             "cogs.reactions",
             "battle",
             "cogs.use",
+            "cogs.soubi"
         ]
 
         for cog in cogs:
