@@ -7,10 +7,11 @@ from database import get_user_profile, save_data, GACHA_POOL
 from achievement import on_battle_win, on_battle_lose
 
 EVENT_CONFIG = {
+    "name": "【特別イベント】vsカス",  # ⭕️ キーを追加して KeyError を防止
     # ── 👤 1体モード（単体ボス）の設定 ──
     "single_mode": {
         "title": "【単体】vsカス",
-        "candidates": ["ロイ", "折原和也", "神明龍矢"],  # この中から1体ランダム
+        "candidates": ["ロイ", "折原和也", "神明龍矢"],
         "boss_level": 80,
         "hp_multiplier": 3.0,
         "atk_multiplier": 1.0,
@@ -21,8 +22,8 @@ EVENT_CONFIG = {
     # ── 👹 複数体モード（ラッシュボス）の設定 ──
     "multi_mode": {
         "title": "【狂乱】カス三人衆を連れてきたよ。",
-        "candidates": ["ロイ", "折原和也", "神明龍矢"], # 4体以上あればランダム3体選出
-        "max_spawn": 3,  # 出現させる数（3〜4体など）
+        "candidates": ["ロイ", "折原和也", "神明龍矢"],
+        "max_spawn": 3,
         "boss_level": 100,
         "hp_multiplier": 2.5,
         "atk_multiplier": 1.1,
@@ -33,9 +34,6 @@ EVENT_CONFIG = {
 }
 
 
-# --------------------------------------------------
-# ⚖️ 補助関数
-# --------------------------------------------------
 def create_smooth_bar(ratio, length=10):
     ratio = max(0.0, min(1.0, ratio))
     filled_length = int(length * ratio)
@@ -46,20 +44,13 @@ def create_smooth_bar(ratio, length=10):
     return filled_bar + empty_bar
 
 
-# --------------------------------------------------
-# 👤 キャラクタークラス
-# --------------------------------------------------
 class Character:
     def __init__(self, data_dict, is_boss=False):
         self.data = data_dict
         self.name = data_dict.get("name", "謎の敵")
         self.icon = data_dict.get("icon", "👤")
         self.element = data_dict.get("element", "無")
-        
-        # 👫 性別（未設定の場合は "不明"）
         self.gender = data_dict.get("gender", "不明")
-        
-        # ⚔️ 攻撃タイプ（物理 / 魔法）
         self.atk_type = data_dict.get("atk_type", "物理")
         
         self.level = data_dict.get("level", 1)
@@ -69,24 +60,16 @@ class Character:
         self.spd = data_dict.get("spd", 10)
         self.rec = data_dict.get("rec", 0)
         
-        # スキル関連パラメータ
         self.skill_name = data_dict.get("skill_name", "通常攻撃")
         self.skill_pow = data_dict.get("skill_pow", 1.0)
         self.skill_type = data_dict.get("skill_type", "normal")
-        
-        # 💖 魅了の対象（"女", "男", "ALL" など。未設定なら "ALL"）
         self.charm_target = data_dict.get("charm_target", "ALL")
-        
-        # ⏱️ キャラ個別の発動タイミング & 発動率設定
         self.skill_trigger = data_dict.get("skill_trigger", "chance")
         self.skill_rate = data_dict.get("skill_rate", 35)
 
         self.is_boss = is_boss
-
-        # ⭕️ バフ保持用のリストを追記
         self.buffs = []
 
-    # ⭕️ バフ込みの攻撃力を計算するメソッドを追加
     def get_effective_atk(self):
         atk_multiplier = 1.0
         for buff in self.buffs:
@@ -95,9 +78,7 @@ class Character:
         return int(self.atk * atk_multiplier)
 
     def should_use_skill(self, current_turn):
-        """キャラ設定に基づいてスキルを発動するかどうか判定する"""
         trigger = self.skill_trigger
-        
         if trigger == "always":
             return True
         elif trigger == "first_turn":
@@ -117,11 +98,9 @@ class Character:
 
     def action(self, target, party, current_turn, target_state):
         type_icon = "⚔️" if self.atk_type == "物理" else "🔮"
-        current_atk = self.get_effective_atk() # ⭕️ バフ込みの攻撃力を取得
+        current_atk = self.get_effective_atk()
 
-        # スキル発動判定
         if self.should_use_skill(current_turn):
-            # ① 全体回復スキル
             if self.skill_type == "heal_all":
                 healed_names = []
                 for p in party:
@@ -132,7 +111,6 @@ class Character:
                     return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(healed_names)}** のHPが回復した！"
                 return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし効果がなかった！"
 
-            # ⭕️ 新規追加：全体攻撃力バフスキル
             elif self.skill_type == "buff_all_atk":
                 boost_rate = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 0.20
                 buff_target_party = party if not self.is_boss else [self]
@@ -143,20 +121,17 @@ class Character:
                         buffed_names.append(member.name)
                 percent = int(boost_rate * 100)
                 return f"🔥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(buffed_names)}** の攻撃力が3ターンの間 **{percent}%** アップ！"
-            
-            # ② 物理特化ダメージ
+
             elif self.skill_type == "physical":
                 dmg = int(self.skill_pow + (current_atk * 0.5))
                 dmg = max(1, dmg)
                 target.hp = max(0, target.hp - dmg)
                 return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
 
-            # ③ スタン（2ターン行動不能）
             elif self.skill_type == "stun":
                 target_state["stun"] = 2
                 return f"🌀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は動揺して **2ターン行動不能** になった！"
 
-            # ④ 💖 魅了（対象の性別判定を追加）
             elif self.skill_type == "charm":
                 if self.charm_target == "ALL" or target.gender == self.charm_target:
                     target_state["charm"] = 3
@@ -164,7 +139,6 @@ class Character:
                 else:
                     return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし **{target.name}** には効かなかった！"
 
-            # ⑤ 通常の単体攻撃スキル
             else:
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15
                 dmg = int(pow_val + current_atk + random.randint(-3, 3))
@@ -172,17 +146,16 @@ class Character:
                 target.hp = max(0, target.hp - dmg)
                 return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
         else:
-            # 通常攻撃
             dmg = max(1, current_atk + random.randint(-2, 2))
             target.hp = max(0, target.hp - dmg)
             return f"{type_icon} {self.icon} **{self.name}** の{self.atk_type}攻撃！ **{target.name}** に **{dmg}** ダメージ！"
+
 
 class EventModeSelectView(discord.ui.View):
     def __init__(self, user_id: int):
         super().__init__(timeout=60)
         self.user_id = user_id
 
-    # ボタンを押した人以外が反応できないようにチェック
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.user_id:
             await interaction.response.send_message("❌ 他のプレイヤーの選択パネルです。", ephemeral=True)
@@ -192,21 +165,18 @@ class EventModeSelectView(discord.ui.View):
     @discord.ui.button(label="👤 1体モード（ランダム1体）", style=discord.ButtonStyle.primary, custom_id="mode_single")
     async def select_single(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.stop()
-        # メッセージを更新してバトル開始
         await interaction.response.edit_message(content="⚔️ **単体ボス戦** を開始します！", view=None)
         await execute_battle(interaction, is_event=True, event_mode="single")
 
     @discord.ui.button(label="👹 強敵ラッシュ（最大3体）", style=discord.ButtonStyle.danger, custom_id="mode_multi")
     async def select_multi(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.stop()
-        # メッセージを更新してバトル開始
         await interaction.response.edit_message(content="🔥 **複数ボス戦** を開始します！", view=None)
         await execute_battle(interaction, is_event=True, event_mode="multi")
-        
-# --------------------------------------------------
-# ⚔️ バトル共通処理（複数敵対応・レベル指定＆報酬倍増版）
-# --------------------------------------------------
-async def execute_battle(interaction: discord.Interaction, is_event: bool = False):
+
+
+# ⭕️ 引数に event_mode: str = "single" を追加
+async def execute_battle(interaction: discord.Interaction, is_event: bool = False, event_mode: str = "single"):
     u_data = get_user_profile(interaction.user.id)
     party = [Character(u_data["characters"][i]) for i in u_data["party_indices"] if i < len(u_data["characters"])]
 
@@ -214,35 +184,26 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         await interaction.response.send_message("❌ パーティメンバーがセットされていません。`/party` で編成してください！", ephemeral=True)
         return
 
-    # 平均レベルの算出
     avg_level = sum(p.level for p in party) // len(party)
     enemies = []
     
-    # 👹 敵の生成分岐
     if is_event:
-        # モードに応じた設定を取得
         mode_config = EVENT_CONFIG.get(f"{event_mode}_mode", EVENT_CONFIG.get("single_mode"))
         target_names = mode_config.get("candidates", [])
 
-        # ガチャプールから該当する候補を取得
         boss_candidates = [c for c in GACHA_POOL if c["name"] in target_names]
         if not boss_candidates:
             boss_candidates = GACHA_POOL.copy()
 
-        # 出現体数の決定
         if event_mode == "single":
             spawn_count = 1
         else:
-            # multiモード：指定数（デフォルト3）または候補数の少ない方を採用
             max_spawn = mode_config.get("max_spawn", 3)
             spawn_count = min(len(boss_candidates), max_spawn)
 
-        # 重複なしでランダム選出
         selected_candidates = random.sample(boss_candidates, k=spawn_count)
-
         boss_lvl = mode_config.get("boss_level", 100)
 
-        # ボスの生成
         for i, candidate in enumerate(selected_candidates):
             calculated_hp = int((candidate.get("max_hp", candidate.get("hp", 100)) + (boss_lvl * 15)) * mode_config.get("hp_multiplier", 3.0))
             calculated_atk = int((candidate.get("atk", 15) + (boss_lvl * 3)) * mode_config.get("atk_multiplier", 1.0))
@@ -272,10 +233,9 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
         title_name = mode_config.get("title", EVENT_CONFIG["name"])
         rewards = (mode_config["reward_gold"], mode_config["reward_rainbow"], mode_config["reward_exp"])
-        enemy_multiplier = spawn_count  # 敵の数に応じた報酬倍率
+        enemy_multiplier = spawn_count
 
     else:
-        # 通常クエスト：平均レベルで出現体を分岐
         if avg_level >= 40:
             enemy_count = 3
         elif avg_level >= 25:
@@ -309,9 +269,8 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             
         title_name = "通常クエスト"
         rewards = ((1000, 3000), (50, 100), (50, 100))
-        enemy_multiplier = enemy_count  # 敵の数だけ報酬倍率をかける！
+        enemy_multiplier = enemy_count
 
-    # 表示用テキストの作成
     enemy_desc = ", ".join([f"**{e.name}**" for e in enemies])
     party_desc = ', '.join([f"**{p.name}** [{p.atk_type}] (Lv.{p.level})" for p in party])
 
@@ -320,18 +279,15 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         description=f"立ちはだかる敵: {enemy_desc}\n出撃メンバー: {party_desc}",
         color=0xE74C3C if is_event else 0x3498DB,
     )
-    await interaction.response.send_message(embed=embed)
+    # ボタン押下後のインタラクション（`edit_message` された応答）に対応するため followups や original_response を考慮
+    await interaction.followup.send(embed=embed)
     battle_msg = await interaction.original_response()
 
     turn = 1
     logs = []
     
-    # 状態異常（魅了・スタン）の初期化
-    states = {}
-    for unit in party + enemies:
-        states[unit] = {"stun": 0, "charm": 0}
+    states = {unit: {"stun": 0, "charm": 0} for unit in party + enemies}
 
-    # どちらかの陣営が全滅するまでループ
     while any(e.hp > 0 for e in enemies) and any(p.hp > 0 for p in party):
         await asyncio.sleep(1.8)
         turn_log = f"**--- ターン {turn} ---**\n"
@@ -350,7 +306,6 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
                     p_state["charm"] -= 1
 
                 else:
-                    # 生きている敵の中からランダムにターゲット選択
                     alive_enemies = [e for e in enemies if e.hp > 0]
                     target_enemy = random.choice(alive_enemies)
                     turn_log += p.action(target_enemy, party, turn, states[target_enemy]) + "\n"
@@ -390,7 +345,6 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         if len(logs) > 2:
             logs.pop(0)
 
-        # ステータス表示構築
         status_text = "\n"
         for enemy in enemies:
             enemy_bar = create_smooth_bar(enemy.hp / enemy.max_hp)
@@ -412,10 +366,8 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
     await asyncio.sleep(1.0)
     
-    # 勝利判定（敵が全員倒れたか）
     if all(e.hp <= 0 for e in enemies):
         (g_min, g_max), (r_min, r_max), (e_min, e_max) = rewards
-        # 敵の数に応じた倍率 multiplier をかける
         gold_gained = random.randint(g_min, g_max) * enemy_multiplier
         rainbow_gained = random.randint(r_min, r_max) * enemy_multiplier
         exp_gained = random.randint(e_min, e_max) * enemy_multiplier
@@ -426,7 +378,6 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
         await on_battle_win(interaction, u_data)
 
-        # レベルアップ処理
         MAX_LEVEL = 99
         lvl_up_msgs = []
         for p in party:
@@ -486,9 +437,6 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
     await battle_msg.edit(embed=result_embed)
 
 
-# --------------------------------------------------
-# 💬 Cog（コマンド登録）
-# --------------------------------------------------
 class BattleCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -497,16 +445,16 @@ class BattleCog(commands.Cog):
     async def battle(self, interaction: discord.Interaction):
         await execute_battle(interaction, is_event=False)
 
+    # ⭕️ クラス内のメソッド定義とインデントを修正（selfを追加）
     @app_commands.command(name="battle_event", description="【9月イベ/vsカス】強力なボスに挑みます！")
-   async def event_battle_cmd(interaction: discord.Interaction):
-    # 選択用のボタンを表示
-    view = EventModeSelectView(user_id=interaction.user.id)
-    embed = discord.Embed(
-        title=f"🎪 {EVENT_CONFIG['name']}",
-        description="挑む難易度（モード）を選択してください！",
-        color=0xE74C3C
-    )
-    await interaction.response.send_message(embed=embed, view=view)
+    async def event_battle_cmd(self, interaction: discord.Interaction):
+        view = EventModeSelectView(user_id=interaction.user.id)
+        embed = discord.Embed(
+            title=f"🎪 {EVENT_CONFIG['name']}",
+            description="挑む難易度（モード）を選択してください！",
+            color=0xE74C3C
+        )
+        await interaction.response.send_message(embed=embed, view=view)
 
 
 async def setup(bot):
