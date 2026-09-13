@@ -448,7 +448,8 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             color=0xFF0000,
         )
 
-    await battle_msg.edit(embed=result_embed)
+    # ⭕️ 既存メッセージの上書きではなく、新規メッセージとして送信
+    await interaction.channel.send(embed=result_embed)
 
 
 class BattleCog(commands.Cog):
