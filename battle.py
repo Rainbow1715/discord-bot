@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from database import get_user_profile, save_data, GACHA_POOL
-from achievement import on_battle_win, on_battle_lose
+from achievement import on_battle_win, on_battle_lose, check_boss_kill_achievements
 
 # 🗡️ 装備マスタをインポート
 from cogs.soubi import EQUIPMENT_MASTER
