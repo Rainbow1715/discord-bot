@@ -300,7 +300,17 @@ class SoubiGachaView(discord.ui.View):
             color=0xFFD700 if has_ur else 0x3498DB
         )
         embed.set_footer(
-            text=f"残高 ｜ 装備ガチャチケット: {items.get('装備ガチャチケット', 0)}枚"
+            text=f"残高 ｜ 虹の欠片: {items.get('虹の欠片', 0)}個 / 装備ガチャチケット: {items.get('装備ガチャチケット', 0)}枚"
         )
 
         await interaction.edit_original_response(embed=embed, view=None)
+
+    # 💎 虹の欠片ボタン
+    @discord.ui.button(label="虹の欠片 1000個で10連", style=discord.ButtonStyle.primary, emoji="💎")
+    async def draw_rainbow(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.process_gacha(interaction, "rainbow")
+
+    # 🎟️ 装備ガチャチケットボタン
+    @discord.ui.button(label="装備ガチャチケ 10枚で10連", style=discord.ButtonStyle.success, emoji="🎟️")
+    async def draw_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.process_gacha(interaction, "ticket")
