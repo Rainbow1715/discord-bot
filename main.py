@@ -4,7 +4,7 @@ import os
 import admin
 from aiohttp import web
 from database import GACHA_POOL, get_user_profile, save_data, user_data
-from gacha import GachaView
+from gacha import GachaMainView, GachaView
 from shop import ShopView
 
 import discord
