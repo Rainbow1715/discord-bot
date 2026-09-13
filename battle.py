@@ -178,7 +178,32 @@ class Character:
             target.hp = max(0, target.hp - dmg)
             return f"{type_icon} {self.icon} **{self.name}** の{self.atk_type}攻撃！ **{target.name}** に **{dmg}** ダメージ！"
 
+class EventModeSelectView(discord.ui.View):
+    def __init__(self, user_id: int):
+        super().__init__(timeout=60)
+        self.user_id = user_id
 
+    # ボタンを押した人以外が反応できないようにチェック
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message("❌ 他のプレイヤーの選択パネルです。", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="👤 1体モード（ランダム1体）", style=discord.ButtonStyle.primary, custom_id="mode_single")
+    async def select_single(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.stop()
+        # メッセージを更新してバトル開始
+        await interaction.response.edit_message(content="⚔️ **単体ボス戦** を開始します！", view=None)
+        await execute_battle(interaction, is_event=True, event_mode="single")
+
+    @discord.ui.button(label="👹 強敵ラッシュ（最大3体）", style=discord.ButtonStyle.danger, custom_id="mode_multi")
+    async def select_multi(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.stop()
+        # メッセージを更新してバトル開始
+        await interaction.response.edit_message(content="🔥 **複数ボス戦** を開始します！", view=None)
+        await execute_battle(interaction, is_event=True, event_mode="multi")
+        
 # --------------------------------------------------
 # ⚔️ バトル共通処理（複数敵対応・レベル指定＆報酬倍増版）
 # --------------------------------------------------
@@ -192,46 +217,64 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
     # 平均レベルの算出
     avg_level = sum(p.level for p in party) // len(party)
-
     enemies = []
     
     # 👹 敵の生成分岐
     if is_event:
-        # イベント時はこれまで通り単体強敵ボス
-        target_name = EVENT_CONFIG.get("target_gacha_name")
-        candidate = None
-        if target_name:
-            candidate = next((c for c in GACHA_POOL if c["name"] == target_name), None)
-        if not candidate:
-            candidate = random.choice(GACHA_POOL)
+        # モードに応じた設定を取得
+        mode_config = EVENT_CONFIG.get(f"{event_mode}_mode", EVENT_CONFIG.get("single_mode"))
+        target_names = mode_config.get("candidates", [])
 
-        boss_lvl = EVENT_CONFIG.get("boss_level", 100)
-        calculated_hp = int((candidate.get("max_hp", candidate.get("hp", 100)) + (boss_lvl * 15)) * EVENT_CONFIG.get("hp_multiplier", 3.0))
-        calculated_atk = int((candidate.get("atk", 15) + (boss_lvl * 3)) * EVENT_CONFIG.get("atk_multiplier", 1.0))
+        # ガチャプールから該当する候補を取得
+        boss_candidates = [c for c in GACHA_POOL if c["name"] in target_names]
+        if not boss_candidates:
+            boss_candidates = GACHA_POOL.copy()
 
-        boss_data = {
-            "name": f"【Lv.{boss_lvl}】{candidate['name']}",
-            "icon": candidate.get("icon", "👹"),
-            "element": candidate.get("element", "無"),
-            "gender": candidate.get("gender", "？"),
-            "atk_type": candidate.get("atk_type", random.choice(["物理", "魔法"])),
-            "level": boss_lvl,
-            "max_hp": calculated_hp,
-            "hp": calculated_hp,
-            "atk": calculated_atk,
-            "spd": candidate.get("spd", 10),
-            "rec": candidate.get("rec", 0),
-            "skill_name": candidate.get("skill_name", "極大攻撃"),
-            "skill_pow": candidate.get("skill_pow", 50),
-            "skill_type": candidate.get("skill_type", "normal"),
-            "charm_target": candidate.get("charm_target", "ALL"),
-            "skill_trigger": candidate.get("skill_trigger", "chance"),
-            "skill_rate": candidate.get("skill_rate", 35),
-        }
-        enemies.append(Character(boss_data, is_boss=True))
-        title_name = EVENT_CONFIG["name"]
-        rewards = (EVENT_CONFIG["reward_gold"], EVENT_CONFIG["reward_rainbow"], EVENT_CONFIG["reward_exp"])
-        enemy_multiplier = 1  # イベント報酬は倍率固定
+        # 出現体数の決定
+        if event_mode == "single":
+            spawn_count = 1
+        else:
+            # multiモード：指定数（デフォルト3）または候補数の少ない方を採用
+            max_spawn = mode_config.get("max_spawn", 3)
+            spawn_count = min(len(boss_candidates), max_spawn)
+
+        # 重複なしでランダム選出
+        selected_candidates = random.sample(boss_candidates, k=spawn_count)
+
+        boss_lvl = mode_config.get("boss_level", 100)
+
+        # ボスの生成
+        for i, candidate in enumerate(selected_candidates):
+            calculated_hp = int((candidate.get("max_hp", candidate.get("hp", 100)) + (boss_lvl * 15)) * mode_config.get("hp_multiplier", 3.0))
+            calculated_atk = int((candidate.get("atk", 15) + (boss_lvl * 3)) * mode_config.get("atk_multiplier", 1.0))
+
+            boss_name_suffix = f"{chr(65+i)}" if selected_candidates.count(candidate) > 1 else ""
+
+            boss_data = {
+                "name": f"【Lv.{boss_lvl}】{candidate['name']}{boss_name_suffix}",
+                "icon": candidate.get("icon", "👹"),
+                "element": candidate.get("element", "無"),
+                "gender": candidate.get("gender", "？"),
+                "atk_type": candidate.get("atk_type", random.choice(["物理", "魔法"])),
+                "level": boss_lvl,
+                "max_hp": calculated_hp,
+                "hp": calculated_hp,
+                "atk": calculated_atk,
+                "spd": candidate.get("spd", 10),
+                "rec": candidate.get("rec", 0),
+                "skill_name": candidate.get("skill_name", "極大攻撃"),
+                "skill_pow": candidate.get("skill_pow", 50),
+                "skill_type": candidate.get("skill_type", "normal"),
+                "charm_target": candidate.get("charm_target", "ALL"),
+                "skill_trigger": candidate.get("skill_trigger", "chance"),
+                "skill_rate": candidate.get("skill_rate", 35),
+            }
+            enemies.append(Character(boss_data, is_boss=True))
+
+        title_name = mode_config.get("title", EVENT_CONFIG["name"])
+        rewards = (mode_config["reward_gold"], mode_config["reward_rainbow"], mode_config["reward_exp"])
+        enemy_multiplier = spawn_count  # 敵の数に応じた報酬倍率
+
     else:
         # 通常クエスト：平均レベルで出現体を分岐
         if avg_level >= 40:
@@ -455,9 +498,16 @@ class BattleCog(commands.Cog):
     async def battle(self, interaction: discord.Interaction):
         await execute_battle(interaction, is_event=False)
 
-    @app_commands.command(name="battle_event", description="【イベント】強力なガチャキャラボスに挑みます！")
-    async def battle_event(self, interaction: discord.Interaction):
-        await execute_battle(interaction, is_event=True)
+    @app_commands.command(name="battle_event", description="【9月イベ/vsカス】強力なボスに挑みます！")
+   async def event_battle_cmd(interaction: discord.Interaction):
+    # 選択用のボタンを表示
+    view = EventModeSelectView(user_id=interaction.user.id)
+    embed = discord.Embed(
+        title=f"🎪 {EVENT_CONFIG['name']}",
+        description="挑む難易度（モード）を選択してください！",
+        color=0xE74C3C
+    )
+    await interaction.response.send_message(embed=embed, view=view)
 
 
 async def setup(bot):
