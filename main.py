@@ -446,27 +446,33 @@ async def party(interaction: discord.Interaction):
 
 
 @bot.tree.command(
-    name="gacha", description="虹の欠片やチケットを使って10連ガチャを回します"
+    name="gacha", description="虹の欠片やチケットを使ってガチャを回します"
 )
 async def gacha(interaction: discord.Interaction):
+    # gacha.py から両方のView、または統合Viewを読み込む
+    from gacha import GachaMainView  # ※後述の統合View
+    
     u_data = get_user_profile(interaction.user.id)
     items = u_data.get("items", {})
 
     rainbow_count = items.get("虹の欠片", 0)
-    ticket_count = items.get("ガチャチケ", 0)
+    chara_ticket = items.get("ガチャチケ", 0)
+    soubi_ticket = items.get("装備ガチャチケット", 0)
 
     embed = discord.Embed(
-        title="🎰 キャラクター召喚（10連ガチャ）",
+        title="🎰 ガチャメニュー",
         description=(
-            "10連ガチャを回して新しい仲間を獲得できます！\n\n"
-            f"💎 **所持 虹の欠片**: {rainbow_count} 個 (必要: 1000個)\n"
-            f"🎫 **所持 ガチャチケ**: {ticket_count} 枚 (必要: 10枚)\n\n"
-            "👇 下のボタンを押してガチャを回してください。"
+            "引くガチャの種類を選んでください！\n\n"
+            f"💎 **所持 虹の欠片**: {rainbow_count} 個\n"
+            f"🎫 **キャラガチャチケ**: {chara_ticket} 枚\n"
+            f"🎟️ **装備ガチャチケ**: {soubi_ticket} 枚\n\n"
+            "👇 下のボタンを押して対象のガチャ画面を開きます。"
         ),
         color=0x9B59B6,
     )
 
-    view = GachaView(interaction.user.id)
+    # キャラ用・装備用の両方にアクセスできるViewを渡す
+    view = GachaMainView(interaction.user.id)
     await interaction.response.send_message(embed=embed, view=view)
 
 
