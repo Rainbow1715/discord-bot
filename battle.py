@@ -14,7 +14,7 @@ EVENT_CONFIG = {
     "single_mode": {
         "title": "【単体】vsカス",
         "candidates": ["ロイ", "折原和也", "神明龍矢"],
-        "boss_level": 80,
+        "boss_level": 50,
         "hp_multiplier": 3.0,
         "atk_multiplier": 1.0,
         "reward_gold": (5000, 8000),
