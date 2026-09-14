@@ -1,5 +1,5 @@
 import discord
-from database import user_data, save_data
+from database import save_data, user_data
 from discord.ext import commands
 
 # --------------------------------------------------
@@ -102,6 +102,11 @@ ACHIEVEMENTS = {
         "desc": "レオ サラ を編成してバトルに勝利する",
         "reward_rainbow": 500,
     },
+    "win_tatuya_HWkanata": {
+        "title": "😭 やめたげてよ",
+        "desc": "神明龍矢 彼方(ハロウィン) を編成してバトルに勝利する",
+        "reward_rainbow": 500,
+    },
     # 👤 特定キャラ入手実績
     "get_kami": {
         "title": "❔ なんで？",
@@ -130,7 +135,7 @@ ACHIEVEMENTS = {
     },
     "get_halloween_kanata": {
         "title": "🎃 と、トリックオア…トリート……？",
-        "desc": "彼方（ハロウィン）を獲得する",
+        "desc": "彼方(ハロウィン)を獲得する",
         "reward_rainbow": 200,
     },
     # 💔 敗北系実績
@@ -169,7 +174,7 @@ ACHIEVEMENTS = {
         "title": "⚔️ カス討伐：サラ",
         "desc": "イベント戦で サラ を撃破する",
         "reward_rainbow": 1000,
-    },  # 修正: カンマと閉じカッコを追加
+    },
     # 🍽️ 飯実績
     "eat_siera": {
         "title": "🍽️ しえらの嫌いなもの",
@@ -239,19 +244,24 @@ LOG_CHANNEL_ID = 1547122457062940712
 # --------------------------------------------------
 # ⚔️ バトル勝利時の自動実績チェック
 # --------------------------------------------------
+WIN_THRESHOLD_ACHIEVEMENTS = [
+    (1, "first_win"),
+    (10, "win_10"),
+    (50, "win_50"),
+    (100, "win_100"),
+    (200, "win_200"),
+    (300, "win_300"),
+]
+
+
 async def on_battle_win(interaction: discord.Interaction, u_data: dict):
     u_data["win_count"] = u_data.get("win_count", 0) + 1
     win_count = u_data["win_count"]
 
-    await check_and_unlock_achievement(interaction, "first_win")
-    if win_count >= 10:
-        await check_and_unlock_achievement(interaction, "win_10")
-    if win_count >= 50:
-        await check_and_unlock_achievement(interaction, "win_50")
-    if win_count >= 100:
-        await check_and_unlock_achievement(interaction, "win_100")
-    if win_count >= 200:  # 追加: win_200 のチェック抜けを補填
-        await check_and_unlock_achievement(interaction, "win_200")
+    # 閾値系実績をまとめてチェック
+    for threshold, ach_id in WIN_THRESHOLD_ACHIEVEMENTS:
+        if win_count >= threshold:
+            await check_and_unlock_achievement(interaction, ach_id)
 
     party_indices = u_data.get("party_indices", [])
     characters = u_data.get("characters", [])
@@ -282,13 +292,18 @@ async def on_battle_win(interaction: discord.Interaction, u_data: dict):
         await check_and_unlock_achievement(interaction, "win_reo_roi")
 
     if {"ロイ", "折原和也", "神明龍矢"}.issubset(party_names_set):
-        await check_and_unlock_achievement(interaction, "win_roi_orihara_tatuya")
+        await check_and_unlock_achievement(
+            interaction, "win_roi_orihara_tatuya"
+        )
 
     if {"ロイ", "サラ", "神明龍矢"}.issubset(party_names_set):
         await check_and_unlock_achievement(interaction, "win_roi_sara_tatuya")
 
-    if {"レオ", "サラ"}.issubset(party_names_set):  # 追加: win_reo_sara
+    if {"レオ", "サラ"}.issubset(party_names_set):
         await check_and_unlock_achievement(interaction, "win_reo_sara")
+
+    if {"神明龍矢", "彼方(ハロウィン)"}.issubset(party_names_set):
+        await check_and_unlock_achievement(interaction, "win_tatuya_HWkanata")
 
 
 # --------------------------------------------------
@@ -301,6 +316,8 @@ async def on_battle_lose(interaction: discord.Interaction, u_data: dict):
     await check_and_unlock_achievement(interaction, "first_lose")
     if lose_count >= 10:
         await check_and_unlock_achievement(interaction, "lose_10")
+    if lose_count >= 50:
+        await check_and_unlock_achievement(interaction, "lose_50")
 
 
 # --------------------------------------------------
@@ -313,7 +330,7 @@ async def check_boss_kill_achievements(
         "ロイ": "kill_roi",
         "折原和也": "kill_orihara",
         "神明龍矢": "kill_tatsuya",
-        "サラ": "kill_sara",  # 追加: サラの撃破判定を追加
+        "サラ": "kill_sara",
     }
 
     for boss_name, ach_id in boss_mapping.items():
@@ -324,7 +341,13 @@ async def check_boss_kill_achievements(
 # --------------------------------------------------
 # 🎰 ガチャ実行時の自動実績チェック
 # --------------------------------------------------
-async def on_gacha_draw(interaction: discord.Interaction, u_data: dict):
+async def on_gacha_draw(
+    interaction: discord.Interaction, u_data: dict, draw_count: int = 0
+):
+    # ガチャ側で加算済みでなければ加算（draw_count > 0 の時）
+    if draw_count > 0:
+        u_data["gacha_count"] = u_data.get("gacha_count", 0) + draw_count
+
     count = u_data.get("gacha_count", 0)
 
     if count >= 1:
@@ -335,6 +358,8 @@ async def on_gacha_draw(interaction: discord.Interaction, u_data: dict):
         await check_and_unlock_achievement(interaction, "gacha_50")
     if count >= 100:
         await check_and_unlock_achievement(interaction, "gacha_100")
+    if count >= 200:
+        await check_and_unlock_achievement(interaction, "gacha_200")
 
 
 # --------------------------------------------------
@@ -351,32 +376,33 @@ async def check_character_achievements(
         "レオ(仮面ライダーパロ)": "get_rider_reo",
         "ルシア(トリッカルパロ)": "get_trickal_rucia",
         "ムクロ(トリッカルパロ)": "get_trickal_mukuro",
+        "彼方(ハロウィン)": "get_halloween_kanata",  # マッピングを追加
     }
 
     for name, ach_id in mapping.items():
         if name in obtained_character_names:
             await check_and_unlock_achievement(interaction, ach_id)
 
+
 # --------------------------------------------------
 # 🍽️ 食事実行時の自動実績チェック
 # --------------------------------------------------
 async def check_eat_dislike_achievement(
-    interaction: discord.Interaction, char_id: str, food_name: str, char_data: dict
+    interaction: discord.Interaction,
+    char_id: str,
+    food_name: str,
+    char_data: dict,
 ):
-    """
-    /chara で食べ物をあげた時に呼び出す関数
+    """/chara で食べ物をあげた時に呼び出す関数
+
     :param char_id: キャラのIDや識別キー（例: "siera", "orihara", "retyan" など）
     :param food_name: あげた食べ物の名前
     :param char_data: DBから取得した該当キャラのデータ辞書
     """
-    # DBのキャラデータから嫌いなもののリストを取得（設定がない場合は空リスト）
     dislikes = char_data.get("dislikes", [])
-    
-    # 嫌いな食べ物かどうか判定（部分一致にも対応）
     is_disliked = any(dislike_item in food_name for dislike_item in dislikes)
 
     if is_disliked:
-        # 実績IDを "eat_キャラID" の形式で自動生成（例: "eat_orihara"）
         ach_id = f"eat_{char_id}"
         await check_and_unlock_achievement(interaction, ach_id)
 
@@ -413,7 +439,7 @@ async def check_and_unlock_achievement(
 
     save_data()
 
-    # 🔔 通知①：本人へのメッセージ（レスポンス状況に応じた安全な送信）
+    # 🔔 通知①：本人へのメッセージ
     reward_str = (
         f"💎 虹の欠片 {reward_rainbow}個" if reward_rainbow > 0 else "なし"
     )
@@ -465,11 +491,11 @@ class AchievementCog(commands.Cog):
 
         embeds = []
         current_embed = discord.Embed(
-            title=f"🏆 {interaction.user.display_name} の実績一覧", color=0xF1C40F
+            title=f"🏆 {interaction.user.display_name} の実績一覧",
+            color=0xF1C40F,
         )
         field_count = 0
 
-        # Discordの25フィールド制限対策：20個ごとにEmbedを分割
         for ach_id, ach in ACHIEVEMENTS.items():
             if field_count >= 20:
                 embeds.append(current_embed)
@@ -494,7 +520,6 @@ class AchievementCog(commands.Cog):
 
         embeds.append(current_embed)
 
-        # 最初のEmbedを返信し、残りはfollowupで送信
         await interaction.response.send_message(
             embed=embeds[0], ephemeral=True
         )
