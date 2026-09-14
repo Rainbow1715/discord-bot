@@ -660,6 +660,7 @@ def get_user_profile(user_id):
             c["atk_type"] = master.get("atk_type", c.get("atk_type", "物理"))
             c["likes"] = master.get("likes", c.get("likes", {}))
             c["dislikes"] = master.get("dislikes", c.get("dislikes", {}))
+            c["best_equip"] = master.get("best_equip", c.get("best_equip", None))
 
         if "element" not in c:
             c["element"] = master.get("element", "赤")
