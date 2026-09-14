@@ -30,6 +30,24 @@ async def start_dummy_server():
 
 
 # --------------------------------------------------
+# 🗡️ 装備表示補助用関数
+# --------------------------------------------------
+def get_equip_display(character_data: dict) -> str:
+    """キャラの現在装備を取得し、ベスト装備と一致していれば ✨ を付けて返す"""
+    current_equip = character_data.get("equip")
+    best_equip = character_data.get("best_equip")
+
+    if not current_equip:
+        return "なし"
+
+    # 現在の装備とベスト装備が一致している場合は ✨ を付与
+    if best_equip and current_equip == best_equip:
+        return f"✨{current_equip}"
+
+    return current_equip
+
+
+# --------------------------------------------------
 # 🤖 Discord Bot の設定
 # --------------------------------------------------
 intents = discord.Intents.default()
@@ -93,7 +111,7 @@ class PartySelectView(discord.ui.View):
             else:
                 base_rarity = int(raw_rarity)
 
-            # ⭕️ limit_break をそのまま取得（所持数からの自動計算を完全排除）
+            # limit_break をそのまま取得
             limit_break = c.get("limit_break", 0)
             star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
@@ -147,11 +165,13 @@ class PartySelectView(discord.ui.View):
             else:
                 base_rarity = int(raw_rarity)
             
-            # ⭕️ limit_break をそのまま取得
             limit_break = c.get("limit_break", 0)
             star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
-            msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
+            # 🗡️ 装備表示（ベスト装備判定関数を適用）
+            equip_disp = get_equip_display(c)
+
+            msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']}) 🗡️{equip_disp}\n"
 
         embed.description = (
             f"{msg}\n✅ **パーティ編成を更新しました！**\n（出撃メンバー:"
@@ -166,7 +186,6 @@ async def profile(interaction: discord.Interaction):
     characters = u_data.get("characters", [])
     char_count = len(characters)
 
-    # ⭕️ 安全に総合力を計算する関数
     def get_total_power(data):
         chars = data.get("characters", [])
         return sum(
@@ -175,7 +194,6 @@ async def profile(interaction: discord.Interaction):
 
     all_users = list(user_data.items())
 
-    # 強さ順位の計算
     sorted_by_power = sorted(
         all_users, key=lambda x: get_total_power(x[1]), reverse=True
     )
@@ -184,7 +202,6 @@ async def profile(interaction: discord.Interaction):
         + 1
     )
 
-    # 所持キャラ数順位の計算（⭕️ .get("characters", []) で安全に取得）
     sorted_by_chars = sorted(
         all_users, key=lambda x: len(x[1].get("characters", [])), reverse=True
     )
@@ -290,7 +307,6 @@ class StatusPaginationView(discord.ui.View):
             else:
                 base_rarity = int(raw_rarity)
 
-            # ⭕️ limit_break をそのまま取得
             limit_break = c.get("limit_break", 0)
             rarity_str = f" [★{base_rarity} +{limit_break}]" if limit_break > 0 else f" [★{base_rarity}]"
 
@@ -302,9 +318,10 @@ class StatusPaginationView(discord.ui.View):
             role_icon = ROLE_ICONS.get(role_str, "🛡️")
             char_icon = c.get("icon") if c.get("icon") else elem_icon
 
-            equip_name = c.get("equip") or "なし"
+            # 🗡️ 装備表示（ベスト装備判定関数を適用）
+            equip_disp = get_equip_display(c)
             is_best = c.get("equip") and c.get("equip") == c.get("best_equip")
-            equip_bonus_str = " ✨(ATK+20%!)" if is_best else ""
+            equip_bonus_str = " (ATK+20%!)" if is_best else ""
 
             s_name = c.get("skill_name", "なし")
             s_pow = c.get("skill_pow", 1.0)
@@ -325,7 +342,7 @@ class StatusPaginationView(discord.ui.View):
                 f"**Lv.{c['level']}** (XP: {c['exp']} /"
                 f" {next_exp})\n{elem_icon} **属性**: {elem_str} | {role_icon}"
                 f" **ロール**: {role_str} | **性別**: {gender_str}\n🗡️ **装備**:"
-                f" {equip_name}{equip_bonus_str}\n❤️ **HP**: {c['hp']} | 🗡️"
+                f" {equip_disp}{equip_bonus_str}\n❤️ **HP**: {c['hp']} | 🗡️"
                 f" **攻撃力**: {c['atk']}\n⚡ **速度**: {c['spd']} | 💖 **回復量**:"
                 f" {c['rec']}\n✨ **スキル**: {skill_info}\n\u200b"
             )
@@ -421,23 +438,19 @@ async def party(interaction: discord.Interaction):
 
     msg = ""
     for idx, c in enumerate(party_members, start=1):
-        # /party コマンドの表示名横にもレア度と凸数を表示
         raw_rarity = c.get("rarity", 1)
         if isinstance(raw_rarity, str):
             base_rarity = int(raw_rarity.replace("★", "")) if raw_rarity.replace("★", "").isdigit() else 1
         else:
             base_rarity = int(raw_rarity)
             
-        # ⭕️ limit_break をそのまま取得
         limit_break = c.get("limit_break", 0)
         star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
         # 🗡️ 装備名の取得（ベスト装備なら ✨ がつく）
         char_name = c.get("name", "")
-        current_equip = c.get("equip")
-        equip_disp = format_equip_name(char_name, current_equip)
+        equip_disp = get_equip_display(c)
 
-        # 💡 行の末尾に 🗡️ 装備 を表示
         msg += f"**{idx}. {char_name}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']}) 🗡️{equip_disp}\n"
 
     embed.description = (
@@ -455,8 +468,7 @@ async def party(interaction: discord.Interaction):
     name="gacha", description="虹の欠片やチケットを使ってガチャを回します"
 )
 async def gacha(interaction: discord.Interaction):
-    # gacha.py から両方のView、または統合Viewを読み込む
-    from gacha import GachaMainView  # ※後述の統合View
+    from gacha import GachaMainView
     
     u_data = get_user_profile(interaction.user.id)
     items = u_data.get("items", {})
@@ -477,7 +489,6 @@ async def gacha(interaction: discord.Interaction):
         color=0x9B59B6,
     )
 
-    # キャラ用・装備用の両方にアクセスできるViewを渡す
     view = GachaMainView(interaction.user.id)
     await interaction.response.send_message(embed=embed, view=view)
 
@@ -534,9 +545,8 @@ async def mailbox(interaction: discord.Interaction):
         total_rainbow += m.get("rainbow", 0)
         total_ticket += m.get("ticket", 0)
 
-        # 👤 添付キャラの処理
         char_name = m.get("char_name")
-        char_count = m.get("char_count", 1)  # 👈 メールに個数が指定されていれば取得（無ければ1体）
+        char_count = m.get("char_count", 1)
         if char_name:
             template = next(
                 (c for c in GACHA_POOL if c["name"] == char_name), None
@@ -548,24 +558,20 @@ async def mailbox(interaction: discord.Interaction):
                 )
 
                 if existing_char:
-                    # すでに所持している場合：純粋に所持数(count)のみを加算
-                    # ※ limit_break（限界突破数）は変更せず独立して維持
                     existing_char["count"] = existing_char.get("count", 1) + char_count
                     received_chars.append(f"{char_name} ×{char_count} (所持数: {existing_char['count']})")
                 else:
-                    # 未所持の場合：新規作成
                     new_char = copy.deepcopy(template)
                     new_char["count"] = char_count
                     new_char["level"] = 1
                     new_char["exp"] = 0
-                    new_char["limit_break"] = 0  # 👈 限界突破は0で初期化
+                    new_char["limit_break"] = 0
                     user_chars.append(new_char)
                     received_chars.append(f"{char_name} ×{char_count} (新規獲得!)")
 
         m["claimed"] = True
         mail_titles.append(m.get("title", "無題のメール"))
 
-    # 報酬を反映
     u_data["gold"] += total_gold
     u_data["items"]["虹の欠片"] = (
         u_data["items"].get("虹の欠片", 0) + total_rainbow
