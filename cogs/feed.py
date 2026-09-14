@@ -47,7 +47,7 @@ class FoodSelectView(discord.ui.View):
             if food_name in eaten_foods:
                 label = f"{food_name} (所持: {count}個)"
                 description = "✅ あげたことがあります"
-            else:
+            
 
             options.append(
                 discord.SelectOption(
