@@ -497,7 +497,7 @@ ADULT_CHARACTERS = [
 SUSPICIOUS_MEAT_ITEMS = ["怪しい肉"]
 
 SUSPICIOUS_MEAT_CHARACTERS = [
-    "Branch Coral", "Root Coral",
+    "Branch Coral", "Root Coral", "ロイ", "折原和也",
 ]
 
 # 🍱 ご飯をあげる処理
