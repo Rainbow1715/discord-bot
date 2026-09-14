@@ -130,10 +130,13 @@ class FoodSelectView(discord.ui.View):
         elif taste == "dislike":
             reaction_msg = f"微妙な表情。\n「……」"
             color = discord.Color.dark_gray()
-            # 🔻 💔 嫌いなものを食べた時の実績チェック（ここを追加！）
+            # 🔻 💔 嫌いなものを食べた時の実績チェック
             ach_id = EAT_ACHIEVEMENT_MAP.get(char_name)
             if ach_id:
-                await achievements.check_and_unlock_achievement(interaction, ach_id)
+                try:
+                    await achievement.check_and_unlock_achievement(interaction, ach_id)
+                except Exception as e:
+                    print(f"[実績解除エラー] {e}")
         else:
             reaction_msg = f"おいしそうに食べている！😋\n「もぐもぐ… {food_name} 、ごちそうさま！」"
             color = discord.Color.green()
