@@ -43,10 +43,13 @@ class FoodSelectView(discord.ui.View):
             if not icon:
                 icon = "🍱"
             
-            # ⭕️ 「食べたことがあるか」でラベルと説明を切替
+            label = f"{food_name} (所持: {count}個)"
+            
+            # ⭕️ 「あげたことがある場合」のみ説明文を付与
             if food_name in eaten_foods:
-                label = f"{food_name} (所持: {count}個)"
                 description = "✅ あげたことがあります"
+            else:
+                description = None
 
             options.append(
                 discord.SelectOption(
@@ -75,16 +78,19 @@ class FoodSelectView(discord.ui.View):
         if food_name == "none":
             return
 
+        # 3秒タイムアウトを防ぐため応答を保留
+        await interaction.response.defer(ephemeral=True)
+
         user_info = db.get_user_profile(self.user_id)
         
         if self.target_char_index >= len(user_info["characters"]):
-            await interaction.response.send_message("❌ キャラクターデータが見つかりません。", ephemeral=True)
+            await interaction.followup.send("❌ キャラクターデータが見つかりません。", ephemeral=True)
             return
 
         char_data = user_info["characters"][self.target_char_index]
 
         if user_info["items"].get(food_name, 0) <= 0:
-            await interaction.response.send_message("❌ そのご飯は持っていません！", ephemeral=True)
+            await interaction.followup.send("❌ そのご飯は持っていません！", ephemeral=True)
             return
 
         # 🍶 1回だけ処理を実行（お酒NGなどのチェックも内部で行われる）
@@ -92,7 +98,7 @@ class FoodSelectView(discord.ui.View):
 
         # 🚫 お酒NGなどのエラーが発生した場合は消費せずに中断
         if result.get("status") == "error":
-            await interaction.response.send_message(result["message"], ephemeral=True)
+            await interaction.followup.send(result["message"], ephemeral=True)
             return
             
         # ✅ 成功した場合のみ、アイテムを1つ減らして保存
@@ -129,7 +135,7 @@ class FoodSelectView(discord.ui.View):
             reward_str = "\n".join(result["rewards"])
             embed.add_field(name="🎉 なつき度アップ報酬GET！", value=reward_str, inline=False)
 
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed, ephemeral=True)
 
 
 # --------------------------------------------------
@@ -147,12 +153,10 @@ class CharacterCardView(discord.ui.View):
             await interaction.response.send_message("❌ 他の人のキャラカードは操作できません。", ephemeral=True)
             return
 
-        # ⚡️ 応答処理の遅れ（タイムアウト）を防ぐために一度「応答中」にする
+        # 3秒タイムアウトを防ぐため先に即時応答（defer）を入れる
         await interaction.response.defer(ephemeral=True)
 
         food_view = FoodSelectView(self.user_id, self.char_index)
-        
-        # ⚡️ deferを使った場合は send_message ではなく followup.send を使う
         await interaction.followup.send("🍱 どのアイテムをあげますか？", view=food_view, ephemeral=True)
 
 
