@@ -353,7 +353,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
                 else:
                     alive_enemies = [e for e in enemies if e.hp > 0]
-                    target_enemy = random.choice(alive_enemies)
+                    target_enemy = p.select_target(alive_enemies)
                     turn_log += p.action(target_enemy, party, turn, states[target_enemy]) + "\n"
 
         # 2. 敵のターン
@@ -375,7 +375,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
                 else:
                     alive_party = [p for p in party if p.hp > 0]
                     if alive_party:
-                        target_player = random.choice(alive_party)
+                        target_player = enemy.select_target(alive_party)
                         turn_log += enemy.action(target_player, enemies, turn, states[target_player]) + "\n"
 
         # バフ減衰処理
