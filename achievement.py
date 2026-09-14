@@ -337,6 +337,29 @@ async def check_character_achievements(
         if name in obtained_character_names:
             await check_and_unlock_achievement(interaction, ach_id)
 
+# --------------------------------------------------
+# 🍽️ 食事実行時の自動実績チェック
+# --------------------------------------------------
+async def check_eat_dislike_achievement(
+    interaction: discord.Interaction, char_id: str, food_name: str, char_data: dict
+):
+    """
+    /chara で食べ物をあげた時に呼び出す関数
+    :param char_id: キャラのIDや識別キー（例: "siera", "orihara", "retyan" など）
+    :param food_name: あげた食べ物の名前
+    :param char_data: DBから取得した該当キャラのデータ辞書
+    """
+    # DBのキャラデータから嫌いなもののリストを取得（設定がない場合は空リスト）
+    dislikes = char_data.get("dislikes", [])
+    
+    # 嫌いな食べ物かどうか判定（部分一致にも対応）
+    is_disliked = any(dislike_item in food_name for dislike_item in dislikes)
+
+    if is_disliked:
+        # 実績IDを "eat_キャラID" の形式で自動生成（例: "eat_orihara"）
+        ach_id = f"eat_{char_id}"
+        await check_and_unlock_achievement(interaction, ach_id)
+
 
 # --------------------------------------------------
 # 🔓 実績解除・通知共通関数
