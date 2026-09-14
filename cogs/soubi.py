@@ -163,16 +163,18 @@ class EquipSelectView(discord.ui.View):
 
     async def on_char_select(self, interaction: discord.Interaction):
         self.selected_char_idx = int(self.char_select.values[0])
+        # 💡 ドロップダウン選択時は defer() せず、そのまま応答を受け取る
         await interaction.response.defer()
 
     async def on_equip_select(self, interaction: discord.Interaction):
         self.selected_equip = self.equip_select.values[0]
+        # 💡 ドロップダウン選択時は defer() せず、そのまま応答を受け取る
         await interaction.response.defer()
 
     @discord.ui.button(label="決定", style=discord.ButtonStyle.success)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.selected_char_idx is None or self.selected_equip is None:
-            await interaction.followup.send("⚠️ キャラクターと装備品の両方を選択してください！", ephemeral=True)
+            await interaction.response.send_message("⚠️ キャラクターと装備品の両方を選択してください！", ephemeral=True)
             return
 
         u_data = get_user_profile(interaction.user.id)
@@ -188,7 +190,9 @@ class EquipSelectView(discord.ui.View):
 
         save_data()
         self.stop()
-        await interaction.edit_original_response(content=msg, embed=None, view=None)
+        
+        # 💡 edit_original_response ではなく、ボタンを押した時点のインタラクションで返答する
+        await interaction.response.send_message(msg, ephemeral=True)
 
 
 async def setup(bot):
