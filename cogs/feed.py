@@ -2,6 +2,22 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import database as db
+import achievements
+
+EAT_ACHIEVEMENT_MAP = {
+    "竹村しえら": "eat_siera",
+    "れーちゃん": "eat_retyan",
+    "レオ": "eat_reo",
+    "Gerânio": "eat_touwata",
+    "白黒レイ": "eat_skrei",
+    "茉鈴": "eat_marin",
+    "橘柊人": "eat_syuuto",
+    "河野蜜柑": "eat_mikan",
+    "ロイ": "eat_roi",
+    "折原和也": "eat_orihara",
+    "神明龍矢": "eat_tatuya",
+    "サラ": "eat_sara",
+}
 
 # --------------------------------------------------
 # 🍱 ご飯選択ドロップダウンの View
@@ -114,6 +130,10 @@ class FoodSelectView(discord.ui.View):
         elif taste == "dislike":
             reaction_msg = f"微妙な表情。\n「……」"
             color = discord.Color.dark_gray()
+            # 🔻 💔 嫌いなものを食べた時の実績チェック（ここを追加！）
+            ach_id = EAT_ACHIEVEMENT_MAP.get(char_name)
+            if ach_id:
+                await achievements.check_and_unlock_achievement(interaction, ach_id)
         else:
             reaction_msg = f"おいしそうに食べている！😋\n「もぐもぐ… {food_name} 、ごちそうさま！」"
             color = discord.Color.green()
