@@ -686,6 +686,8 @@ def get_user_profile(user_id):
             c["known_likes"] = []
         if "known_dislikes" not in c:
             c["known_dislikes"] = []
+        if "eaten_foods" not in c:
+            c["eaten_foods"] = []
 
     return u_info
 
