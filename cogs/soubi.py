@@ -19,90 +19,20 @@ def get_equip_display(character_data: dict) -> str:
 
 # 🗡️ 装備マスタデータ
 EQUIPMENT_MASTER = {
-    "鉄の剣": {
-        "icon": "⚔️",
-        "rarity": 3,
-        "atk": 10,
-        "description": "一般的な鉄製の剣。"
-    },
-    "鋼の剣": {
-        "icon": "⚔️",
-        "rarity": 4,
-        "atk": 25,
-        "description": "鍛え抜かれた鋼の剣。"
-    },
-    "聖剣エクスカリバー": {
-        "icon": "🗡️",
-        "rarity": 5,
-        "atk": 60,
-        "description": "伝説の聖剣。"
-    },
-    "なんか強そうな棒": {
-        "icon": "",
-        "rarity": 3,
-        "atk": 10,
-        "description": "その辺に落ちてそうな棒。強いのか？"
-    },
-    "紙パックのいちごオレ": {
-        "icon": "",
-        "rarity": 4,
-        "p_hp": 100,
-        "description": "美味しい。毎ターンHP100回復。"
-    },
-    "ナイフ": {
-        "icon": "",
-        "rarity": 3,
-        "atk": 10,
-        "description": "普通のナイフ。"
-    },
-    "ロケット": {
-        "icon": "",
-        "rarity": 3,
-        "atk": 10,
-        "description": "中に女性の写真が入っている。"
-    },
-    "電子機器": {
-        "icon": "",
-        "rarity": 5,
-        "atk": 500,
-        "description": "ばか"
-    },
-    "子供用カメラ": {
-        "icon": "",
-        "rarity": 3,
-        "atk": 10,
-        "description": "一応撮れる。"
-    },
-    "ハリセン": {
-        "icon": "",
-        "rarity": 3,
-        "atk": 10,
-        "description": "いい音が鳴りそう。"
-    },
-    "学校の箒": {
-        "icon": "",
-        "rarity": 3,
-        "atk": 10,
-        "description": "掃除でもするんですか？"
-    },
-    "鏡": {
-        "icon": "",
-        "rarity": 3,
-        "atk": 10,
-        "description": "この世で1番美しいのはだぁれ？"
-    },
-    "怪しい試験管": {
-        "icon": "",
-        "rarity": 3,
-        "p_hp": 50,
-        "description": "何が入ってるんですかこれ"
-    },
-    "酒瓶": {
-        "icon": "",
-        "rarity": 3,
-        "atk": 10,
-        "description": "割れると痛いですよ。"
-    },
+    "鉄の剣": {"icon": "⚔️", "rarity": 3, "atk": 10, "description": "一般的な鉄製の剣。"},
+    "鋼の剣": {"icon": "⚔️", "rarity": 4, "atk": 25, "description": "鍛え抜かれた鋼の剣。"},
+    "聖剣エクスカリバー": {"icon": "🗡️", "rarity": 5, "atk": 60, "description": "伝説の聖剣。"},
+    "なんか強そうな棒": {"icon": "", "rarity": 3, "atk": 10, "description": "その辺に落ちてそうな棒。強いのか？"},
+    "紙パックのいちごオレ": {"icon": "", "rarity": 4, "p_hp": 100, "description": "美味しい。毎ターンHP100回復。"},
+    "ナイフ": {"icon": "", "rarity": 3, "atk": 10, "description": "普通のナイフ。"},
+    "ロケット": {"icon": "", "rarity": 3, "atk": 10, "description": "中に女性の写真が入っている。"},
+    "電子機器": {"icon": "", "rarity": 5, "atk": 500, "description": "ばか"},
+    "子供用カメラ": {"icon": "", "rarity": 3, "atk": 10, "description": "一応撮れる。"},
+    "ハリセン": {"icon": "", "rarity": 3, "atk": 10, "description": "いい音が鳴りそう。"},
+    "学校の箒": {"icon": "", "rarity": 3, "atk": 10, "description": "掃除でもするんですか？"},
+    "鏡": {"icon": "", "rarity": 3, "atk": 10, "description": "この世で1番美しいのはだぁれ？"},
+    "怪しい試験管": {"icon": "", "rarity": 3, "p_hp": 50, "description": "何が入ってるんですかこれ"},
+    "酒瓶": {"icon": "", "rarity": 3, "atk": 10, "description": "割れると痛いですよ。"},
 }
 
 
@@ -122,24 +52,17 @@ class SoubiCog(commands.Cog):
     async def equip(self, interaction: discord.Interaction):
         u_data = get_user_profile(interaction.user.id)
         characters = u_data.get("characters", [])
-        
-        # 💡 equipments リスト（[{"name": "ナイフ", ...}, ...]）を取得
         raw_equipments = u_data.get("equipments", [])
-
-        # 🔍 デバッグ用：ターミナルで所持データの中身を確認
-        print(f"DEBUG - 所持装備リストの中身: {raw_equipments}")
 
         if not characters:
             await interaction.response.send_message("❌ 所持しているキャラクターがいません。", ephemeral=True)
             return
 
-        # 💡 リスト内の辞書から装備名を取り出し、重複を除外したリストを作成
         user_equipments = list(set(
             eq["name"] for eq in raw_equipments 
             if isinstance(eq, dict) and eq.get("name") in EQUIPMENT_MASTER
         ))
 
-        # 装備選択用のドロップダウン View を作成して送信
         view = EquipSelectView(user_id=interaction.user.id, characters=characters, user_equipments=user_equipments)
         
         embed = discord.Embed(
@@ -160,10 +83,10 @@ class EquipSelectView(discord.ui.View):
         self.selected_char_idx = None
         self.selected_equip = None
 
-        # ① キャラクター選択ドロップダウン
+        # ① キャラクター選択ドロップダウン（get_equip_display を使用して現在装備を表示）
         char_options = [
             discord.SelectOption(
-                label=f"{c.get('name', 'キャラ')} (現在: {c.get('equip', 'なし')})",
+                label=f"{c.get('name', 'キャラ')} (現在: {get_equip_display(c)})",
                 value=str(i)
             ) for i, c in enumerate(characters[:25]) # Selectの上限は25個
         ]
@@ -206,7 +129,9 @@ class EquipSelectView(discord.ui.View):
             msg = f"🧹 **{target_char['name']}** の装備を外しました。"
         else:
             target_char["equip"] = self.selected_equip
-            msg = f"✨ **{target_char['name']}** に **{self.selected_equip}** を装備させました！"
+            # 装備反映後の最新表示（✨含む）を取得
+            display_name = get_equip_display(target_char)
+            msg = f"⚔️ **{target_char['name']}** に **{display_name}** を装備させました！"
 
         save_data()
         self.stop()
