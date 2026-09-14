@@ -324,8 +324,8 @@ GACHA_POOL = [
             "ブルーベリージャムパン": "ジャムを大量に塗りたくってやったのに、手も口元も汚さず完食しやがった。"
         },
         "dislikes": {
-            "クソデカステーキ": "普通のサイズのはないの？　と文句を言ってきた。",
-            "怪しい肉": "え……何これ？　と顔を顰めていた。食べたことはなさそうだった。",
+            "クソデカステーキ": "普通のサイズのはないの？ と文句を言ってきた。",
+            "怪しい肉": "え……何これ？ と顔を顰めていた。食べたことはなさそうだった。"
         },
         "affection_level": 1,
         "affection_exp": 0,
@@ -357,7 +357,7 @@ GACHA_POOL = [
         },
         "dislikes": {
             "酒": "研究が鈍るじゃないか、と怒ってきた。",
-            "怪しい肉": "……元はどのモルモットだい？　と聞いてきた。食べたことはなさそうだった。"
+            "怪しい肉": "……元はどのモルモットだい？ と聞いてきた。食べたことはなさそうだった。"
         },
         "affection_level": 1,
         "affection_exp": 0,
@@ -365,41 +365,37 @@ GACHA_POOL = [
         "known_dislikes": []
     },
     {
-        "name": "神明龍矢",             # [文字列] キャラクター名
-        "icon": "<:602606_tatuya:1517868436951273513>",             # [文字列] アイコンデータ（Discord絵文字IDなど）
-        "gender": "男",           # [文字列] 性別（"男", "女", "？"）
-        "rarity": "★3",           # [文字列] レアリティ（"★2" 〜 "★5"）
-        "element": "赤",         # [文字列] 属性（"赤", "青", "紫", "光" など）
-        "role": "アタッカー",            # [文字列] 戦闘での役割（"アタッカー", "サポーター"）
-        "atk_type": "物理",        # [文字列] 攻撃タイプ（"物理", "魔法"）
-        # --- ステータス・成長 ---
-        "level": 1,           # [数値] 現在のレベル
-        "exp": 0,             # [数値] 現在の獲得経験値
-        "hp": 98,               # [数値] 現在のHP
-        "max_hp": 98,           # [数値] 最大HP
-        "atk": 30,             # [数値] 攻撃力
-        "spd": 20,             # [数値] 素早さ（行動順）
-        "rec": 10,             # [数値] 回復力（回復スキル等の効果量）
-        # --- スキル関連 ---
-        "skill_name": "黙って人の言うこと聞けねぇ奴は、背中刺されて死んだらいい。",      # [文字列] スキル名
-        "skill_type": "physical",      # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
-        "skill_pow": 20,       # [数値] スキル威力・倍率
-        "skill_trigger": "chance",   # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
-        "skill_rate": 75,      # [数値] 発動成功率(%)（例: 95 = 95%）※一部キャラのみ
-        # --- 装備関連 ---
-        "best_equip": "酒瓶",      # [文字列] 相性の良いモチーフ装備名
-        "equip": None,           # [None / 辞書] 現在装備中のアイテムデータ
-        # --- 好感度・交流システム ---
+        "name": "神明龍矢",
+        "icon": "<:602606_tatuya:1517868436951273513>",
+        "gender": "男",
+        "rarity": "★3",
+        "element": "赤",
+        "role": "アタッカー",
+        "atk_type": "物理",
+        "level": 1,
+        "exp": 0,
+        "hp": 98,
+        "max_hp": 98,
+        "atk": 30,
+        "spd": 20,
+        "rec": 10,
+        "skill_name": "黙って人の言うこと聞けねぇ奴は、背中刺されて死んだらいい。",
+        "skill_type": "physical",
+        "skill_pow": 20,
+        "skill_trigger": "chance",
+        "skill_rate": 75,
+        "best_equip": "酒瓶",
+        "equip": None,
         "likes": {
-            "酒": "龍矢は出された酒を上機嫌で飲み干した。",   # [辞書] 好きな食べ物とリアクション文 {"アイテム名": "テキスト"}
+            "酒": "龍矢は出された酒を上機嫌で飲み干した。",
         },
         "dislikes": {
             "カプレーゼ": "気取った横文字の食べ物なんざ出してくるな、とブチ切れた。",
-        },                                        # [辞書] 嫌いな食べ物とリアクション文 {"アイテム名": "テキスト"}
-        "affection_level": 1,  # [数値] 現在の好感度レベル
-        "affection_exp": 0,    # [数値] 現在の好感度経験値
-        "known_likes": [],      # [リスト] 発見済みの「好きなもの」リスト
-        "known_dislikes": [],   # [リスト] 発見済みの「嫌いなもの」リスト
+        },
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": []
     }
 ]
 
@@ -417,10 +413,6 @@ DEFAULT_CHARACTERS = [
     find_gacha_char("橘柊人"),
     find_gacha_char("河野蜜柑")
 ]
-
-
-
-
 
 # 🍱 ご飯アイテムの定義
 FOOD_ITEMS = {
@@ -519,13 +511,16 @@ def feed_character(user_info, char_data, food_name):
             "message": f"❌ **{char_name}** はお酒を飲むことができません！"
         }
 
-    # 「怪しい肉」をあげる時の処理イメージ
+    # 「怪しい肉」をあげる時の処理イメージ（完全拒否キャラ用の判定）
     if food_name in SUSPICIOUS_MEAT_ITEMS and char_name not in SUSPICIOUS_MEAT_CHARACTERS:
-        return {
-            "status": "error",
-            "reason": "refused",
-            "message": f"❌ **{char_name}** にこんなものあげようとしないでください！"
-        }
+        # ロイや折原和也のように dislikes にセリフが設定されているキャラは受け取る（ここで弾かない）
+        master_char = find_gacha_char(char_name) or {}
+        if food_name not in master_char.get("dislikes", {}):
+            return {
+                "status": "error",
+                "reason": "refused",
+                "message": f"❌ **{char_name}** にこんなものあげようとしないでください！"
+            }
         
     # GACHA_POOL から最新のマスターデータを取得
     master_char = find_gacha_char(char_name) or {}
