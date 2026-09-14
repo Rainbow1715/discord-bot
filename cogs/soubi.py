@@ -1,7 +1,9 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
+from database import get_user_profile, save_data
 
-# 🗡️ 装備データはすべてここにまとめる！
+# 🗡️ 装備マスタデータ
 EQUIPMENT_MASTER = {
     "鉄の剣": {
         "icon": "⚔️",
@@ -21,11 +23,6 @@ EQUIPMENT_MASTER = {
         "atk": 60,
         "description": "伝説の聖剣。"
     },
-
-        # 装備！！！！！
-        # EQUIPMENT_GACHA_POOL = {
-        #     "name": "鉄の剣", "rarity": 3, "icon": "🗡️", "atk_bonus": 15, "hp_bonus": 0, "desc": "一般的な鉄製の剣。"},
-
     "なんか強そうな棒": {
         "icon": "",
         "rarity": 3,
@@ -99,11 +96,100 @@ class SoubiCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    # 1. 装備ガチャコマンド
     @commands.command(name="装備ガチャ")
     async def open_soubi_gacha(self, ctx):
         from gacha import SoubiGachaView
         view = SoubiGachaView(ctx.author.id)
         await ctx.send("🗡️ 装備ガチャ", view=view)
+
+    # 2. 装備装着スラッシュコマンド (/equip)
+    @app_commands.command(name="equip", description="所持キャラクターに装備を装着・変更します")
+    async def equip(self, interaction: discord.Interaction):
+        u_data = get_user_profile(interaction.user.id)
+        characters = u_data.get("characters", [])
+        items = u_data.get("items", {})
+
+        if not characters:
+            await interaction.response.send_message("❌ 所持しているキャラクターがいません。", ephemeral=True)
+            return
+
+        # 所持している装備リストを取得（装備マスタに存在する＆所持数が1以上のもの）
+        user_equipments = [item_name for item_name, count in items.items() if item_name in EQUIPMENT_MASTER and count > 0]
+
+        # 装備選択用のドロップダウン View を作成して送信
+        view = EquipSelectView(user_id=interaction.user.id, characters=characters, user_equipments=user_equipments)
+        
+        embed = discord.Embed(
+            title="🗡️ 装備変更",
+            description="装備を変更したい **キャラクター** と **装備品** を選択してください。\n（「装備を外す」を選ぶことも可能です）",
+            color=0x3498DB
+        )
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+
+
+# --------------------------------------------------
+# 🗡️ 装備選択用の Select / View
+# --------------------------------------------------
+class EquipSelectView(discord.ui.View):
+    def __init__(self, user_id: int, characters: list, user_equipments: list):
+        super().__init__(timeout=60)
+        self.user_id = user_id
+        self.selected_char_idx = None
+        self.selected_equip = None
+
+        # ① キャラクター選択ドロップダウン
+        char_options = [
+            discord.SelectOption(
+                label=f"{c.get('name', 'キャラ')} (現在: {c.get('equip', 'なし')})",
+                value=str(i)
+            ) for i, c in enumerate(characters[:25]) # Selectの上限は25個
+        ]
+        self.char_select = discord.ui.Select(placeholder="👤 キャラクターを選択", options=char_options, custom_id="select_char")
+        self.char_select.callback = self.on_char_select
+        self.add_item(self.char_select)
+
+        # ② 装備品選択ドロップダウン
+        equip_options = [discord.SelectOption(label="❌ 装備を外す", value="NONE")]
+        for eq in user_equipments[:24]:
+            equip_options.append(discord.SelectOption(label=f"🗡️ {eq}", value=eq))
+
+        self.equip_select = discord.ui.Select(placeholder="🗡️ 装備品を選択", options=equip_options, custom_id="select_equip")
+        self.equip_select.callback = self.on_equip_select
+        self.add_item(self.equip_select)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return interaction.user.id == self.user_id
+
+    async def on_char_select(self, interaction: discord.Interaction):
+        self.selected_char_idx = int(self.char_select.values[0])
+        await interaction.response.defer()
+
+    async def on_equip_select(self, interaction: discord.Interaction):
+        self.selected_equip = self.equip_select.values[0]
+        await interaction.response.defer()
+
+    @discord.ui.button(label="決定", style=discord.ButtonStyle.success)
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.selected_char_idx is None or self.selected_equip is None:
+            await interaction.followup.send("⚠️ キャラクターと装備品の両方を選択してください！", ephemeral=True)
+            return
+
+        u_data = get_user_profile(interaction.user.id)
+        target_char = u_data["characters"][self.selected_char_idx]
+
+        # 装備の付け替え処理
+        if self.selected_equip == "NONE":
+            target_char["equip"] = None
+            msg = f"🧹 **{target_char['name']}** の装備を外しました。"
+        else:
+            target_char["equip"] = self.selected_equip
+            msg = f"✨ **{target_char['name']}** に **{self.selected_equip}** を装備させました！"
+
+        save_data()
+        self.stop()
+        await interaction.edit_original_response(content=msg, embed=None, view=None)
+
 
 async def setup(bot):
     await bot.add_cog(SoubiCog(bot))
