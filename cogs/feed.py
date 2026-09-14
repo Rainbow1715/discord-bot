@@ -43,11 +43,10 @@ class FoodSelectView(discord.ui.View):
             if not icon:
                 icon = "🍱"
             
-            # ⭕️ ここで「食べたことがあるか」判定！
+            # ⭕️ 「食べたことがあるか」でラベルと説明を切替
             if food_name in eaten_foods:
                 label = f"{food_name} (所持: {count}個)"
                 description = "✅ あげたことがあります"
-            
 
             options.append(
                 discord.SelectOption(
@@ -148,8 +147,13 @@ class CharacterCardView(discord.ui.View):
             await interaction.response.send_message("❌ 他の人のキャラカードは操作できません。", ephemeral=True)
             return
 
+        # ⚡️ 応答処理の遅れ（タイムアウト）を防ぐために一度「応答中」にする
+        await interaction.response.defer(ephemeral=True)
+
         food_view = FoodSelectView(self.user_id, self.char_index)
-        await interaction.response.send_message("🍱 どのアイテムをあげますか？", view=food_view, ephemeral=True)
+        
+        # ⚡️ deferを使った場合は send_message ではなく followup.send を使う
+        await interaction.followup.send("🍱 どのアイテムをあげますか？", view=food_view, ephemeral=True)
 
 
 # --------------------------------------------------
