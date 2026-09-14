@@ -79,7 +79,7 @@ class FoodSelectView(discord.ui.View):
             return
 
         # 3秒タイムアウトを防ぐため応答を保留
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
 
         user_info = db.get_user_profile(self.user_id)
         
@@ -135,7 +135,7 @@ class FoodSelectView(discord.ui.View):
             reward_str = "\n".join(result["rewards"])
             embed.add_field(name="🎉 なつき度アップ報酬GET！", value=reward_str, inline=False)
 
-        await interaction.followup.send(embed=embed, ephemeral=True)
+        await interaction.followup.send(embed=embed)
 
 
 # --------------------------------------------------
