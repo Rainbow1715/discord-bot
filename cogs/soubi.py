@@ -110,6 +110,8 @@ class SoubiCog(commands.Cog):
         characters = u_data.get("characters", [])
         items = u_data.get("items", {})
 
+        print(f"DEBUG - itemsの中身: {items}")
+
         if not characters:
             await interaction.response.send_message("❌ 所持しているキャラクターがいません。", ephemeral=True)
             return
