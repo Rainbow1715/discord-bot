@@ -13,6 +13,26 @@ class ItemView(discord.ui.View):
         self.user = user
         self.u_data = u_data
         self.current_page = 1
+        self.update_button_states()
+
+    def update_button_states(self):
+        """現在のページに応じてボタンのラベルと有効/無効を設定"""
+        # self.children[0] は 前へボタン、self.children[1] は 次へボタン
+        if self.current_page == 1:
+            self.children[0].disabled = True
+            self.children[0].label = "◀ 前へ"
+            self.children[1].disabled = False
+            self.children[1].label = "2ページ目 (食べ物) ▶"
+        elif self.current_page == 2:
+            self.children[0].disabled = False
+            self.children[0].label = "◀ 1ページ目 (主要)"
+            self.children[1].disabled = False
+            self.children[1].label = "3ページ目 (装備) ▶"
+        elif self.current_page == 3:
+            self.children[0].disabled = False
+            self.children[0].label = "◀ 2ページ目 (食べ物)"
+            self.children[1].disabled = True
+            self.children[1].label = "次へ ▶"
 
     def create_embed(self) -> discord.Embed:
         if self.current_page == 1:
@@ -25,16 +45,16 @@ class ItemView(discord.ui.View):
             ticket = items.get("ガチャチケ", 0)  # 保存時のキー名に合わせて調整してください
 
             embed = discord.Embed(
-                title=f"🎒 {self.user.display_name} の所持アイテム (1/2)",
+                title=f"🎒 {self.user.display_name} の所持アイテム (1/3)",
                 description="現在の所持通貨・チケットです。",
                 color=0x3498DB
             )
             embed.add_field(name="💰 ゴールド", value=f"**{gold:,}** G", inline=True)
             embed.add_field(name="💎 虹の欠片", value=f"**{rainbow:,}** 個", inline=True)
             embed.add_field(name="🎫 ガチャチケ", value=f"**{ticket:,}** 枚", inline=False)
-            embed.set_footer(text="ページ 1/2 | 下のボタンで切り替え")
+            embed.set_footer(text="ページ 1/3 | 下のボタンで切り替え")
 
-        else:
+        elif self.current_page == 2:
             # --------------------------------------------------
             # 📄 ページ2: 食べ物・消費アイテム
             # --------------------------------------------------
@@ -45,7 +65,7 @@ class ItemView(discord.ui.View):
             food_items = {k: v for k, v in items.items() if k not in exclude_keys and v > 0}
 
             embed = discord.Embed(
-                title=f"🍱 {self.user.display_name} の所持アイテム (2/2)",
+                title=f"🍱 {self.user.display_name} の所持アイテム (2/3)",
                 description="所持している食べ物・消費アイテム一覧です。",
                 color=0x2ECC71
             )
@@ -56,34 +76,55 @@ class ItemView(discord.ui.View):
             else:
                 embed.add_field(name="🍔 食べ物・その他", value="所持している食べ物はありあせん。", inline=False)
 
-            embed.set_footer(text="ページ 2/2 | 下のボタンで切り替え")
+            embed.set_footer(text="ページ 2/3 | 下のボタンで切り替え")
+
+        else:
+            # --------------------------------------------------
+            # 📄 ページ3: 所持装備品一覧
+            # --------------------------------------------------
+            equipment = self.u_data.get("equipment", {})
+            
+            # 所持数が1個以上の装備のみ抽出
+            equip_items = {k: v for k, v in equipment.items() if v > 0}
+
+            embed = discord.Embed(
+                title=f"🗡️ {self.user.display_name} の所持装備 (3/3)",
+                description="所持している装備品一覧です。",
+                color=0xE74C3C
+            )
+
+            if equip_items:
+                equip_list_str = "\n".join([f"・**{name}**: {count} 個" for name, count in equip_items.items()])
+                embed.add_field(name="⚔️ 装備品", value=equip_list_str, inline=False)
+            else:
+                embed.add_field(name="⚔️ 装備品", value="所持している装備はありません。", inline=False)
+
+            embed.set_footer(text="ページ 3/3 | 下のボタンで切り替え")
 
         return embed
 
-    @discord.ui.button(label="◀ 1ページ目", style=discord.ButtonStyle.primary, disabled=True)
+    @discord.ui.button(label="◀ 前へ", style=discord.ButtonStyle.primary, disabled=True)
     async def prev_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.user.id:
             await interaction.response.send_message("❌ 他人のインベントリ操作はできません。", ephemeral=True)
             return
 
-        self.current_page = 1
-        # ボタンの有効/無効化切り替え
-        self.children[0].disabled = True   # 前へボタン無効化
-        self.children[1].disabled = False  # 次へボタン有効化
-
+        if self.current_page > 1:
+            self.current_page -= 1
+        
+        self.update_button_states()
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
-    @discord.ui.button(label="2ページ目 (食べ物) ▶", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="次へ ▶", style=discord.ButtonStyle.primary)
     async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.user.id:
             await interaction.response.send_message("❌ 他人のインベントリ操作はできません。", ephemeral=True)
             return
 
-        self.current_page = 2
-        # ボタンの有効/無効化切り替え
-        self.children[0].disabled = False  # 前へボタン有効化
-        self.children[1].disabled = True   # 次へボタン無効化
+        if self.current_page < 3:
+            self.current_page += 1
 
+        self.update_button_states()
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
 
