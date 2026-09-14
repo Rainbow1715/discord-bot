@@ -15,6 +15,12 @@ class FoodSelectView(discord.ui.View):
         user_info = db.get_user_profile(user_id)
         user_items = user_info.get("items", {})
 
+        # ターゲットキャラのデータを取得して「食べたことのあるご飯リスト」を取得
+        characters = user_info.get("characters", [])
+        eaten_foods = []
+        if target_char_index < len(characters):
+            eaten_foods = characters[target_char_index].get("eaten_foods", [])
+
         # 所持しているご飯アイテムのみ抽出
         available_foods = [
             food for food in db.FOOD_ITEMS.keys()
@@ -37,10 +43,17 @@ class FoodSelectView(discord.ui.View):
             if not icon:
                 icon = "🍱"
             
+            # ⭕️ ここで「食べたことがあるか」判定！
+            if food_name in eaten_foods:
+                label = f"{food_name} (所持: {count}個)"
+                description = "✅ あげたことがあります"
+            else:
+
             options.append(
                 discord.SelectOption(
-                    label=f"{food_name} (所持: {count}個)",
+                    label=label,
                     value=food_name,
+                    description=description,
                     emoji=icon
                 )
             )
