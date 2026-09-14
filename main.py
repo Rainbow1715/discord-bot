@@ -432,7 +432,13 @@ async def party(interaction: discord.Interaction):
         limit_break = c.get("limit_break", 0)
         star_str = f"★{base_rarity} +{limit_break}" if limit_break > 0 else f"★{base_rarity}"
 
-        msg += f"**{idx}. {c['name']}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']})\n"
+        # 🗡️ 装備名の取得（ベスト装備なら ✨ がつく）
+        char_name = c.get("name", "")
+        current_equip = c.get("equip")
+        equip_disp = format_equip_name(char_name, current_equip)
+
+        # 💡 行の末尾に 🗡️ 装備 を表示
+        msg += f"**{idx}. {char_name}** [{star_str}] (Lv.{c['level']} / HP: {c['hp']} / ATK: {c['atk']}) 🗡️{equip_disp}\n"
 
     embed.description = (
         msg
