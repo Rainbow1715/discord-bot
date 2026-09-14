@@ -31,6 +31,11 @@ ACHIEVEMENTS = {
         "desc": "バトルで200回勝利する",
         "reward_rainbow": 10000,
     },
+    "win_300": {
+        "title": "⚔️ 怖いって",
+        "desc": "バトルで300回勝利する",
+        "reward_rainbow": 10000,
+    },
     "gacha_1": {
         "title": "🔰 初めてのガチャ",
         "desc": "ガチャを累計1回引く",
@@ -50,6 +55,11 @@ ACHIEVEMENTS = {
         "title": "🎰 真のガチャ中毒",
         "desc": "ガチャを累計100回引く",
         "reward_rainbow": 3000,
+    },
+    "gacha_200": {
+        "title": "🎰 欲しいの出ました？",
+        "desc": "ガチャを累計200回引く",
+        "reward_rainbow": 5000,
     },
     # 🆕 特定キャラ編成で勝利の実績
     "win_siera_retya": {
@@ -118,6 +128,11 @@ ACHIEVEMENTS = {
         "desc": "ムクロ(トリッカルパロ) を獲得する",
         "reward_rainbow": 200,
     },
+    "get_halloween_kanata": {
+        "title": "🎃 と、トリックオア…トリート……？",
+        "desc": "彼方（ハロウィン）を獲得する",
+        "reward_rainbow": 200,
+    },
     # 💔 敗北系実績
     "first_lose": {
         "title": "🔰 最初の挫折",
@@ -128,6 +143,11 @@ ACHIEVEMENTS = {
         "title": "🩹 七転び八起き",
         "desc": "累計10回バトルで敗北する",
         "reward_rainbow": 350,
+    },
+    "lose_50": {
+        "title": "🩹 どしたん話聞こか？",
+        "desc": "累計50回バトルで敗北する",
+        "reward_rainbow": 500,
     },
     # 👹 イベントボス撃破実績
     "kill_roi": {
