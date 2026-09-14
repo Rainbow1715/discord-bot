@@ -25,7 +25,7 @@ EVENT_CONFIG = {
         "title": "【狂乱】カス三人衆を連れてきたよ。",
         "candidates": ["ロイ", "折原和也", "神明龍矢"],
         "max_spawn": 3,
-        "boss_level": 100,
+        "boss_level": 50,
         "hp_multiplier": 2.5,
         "atk_multiplier": 1.1,
         "reward_gold": (8000, 15000),
