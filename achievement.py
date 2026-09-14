@@ -26,6 +26,11 @@ ACHIEVEMENTS = {
         "desc": "バトルで100回勝利する",
         "reward_rainbow": 10000,
     },
+    "win_200": {
+        "title": "⚔️ （ドン引き）",
+        "desc": "バトルで200回勝利する",
+        "reward_rainbow": 10000,
+    },
     "gacha_1": {
         "title": "🔰 初めてのガチャ",
         "desc": "ガチャを累計1回引く",
@@ -82,6 +87,11 @@ ACHIEVEMENTS = {
         "desc": "ロイ サラ 神明龍矢 を編成してバトルに勝利する",
         "reward_rainbow": 500,
     },
+    "win_reo_sara": {
+        "title": "🤩 弱虫毛虫、意気地なし！",
+        "desc": "レオ サラ を編成してバトルに勝利する",
+        "reward_rainbow": 500,
+    },
     # 👤 特定キャラ入手実績
     "get_kami": {
         "title": "❔ なんで？",
@@ -136,6 +146,71 @@ ACHIEVEMENTS = {
         "title": "⚔️ カス討伐：神明龍矢",
         "desc": "イベント戦で 神明龍矢 を撃破する",
         "reward_rainbow": 1000,
+    },
+    "kill_sara": {
+        "title": "⚔️ カス討伐：サラ",
+        "desc": "イベント戦で サラ を撃破する",
+        "reward_rainbow": 1000,
+    # 飯実績
+    "eat_siera": {
+        "title": "🍽️ しえらの嫌いなもの",
+        "desc": "竹村しえら に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_retyan": {
+        "title": "🍽️ れーちゃんの嫌いなもの",
+        "desc": "れーちゃん に嫌いなものを食べさせた",
+        "reward_rainbow": 150,
+    },
+    "eat_reo": {
+        "title": "🍽️ レオの嫌いなもの",
+        "desc": "レオ に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_touwata": {
+        "title": "🍽️ 唐綿さんの嫌いなもの",
+        "desc": "Gerânio に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_skrei": {
+        "title": "🍽️ xX神Xxの嫌いなもの",
+        "desc": "白黒レイ に嫌いなものを食べさせた",
+        "reward_rainbow": 500,
+    },
+    "eat_marin": {
+        "title": "🍽️ 茉鈴の嫌いなもの",
+        "desc": "茉鈴 に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_syuuto": {
+        "title": "🍽️ 柊人の嫌いなもの",
+        "desc": "橘柊人 に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_mikan": {
+        "title": "🍽️ 河野蜜柑の嫌いなもの",
+        "desc": "河野蜜柑 に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_roi": {
+        "title": "🍽️ ロイの嫌いなもの",
+        "desc": "ロイ に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_orihara": {
+        "title": "🍽️ 折原さんの嫌いなもの",
+        "desc": "折原和也 に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_tatuya": {
+        "title": "🍽️ 神明龍矢の嫌いなもの",
+        "desc": "神明龍矢 に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_sara": {
+        "title": "🍽️ サラの嫌いなもの",
+        "desc": "サラ に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
     },
 }
 
