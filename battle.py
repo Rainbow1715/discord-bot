@@ -275,7 +275,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         enemy_multiplier = spawn_count
 
     else:
-        if avg_level >= 40:
+        if avg_level >= 90:
             enemy_count = 3
         elif avg_level >= 25:
             enemy_count = 2
