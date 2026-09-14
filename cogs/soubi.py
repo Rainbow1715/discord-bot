@@ -108,16 +108,22 @@ class SoubiCog(commands.Cog):
     async def equip(self, interaction: discord.Interaction):
         u_data = get_user_profile(interaction.user.id)
         characters = u_data.get("characters", [])
-        items = u_data.get("items", {})
+        
+        # 💡 equipments リスト（[{"name": "ナイフ", ...}, ...]）を取得
+        raw_equipments = u_data.get("equipments", [])
 
-        print(f"DEBUG - itemsの中身: {items}")
+        # 🔍 デバッグ用：ターミナルで所持データの中身を確認
+        print(f"DEBUG - 所持装備リストの中身: {raw_equipments}")
 
         if not characters:
             await interaction.response.send_message("❌ 所持しているキャラクターがいません。", ephemeral=True)
             return
 
-        # 所持している装備リストを取得（装備マスタに存在する＆所持数が1以上のもの）
-        user_equipments = [item_name for item_name, count in items.items() if item_name in EQUIPMENT_MASTER and count > 0]
+        # 💡 リスト内の辞書から装備名を取り出し、重複を除外したリストを作成
+        user_equipments = list(set(
+            eq["name"] for eq in raw_equipments 
+            if isinstance(eq, dict) and eq.get("name") in EQUIPMENT_MASTER
+        ))
 
         # 装備選択用のドロップダウン View を作成して送信
         view = EquipSelectView(user_id=interaction.user.id, characters=characters, user_equipments=user_equipments)
@@ -165,12 +171,10 @@ class EquipSelectView(discord.ui.View):
 
     async def on_char_select(self, interaction: discord.Interaction):
         self.selected_char_idx = int(self.char_select.values[0])
-        # 💡 ドロップダウン選択時は defer() せず、そのまま応答を受け取る
         await interaction.response.defer()
 
     async def on_equip_select(self, interaction: discord.Interaction):
         self.selected_equip = self.equip_select.values[0]
-        # 💡 ドロップダウン選択時は defer() せず、そのまま応答を受け取る
         await interaction.response.defer()
 
     @discord.ui.button(label="決定", style=discord.ButtonStyle.success)
@@ -193,7 +197,6 @@ class EquipSelectView(discord.ui.View):
         save_data()
         self.stop()
         
-        # 💡 edit_original_response ではなく、ボタンを押した時点のインタラクションで返答する
         await interaction.response.send_message(msg, ephemeral=True)
 
 
