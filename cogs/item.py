@@ -80,12 +80,10 @@ class ItemView(discord.ui.View):
 
         else:
             # --------------------------------------------------
-            # 📄 ページ3: 所持装備品一覧
+            # 📄 ページ3: 所持装備品一覧（リスト形式の読み込み）
             # --------------------------------------------------
-            equipment = self.u_data.get("equipment", {})
-            
-            # 所持数が1個以上の装備のみ抽出
-            equip_items = {k: v for k, v in equipment.items() if v > 0}
+            # equipments または user_equipments のどちらのキーでも取得できるように対応
+            user_equipments = self.u_data.get("equipments") or self.u_data.get("user_equipments", [])
 
             embed = discord.Embed(
                 title=f"🗡️ {self.user.display_name} の所持装備 (3/3)",
@@ -93,8 +91,21 @@ class ItemView(discord.ui.View):
                 color=0xE74C3C
             )
 
-            if equip_items:
-                equip_list_str = "\n".join([f"・**{name}**: {count} 個" for name, count in equip_items.items()])
+            if user_equipments:
+                # リスト内の装備を集計（同じ名前・レア度の装備をカウント）
+                equip_counts = {}
+                for eq in user_equipments:
+                    name = eq.get("name", "不明な装備")
+                    rarity = eq.get("rarity", "")
+                    
+                    # レア度表記の整形（数値の場合は ★ を付与）
+                    rarity_str = f"★{rarity}" if str(rarity).isdigit() else str(rarity)
+                    key = f"{name} [{rarity_str}]" if rarity_str else name
+                    
+                    equip_counts[key] = equip_counts.get(key, 0) + 1
+
+                # 集計結果をリスト表示用テキストに整形
+                equip_list_str = "\n".join([f"・**{display_name}** ×{count}" for display_name, count in equip_counts.items()])
                 embed.add_field(name="⚔️ 装備品", value=equip_list_str, inline=False)
             else:
                 embed.add_field(name="⚔️ 装備品", value="所持している装備はありません。", inline=False)
