@@ -30,7 +30,7 @@ async def start_dummy_server():
 
 
 # --------------------------------------------------
-# 🗡️ 装備表示補助用関数
+# 🗡️ 装備表示補助用関数（修正版）
 # --------------------------------------------------
 def get_equip_display(character_data: dict) -> str:
     """キャラの現在装備を取得し、ベスト装備と一致していれば ✨ を付けて返す"""
@@ -40,11 +40,15 @@ def get_equip_display(character_data: dict) -> str:
     if not current_equip:
         return "なし"
 
-    # 現在の装備とベスト装備が一致している場合は ✨ を付与
-    if best_equip and current_equip == best_equip:
-        return f"✨{current_equip}"
+    # 装備が辞書型(dict)の場合は名前(name)を取り出し、文字列の場合はそのまま使う
+    current_name = current_equip.get("name") if isinstance(current_equip, dict) else current_equip
+    best_name = best_equip.get("name") if isinstance(best_equip, dict) else best_equip
 
-    return current_equip
+    # 現在の装備とベスト装備の名前が一致している場合は ✨ を付与
+    if best_name and current_name == best_name:
+        return f"✨{current_name}"
+
+    return str(current_name)
 
 
 # --------------------------------------------------
@@ -320,7 +324,7 @@ class StatusPaginationView(discord.ui.View):
 
             # 🗡️ 装備表示（ベスト装備判定関数を適用）
             equip_disp = get_equip_display(c)
-            is_best = c.get("equip") and c.get("equip") == c.get("best_equip")
+            is_best = equip_disp.startswith("✨")
             equip_bonus_str = " (ATK+20%!)" if is_best else ""
 
             s_name = c.get("skill_name", "なし")
