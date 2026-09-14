@@ -3,6 +3,20 @@ from discord import app_commands
 from discord.ext import commands
 from database import get_user_profile, save_data
 
+def get_equip_display(character_data: dict) -> str:
+    """キャラの現在装備を取得し、ベスト装備と一致していれば ✨ を付けて返す"""
+    current_equip = character_data.get("equip")
+    best_equip = character_data.get("best_equip")
+
+    if not current_equip:
+        return "なし"
+
+    # 現在の装備とベスト装備が一致している場合は ✨ を先頭に付与
+    if best_equip and current_equip == best_equip:
+        return f"✨{current_equip}"
+
+    return current_equip
+
 # 🗡️ 装備マスタデータ
 EQUIPMENT_MASTER = {
     "鉄の剣": {
