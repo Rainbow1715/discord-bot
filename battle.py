@@ -174,6 +174,28 @@ class Character:
                 else:
                     return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし **{target.name}** には効かなかった！"
 
+            # 連続3回攻撃
+            elif self.skill_type == "multi_hit":
+                hits = 3
+                hit_damages = []
+                total_dmg = 0
+                
+                for _ in range(hits):
+                    # 1発あたり：攻撃力の0.5倍（＋微小な乱数振れ幅）
+                    dmg = int((current_atk * 0.5) + random.randint(-1, 2))
+                    dmg = max(1, dmg) # 最低1ダメージ保証
+                    hit_damages.append(str(dmg))
+                    total_dmg += dmg
+                
+                # ダメージ適用
+                target.hp = max(0, target.hp - total_dmg)
+                
+                # ログの作成例: 「15, 14, 16 の計 45 ダメージ！」
+                hits_str = ", ".join(hit_damages)
+                return f"⚡ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **3連続攻撃**（{hits_str}）！ **合計 {total_dmg} ダメージ**！"
+
+            # --------------------------------------------------
+            
             else:
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15.0
                 dmg = int(pow_val + current_atk + random.randint(-3, 3))
