@@ -117,29 +117,31 @@ class ReactionsCog(commands.Cog):
             master_dislikes = master_char.get("dislikes", {})
             master_special = master_char.get("special_reactions", {})
 
-            # ❤️ 好きな食べ物
-            if known_likes:
+            # ❤️ 好きな食べ物（「怪しい肉」を除外）
+            filtered_likes = [f for f in known_likes if f != "怪しい肉"]
+            if filtered_likes:
                 like_lines = []
-                for food in known_likes:
-                    reaction = (
-                        master_likes.get(food, "「美味しい！」")
-                        if isinstance(master_likes, dict)
-                        else "「美味しい！」"
-                    )
+                for food in filtered_likes:
+                    if isinstance(master_likes, dict):
+                        reaction = master_likes.get(food, "「美味しい！」")
+                    else:
+                        reaction = "「美味しい！」"
                     like_lines.append(f"・**{food}**: {reaction}")
                 likes_display = "\n".join(like_lines)
             else:
                 likes_display = "まだわかりません"
 
-            # 💔 嫌いな食べ物
-            if known_dislikes:
+            # 💔 嫌いな食べ物（「怪しい肉」を除外）
+            filtered_dislikes = [f for f in known_dislikes if f != "怪しい肉"]
+            if filtered_dislikes:
                 dislike_lines = []
-                for food in known_dislikes:
-                    reaction = (
-                        master_dislikes.get(food, "「……」")
-                        if isinstance(master_dislikes, dict)
-                        else "「……」"
-                    )
+                for food in filtered_dislikes:
+                    if isinstance(master_dislikes, dict):
+                        reaction = master_dislikes.get(food, "「……」")
+                    elif isinstance(master_dislikes, list) and food in master_dislikes:
+                        reaction = "「……」"
+                    else:
+                        reaction = "「……」"
                     dislike_lines.append(f"・**{food}**: {reaction}")
                 dislikes_display = "\n".join(dislike_lines)
             else:
