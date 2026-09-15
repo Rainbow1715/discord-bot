@@ -326,7 +326,7 @@ GACHA_POOL = [
         "dislikes": {
             "クソデカステーキ": "普通のサイズのはないの？ と文句を言ってきた。",
         },
-        "master_special": {"怪しい肉": "え……何これ？ と顔を顰めていた。食べたことはなさそうだった。"},
+        "special_reactions": {"怪しい肉": "え……何これ？ と顔を顰めていた。食べたことはなさそうだった。"},
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
@@ -358,7 +358,7 @@ GACHA_POOL = [
         "dislikes": {
             "酒": "研究が鈍るじゃないか、と怒ってきた。",
         },
-        "master_special": {"怪しい肉": "……元はどのモルモットだい？ と聞いてきた。食べたことはなさそうだった。"},
+        "special_reactions": {"怪しい肉": "……元はどのモルモットだい？ と聞いてきた。食べたことはなさそうだった。"},
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
