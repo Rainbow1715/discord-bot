@@ -381,7 +381,7 @@ GACHA_POOL = [
         "rec": 10,
         "skill_name": "黙って人の言うこと聞けねぇ奴は、背中刺されて死んだらいい。",
         "skill_type": "physical",
-        "skill_pow": 20,
+        "skill_pow": 50,
         "skill_trigger": "chance",
         "skill_rate": 75,
         "best_equip": "酒瓶",
