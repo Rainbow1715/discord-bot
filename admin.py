@@ -107,8 +107,9 @@ async def admin_mail(
     gold: int = 0,
     rainbow: int = 0,
     ticket: int = 0,
-    char_name: str = None,  # 👈 添付キャラ名（任意）
-    char_count: int = 1  # 👈 送信個数を追加（デフォルト1）
+    Sticket: int = 0,      # 👈 装備ガチャチケット
+    char_name: str = None,
+    char_count: int = 1
 ):
     if char_name:
         char_exists = any(c.get("name") == char_name for c in GACHA_POOL)
@@ -132,6 +133,7 @@ async def admin_mail(
                 "gold": gold,
                 "rainbow": rainbow,
                 "ticket": ticket,
+                "Sticket": Sticket, # 👈 追記：辞書に正しく格納
                 "char_name": char_name,
                 "char_count": char_count,
                 "claimed": False
@@ -147,8 +149,10 @@ async def admin_mail(
         attachments.append(f"虹の欠片 {rainbow}個")
     if ticket > 0:
         attachments.append(f"ガチャチケ {ticket}枚")
+    if Sticket > 0:
+        attachments.append(f"装備ガチャチケ {Sticket}枚") # 👈 追記：表示ログに追加
     if char_name:
-        attachments.append(f"👤 {char_name}")
+        attachments.append(f"👤 {char_name} ×{char_count}")
 
     attachment_str = " / ".join(attachments) if attachments else "なし"
 
@@ -173,7 +177,9 @@ async def admin_direct_mail(
     gold: int = 0,
     rainbow: int = 0,
     ticket: int = 0,
-    char_name: str = None
+    Sticket: int = 0,
+    char_name: str = None, # 👈 カンマを追加
+    char_count: int = 1
 ):
     if char_name:
         char_exists = any(c.get("name") == char_name for c in GACHA_POOL)
@@ -201,7 +207,9 @@ async def admin_direct_mail(
         "gold": gold,
         "rainbow": rainbow,
         "ticket": ticket,
+        "Sticket": Sticket, # 👈 追記：辞書に正しく格納
         "char_name": char_name,
+        "char_count": char_count,
         "claimed": False
     })
 
@@ -214,8 +222,10 @@ async def admin_direct_mail(
         attachments.append(f"虹の欠片 {rainbow}個")
     if ticket > 0:
         attachments.append(f"ガチャチケ {ticket}枚")
+    if Sticket > 0:
+        attachments.append(f"装備ガチャチケ {Sticket}枚") # 👈 追記：表示ログに追加
     if char_name:
-        attachments.append(f"👤 {char_name}")
+        attachments.append(f"👤 {char_name} ×{char_count}")
 
     attachment_str = " / ".join(attachments) if attachments else "なし"
 
