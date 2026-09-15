@@ -13,7 +13,7 @@ EVENT_CONFIG = {
     "name": "【特別イベント】vsカス",
     "single_mode": {
         "title": "【単体】vsカス",
-        "candidates": ["ロイ", "折原和也", "神明龍矢"],
+        "candidates": ["ロイ", "折原和也", "神明龍矢", "サラ"],
         "boss_level": 50,
         "hp_multiplier": 3.0,
         "atk_multiplier": 1.0,
@@ -23,7 +23,7 @@ EVENT_CONFIG = {
     },
     "multi_mode": {
         "title": "【狂乱】カス三人衆を連れてきたよ。",
-        "candidates": ["ロイ", "折原和也", "神明龍矢"],
+        "candidates": ["ロイ", "折原和也", "神明龍矢", "サラ"],
         "max_spawn": 3,
         "boss_level": 50,
         "hp_multiplier": 2.5,
