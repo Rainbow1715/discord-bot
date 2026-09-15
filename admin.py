@@ -107,7 +107,7 @@ async def admin_mail(
     gold: int = 0,
     rainbow: int = 0,
     ticket: int = 0,
-    Sticket: int = 0,      # 👈 装備ガチャチケット
+    sticket: int = 0,      # 👈 「Sticket」から「sticket」へ変更（小文字）
     char_name: str = None,
     char_count: int = 1
 ):
@@ -133,7 +133,7 @@ async def admin_mail(
                 "gold": gold,
                 "rainbow": rainbow,
                 "ticket": ticket,
-                "Sticket": Sticket, # 👈 追記：辞書に正しく格納
+                "Sticket": sticket, # メール保存時のキーは大文字を含んでいてもOKです
                 "char_name": char_name,
                 "char_count": char_count,
                 "claimed": False
@@ -149,8 +149,8 @@ async def admin_mail(
         attachments.append(f"虹の欠片 {rainbow}個")
     if ticket > 0:
         attachments.append(f"ガチャチケ {ticket}枚")
-    if Sticket > 0:
-        attachments.append(f"装備ガチャチケ {Sticket}枚") # 👈 追記：表示ログに追加
+    if sticket > 0:
+        attachments.append(f"装備ガチャチケ {sticket}枚")
     if char_name:
         attachments.append(f"👤 {char_name} ×{char_count}")
 
@@ -177,8 +177,8 @@ async def admin_direct_mail(
     gold: int = 0,
     rainbow: int = 0,
     ticket: int = 0,
-    Sticket: int = 0,
-    char_name: str = None, # 👈 カンマを追加
+    sticket: int = 0,      # 👈 「Sticket」から「sticket」へ変更（小文字）
+    char_name: str = None,
     char_count: int = 1
 ):
     if char_name:
@@ -207,7 +207,7 @@ async def admin_direct_mail(
         "gold": gold,
         "rainbow": rainbow,
         "ticket": ticket,
-        "Sticket": Sticket, # 👈 追記：辞書に正しく格納
+        "Sticket": sticket, # メール保存時のキーは大文字を含んでいてもOKです
         "char_name": char_name,
         "char_count": char_count,
         "claimed": False
@@ -222,8 +222,8 @@ async def admin_direct_mail(
         attachments.append(f"虹の欠片 {rainbow}個")
     if ticket > 0:
         attachments.append(f"ガチャチケ {ticket}枚")
-    if Sticket > 0:
-        attachments.append(f"装備ガチャチケ {Sticket}枚") # 👈 追記：表示ログに追加
+    if sticket > 0:
+        attachments.append(f"装備ガチャチケ {sticket}枚")
     if char_name:
         attachments.append(f"👤 {char_name} ×{char_count}")
 
