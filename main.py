@@ -521,7 +521,7 @@ async def shop(interaction: discord.Interaction):
 
 
 # --------------------------------------------------
-# 📬 メール受信・受取コマンド（キャラ受取対応版）
+# 📬 メール受信・受取コマンド（キャラ・装備ガチャチケ受取対応版）
 # --------------------------------------------------
 @bot.tree.command(
     name="mailbox", description="届いているメールや報酬を確認・受け取ります"
@@ -541,6 +541,7 @@ async def mailbox(interaction: discord.Interaction):
     total_gold = 0
     total_rainbow = 0
     total_ticket = 0
+    total_Sticket = 0  # 👈 1. 初期化を追加
     received_chars = []
     mail_titles = []
 
@@ -548,6 +549,7 @@ async def mailbox(interaction: discord.Interaction):
         total_gold += m.get("gold", 0)
         total_rainbow += m.get("rainbow", 0)
         total_ticket += m.get("ticket", 0)
+        total_Sticket += m.get("Sticket", 0)  # 👈 2. メールから装備ガチャチケ数を加算
 
         char_name = m.get("char_name")
         char_count = m.get("char_count", 1)
@@ -576,12 +578,16 @@ async def mailbox(interaction: discord.Interaction):
         m["claimed"] = True
         mail_titles.append(m.get("title", "無題のメール"))
 
+    # データ反映
     u_data["gold"] += total_gold
     u_data["items"]["虹の欠片"] = (
         u_data["items"].get("虹の欠片", 0) + total_rainbow
     )
     u_data["items"]["ガチャチケ"] = (
         u_data["items"].get("ガチャチケ", 0) + total_ticket
+    )
+    u_data["items"]["装備ガチャチケット"] = (  # 👈 3. DBの所持アイテムへ加算
+        u_data["items"].get("装備ガチャチケット", 0) + total_Sticket
     )
     save_data()
 
@@ -591,13 +597,20 @@ async def mailbox(interaction: discord.Interaction):
         color=0x2ECC71,
     )
 
-    reward_msg = (
-        f"💰 **ゴールド**: +{total_gold} G\n"
-        f"💎 **虹の欠片**: +{total_rainbow} 個\n"
-        f"🎫 **ガチャチケ**: +{total_ticket} 枚"
-    )
+    # 表示用テキストの構築
+    reward_items = []
+    if total_gold > 0:
+        reward_items.append(f"💰 **ゴールド**: +{total_gold} G")
+    if total_rainbow > 0:
+        reward_items.append(f"💎 **虹の欠片**: +{total_rainbow} 個")
+    if total_ticket > 0:
+        reward_items.append(f"🎫 **ガチャチケ**: +{total_ticket} 枚")
+    if total_Sticket > 0:
+        reward_items.append(f"🎟️ **装備ガチャチケ**: +{total_Sticket} 枚")
     if received_chars:
-        reward_msg += f"\n👤 **獲得キャラ**: " + ", ".join(received_chars)
+        reward_items.append(f"👤 **獲得キャラ**: " + ", ".join(received_chars))
+
+    reward_msg = "\n".join(reward_items) if reward_items else "報酬なし"
 
     embed.add_field(name="獲得アイテム", value=reward_msg, inline=False)
 
