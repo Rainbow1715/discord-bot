@@ -33,6 +33,8 @@ EQUIPMENT_MASTER = {
     "鏡": {"icon": "", "rarity": 3, "atk": 10, "description": "この世で1番美しいのはだぁれ？"},
     "怪しい試験管": {"icon": "", "rarity": 3, "p_hp": 50, "description": "何が入ってるんですかこれ"},
     "酒瓶": {"icon": "", "rarity": 3, "atk": 10, "description": "割れると痛いですよ。"},
+    "片手剣": {"icon": "", "rarity": 3, "atk": 10, "description": "なんか不思議な力で作られている、黄色い剣。"},
+    
 }
 
 
