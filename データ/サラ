@@ -36,8 +36,7 @@
 
 # --- スキル関連 ---
 "skill_name": "うわああああああああこっちこないで！！！！！",       # [文字列] スキル名
-"skill_type": "multi_hit",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
-"skill_pow": 20,        # [数値] スキル威力・倍率
+"skill_type": "multi_hit",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など)
 "skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
 "skill_rate": 20,       # [数値] 発動成功率(%)（例: 95 = 95%）※一部キャラのみ
 
