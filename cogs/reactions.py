@@ -4,6 +4,60 @@ from discord import app_commands
 from discord.ext import commands
 
 
+# --------------------------------------------------
+# 🔘 ページ切り替え用 View
+# --------------------------------------------------
+class ReactionPaginationView(discord.ui.View):
+
+    def __init__(self, embeds: list[discord.Embed], author_id: int):
+        super().__init__(timeout=180)  # 3分間操作がなければ無効化
+        self.embeds = embeds
+        self.author_id = author_id
+        self.current_page = 0
+        self.update_buttons()
+
+    def update_buttons(self):
+        """現在のページに応じてボタンの有効/無効を更新"""
+        self.prev_button.disabled = self.current_page == 0
+        self.next_button.disabled = self.current_page == len(self.embeds) - 1
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """コマンドを実行した本人だけがボタンを操作できるように制限"""
+        if interaction.user.id != self.author_id:
+            await interaction.response.send_message(
+                "他の人の図鑑操作はできません！", ephemeral=True
+            )
+            return False
+        return True
+
+    @discord.ui.button(
+        label="◀ 前へ", style=discord.ButtonStyle.primary, custom_id="prev_page"
+    )
+    async def prev_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        self.current_page -= 1
+        self.update_buttons()
+        await interaction.response.edit_message(
+            embed=self.embeds[self.current_page], view=self
+        )
+
+    @discord.ui.button(
+        label="次へ ▶", style=discord.ButtonStyle.primary, custom_id="next_page"
+    )
+    async def next_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        self.current_page += 1
+        self.update_buttons()
+        await interaction.response.edit_message(
+            embed=self.embeds[self.current_page], view=self
+        )
+
+
+# --------------------------------------------------
+# 📖 コマンド本体
+# --------------------------------------------------
 class ReactionsCog(commands.Cog):
 
     def __init__(self, bot):
@@ -32,7 +86,7 @@ class ReactionsCog(commands.Cog):
             if field_count >= 6:
                 embeds.append(current_embed)
                 current_embed = discord.Embed(
-                    title="📖 判明済み・食べ物の反応図鑑 (続き)",
+                    title="📖 判明済み・食べ物の反応図鑑",
                     color=discord.Color.orange(),
                 )
                 field_count = 0
@@ -125,11 +179,17 @@ class ReactionsCog(commands.Cog):
 
         embeds.append(current_embed)
 
-        # 1枚目を送信
-        await interaction.followup.send(embed=embeds[0])
-        # 2枚目以降（7キャラ目〜）があれば順次追加送信
-        for extra_embed in embeds[1:]:
-            await interaction.followup.send(embed=extra_embed)
+        # ページ番号をフッターに追加（例：1 / 3 ページ）
+        total_pages = len(embeds)
+        for i, embed in enumerate(embeds):
+            embed.set_footer(text=f"ページ {i + 1} / {total_pages}")
+
+        # 1ページしかない場合はボタンを付けずに送信
+        if total_pages == 1:
+            await interaction.followup.send(embed=embeds[0])
+        else:
+            view = ReactionPaginationView(embeds, interaction.user.id)
+            await interaction.followup.send(embed=embeds[0], view=view)
 
 
 async def setup(bot):
