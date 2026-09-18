@@ -360,8 +360,20 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             enemies.append(Character(enemy_data, is_boss=True))
             
         title_name = "通常クエスト"
-        rewards = ((1000, 3000), (50, 100), (50, 100))
-        enemy_multiplier = enemy_count
+        
+        # 🎁 敵の体数に応じた報酬テーブルの設定（ゴールド, 虹の欠片, 経験値）
+        if enemy_count == 3:
+            # 3体の場合の報酬
+            rewards = ((3000, 6000), (150, 300), (2000, 3000))
+        elif enemy_count == 2:
+            # 2体の場合の報酬
+            rewards = ((1800, 4000), (90, 180), (1000, 2000))
+        else:
+            # 1体の場合の報酬
+            rewards = ((1000, 2000), (50, 100), (50, 100))
+
+        # 個別設定した報酬をそのまま使うため、倍率は1にしておく
+        enemy_multiplier = 1
 
     enemy_desc = ", ".join([f"**{e.name}**" for e in enemies])
     party_desc = ', '.join([f"**{p.name}** [{p.atk_type}] (Lv.{p.level})" for p in party])
