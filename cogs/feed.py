@@ -20,13 +20,16 @@ EAT_ACHIEVEMENT_MAP = {
 }
 
 # --------------------------------------------------
-# 🍱 ご飯選択ドロップダウンの View
+# 🍱 ご飯選択ドロップダウン & ページ送りの View
 # --------------------------------------------------
 class FoodSelectView(discord.ui.View):
-    def __init__(self, user_id: int, target_char_index: int):
+    ITEMS_PER_PAGE = 25
+
+    def __init__(self, user_id: int, target_char_index: int, page: int = 0):
         super().__init__(timeout=60)
         self.user_id = user_id
         self.target_char_index = target_char_index
+        self.page = page
 
         user_info = db.get_user_profile(user_id)
         user_items = user_info.get("items", {})
@@ -38,12 +41,12 @@ class FoodSelectView(discord.ui.View):
             eaten_foods = characters[target_char_index].get("eaten_foods", [])
 
         # 所持しているご飯アイテムのみ抽出
-        available_foods = [
+        self.available_foods = [
             food for food in db.FOOD_ITEMS.keys()
             if user_items.get(food, 0) > 0
         ]
 
-        if not available_foods:
+        if not self.available_foods:
             select = discord.ui.Select(
                 placeholder="あげるご飯がありません…",
                 options=[discord.SelectOption(label="ご飯を持っていません", value="none")],
@@ -52,16 +55,20 @@ class FoodSelectView(discord.ui.View):
             self.add_item(select)
             return
 
+        # ページ計算
+        self.max_page = (len(self.available_foods) - 1) // self.ITEMS_PER_PAGE
+        start_idx = self.page * self.ITEMS_PER_PAGE
+        end_idx = start_idx + self.ITEMS_PER_PAGE
+        current_page_foods = self.available_foods[start_idx:end_idx]
+
+        # ドロップダウンアイテム構築
         options = []
-        for food_name in available_foods[:25]:
+        for food_name in current_page_foods:
             count = user_items[food_name]
-            icon = db.FOOD_ITEMS[food_name].get("icon", "🍱")
-            if not icon:
-                icon = "🍱"
+            icon = db.FOOD_ITEMS[food_name].get("icon", "🍱") or "🍱"
             
             label = f"{food_name} (所持: {count}個)"
             
-            # ⭕️ 「あげたことがある場合」のみ説明文を付与
             if food_name in eaten_foods:
                 description = "✅ あげたことがあります"
             else:
@@ -77,20 +84,60 @@ class FoodSelectView(discord.ui.View):
             )
 
         select = discord.ui.Select(
-            placeholder="あげるご飯を選んでね！",
+            placeholder=f"あげるご飯を選んでね！ ({self.page + 1}/{self.max_page + 1} ページ)",
             options=options,
             min_values=1,
-            max_values=1
+            max_values=1,
+            row=0
         )
         select.callback = self.food_selected_callback
         self.add_item(select)
 
-    async def food_selected_callback(self, interaction: discord.Interaction):
+        # 📄 25個を超える場合のみページ送りボタンを表示（2行目に配置）
+        if self.max_page > 0:
+            prev_btn = discord.ui.Button(
+                label="◀️ 前へ",
+                style=discord.ButtonStyle.secondary,
+                disabled=(self.page == 0),
+                row=1
+            )
+            prev_btn.callback = self.prev_page_callback
+            self.add_item(prev_btn)
+
+            next_btn = discord.ui.Button(
+                label="次へ ▶️",
+                style=discord.ButtonStyle.secondary,
+                disabled=(self.page >= self.max_page),
+                row=1
+            )
+            next_btn.callback = self.next_page_callback
+            self.add_item(next_btn)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.user_id:
             await interaction.response.send_message("❌ 他の人の操作はできません。", ephemeral=True)
-            return
+            return False
+        return True
 
-        food_name = self.children[0].values[0]
+    # ページ切替の共通更新処理
+    async def update_page(self, interaction: discord.Interaction, new_page: int):
+        new_view = FoodSelectView(self.user_id, self.target_char_index, page=new_page)
+        await interaction.response.edit_message(
+            content=f"🍱 どのアイテムをあげますか？ ({new_page + 1}/{new_view.max_page + 1} ページ)",
+            view=new_view
+        )
+
+    async def prev_page_callback(self, interaction: discord.Interaction):
+        await self.update_page(interaction, self.page - 1)
+
+    async def next_page_callback(self, interaction: discord.Interaction):
+        await self.update_page(interaction, self.page + 1)
+
+    async def food_selected_callback(self, interaction: discord.Interaction):
+        # 選択されたSelect要素から値を取得
+        select_component = [child for child in self.children if isinstance(child, discord.ui.Select)][0]
+        food_name = select_component.values[0]
+        
         if food_name == "none":
             return
 
