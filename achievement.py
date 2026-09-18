@@ -36,6 +36,16 @@ ACHIEVEMENTS = {
         "desc": "バトルで300回勝利する",
         "reward_rainbow": 10000,
     },
+    "win_400": {
+        "title": "⚔️ なにがおまえをそこまでかりたてるのか",
+        "desc": "バトルで400回勝利する",
+        "reward_rainbow": 10000,
+    },
+    "win_500": {
+        "title": "⚔️ えぇ…",
+        "desc": "バトルで500回勝利する",
+        "reward_rainbow": 10000,
+    },
     "gacha_1": {
         "title": "🔰 初めてのガチャ",
         "desc": "ガチャを累計1回引く",
@@ -135,7 +145,12 @@ ACHIEVEMENTS = {
     },
     "get_halloween_kanata": {
         "title": "🎃 と、トリックオア…トリート……？",
-        "desc": "彼方(ハロウィン)を獲得する",
+        "desc": "彼方(ハロウィン) を獲得する",
+        "reward_rainbow": 200,
+    },
+    "get_rider_higurekou": {
+        "title": "タ・ト・バ！　タトバ タ・ト・バ！",
+        "desc": "日暮考(仮面ライダーパロ) を獲得する",
         "reward_rainbow": 200,
     },
     # 💔 敗北系実績
@@ -152,6 +167,11 @@ ACHIEVEMENTS = {
     "lose_50": {
         "title": "🩹 どしたん話聞こか？",
         "desc": "累計50回バトルで敗北する",
+        "reward_rainbow": 500,
+    },
+    "lose_100": {
+        "title": "🩹 うんうん、それは彼氏さんが悪いね！",
+        "desc": "累計100回バトルで敗北する",
         "reward_rainbow": 500,
     },
     # 👹 イベントボス撃破実績
@@ -251,6 +271,8 @@ WIN_THRESHOLD_ACHIEVEMENTS = [
     (100, "win_100"),
     (200, "win_200"),
     (300, "win_300"),
+    (400, "win_400"),
+    (500, "win_500"),
 ]
 
 
@@ -318,6 +340,8 @@ async def on_battle_lose(interaction: discord.Interaction, u_data: dict):
         await check_and_unlock_achievement(interaction, "lose_10")
     if lose_count >= 50:
         await check_and_unlock_achievement(interaction, "lose_50")
+    if lose_count >= 100:
+        await check_and_unlock_achievement(interaction, "lose_100")
 
 
 # --------------------------------------------------
@@ -377,6 +401,7 @@ async def check_character_achievements(
         "ルシア(トリッカルパロ)": "get_trickal_rucia",
         "ムクロ(トリッカルパロ)": "get_trickal_mukuro",
         "彼方(ハロウィン)": "get_halloween_kanata",  # マッピングを追加
+        "日暮考(仮面ライダーパロ)": "get_rider_higurekou",
     }
 
     for name, ach_id in mapping.items():
