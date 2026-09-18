@@ -19,7 +19,17 @@ EVENT_CONFIG = {
         "atk_multiplier": 1.0,
         "reward_gold": (5000, 8000),
         "reward_rainbow": (2000, 3000),
-        "reward_exp": (2000, 3000),
+        "reward_exp": (1800, 2500),
+    },
+    "single100_mode": {
+        "title": "【単体】vsカス(強化)",
+        "candidates": ["ロイ", "折原和也", "神明龍矢", "サラ"],
+        "boss_level": 100,
+        "hp_multiplier": 3.0,
+        "atk_multiplier": 1.0,
+        "reward_gold": (8000, 12000),
+        "reward_rainbow": (3000, 4500),
+        "reward_exp": (2500, 3200),
     },
     "multi_mode": {
         "title": "【狂乱】カス三人衆を連れてきたよ。",
@@ -28,9 +38,9 @@ EVENT_CONFIG = {
         "boss_level": 50,
         "hp_multiplier": 2.5,
         "atk_multiplier": 1.1,
-        "reward_gold": (8000, 15000),
-        "reward_rainbow": (3000, 6000),
-        "reward_exp": (3000, 5000),
+        "reward_gold": (12000, 18000),
+        "reward_rainbow": (4500, 6200),
+        "reward_exp": (3200, 5200),
     }
 }
 
