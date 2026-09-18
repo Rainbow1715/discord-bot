@@ -165,7 +165,7 @@ class Character:
                 buffed_names = []
                 for member in party:
                     if member.hp > 0:
-                        member.buffs.append({"type": "atk_up", "value": boost_rate, "duration": 3})
+                        member.buffs.append({"type": "atk_up", "value": boost_rate, "duration": 4})
                         buffed_names.append(member.name)
                         
                 percent = int(boost_rate * 100)
