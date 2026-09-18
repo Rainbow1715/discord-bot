@@ -250,6 +250,12 @@ class EventModeSelectView(discord.ui.View):
         await interaction.response.defer()
         await execute_battle(interaction, is_event=True, event_mode="single", target_message=interaction.message)
 
+    @discord.ui.button(label="🔥 1体モード (Lv.100)", style=discord.ButtonStyle.secondary, custom_id="mode_single100")
+    async def select_single100(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.stop()
+        await interaction.response.defer()
+        await execute_battle(interaction, is_event=True, event_mode="single100", target_message=interaction.message)
+
     @discord.ui.button(label="👹 強敵ラッシュ（最大3体）", style=discord.ButtonStyle.danger, custom_id="mode_multi")
     async def select_multi(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.stop()
@@ -281,7 +287,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         if not boss_candidates:
             boss_candidates = GACHA_POOL.copy()
 
-        if event_mode == "single":
+        if event_mode in ["single", "single100"]:
             spawn_count = 1
         else:
             max_spawn = mode_config.get("max_spawn", 3)
