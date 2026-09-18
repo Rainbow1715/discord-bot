@@ -136,6 +136,7 @@ class Character:
         current_atk = self.get_effective_atk()
 
         if self.should_use_skill(current_turn):
+            # 1. 味方全体回復
             if self.skill_type == "heal_all":
                 healed_names = []
                 for p in party:
@@ -146,27 +147,37 @@ class Character:
                     return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(healed_names)}** のHPが回復した！"
                 return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし効果がなかった！"
 
+            # 2. 攻撃力上昇バフ（自分＋味方グループ全体に付与）
             elif self.skill_type == "buff_all_atk":
                 boost_rate = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 0.20
-                buff_target_party = party if not self.is_boss else [self]
+                
+                # 自分を含む「味方チーム全員(party)」を対象にする
                 buffed_names = []
-                for member in buff_target_party:
+                for member in party:
                     if member.hp > 0:
                         member.buffs.append({"type": "atk_up", "value": boost_rate, "duration": 3})
                         buffed_names.append(member.name)
+                        
                 percent = int(boost_rate * 100)
                 return f"🔥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(buffed_names)}** の攻撃力が3ターンの間 **{percent}%** アップ！"
 
-            elif self.skill_type == "physical":
+            # 単体対象スキルでターゲットがいない場合の安全装置
+            if not target:
+                return f"❓ {self.icon} **{self.name}** は攻撃しようとしたが、対象がいなかった！"
+
+            # 3. 物理単体攻撃
+            if self.skill_type == "physical":
                 dmg = int(self.skill_pow + (current_atk * 0.5))
                 dmg = max(1, dmg)
                 target.hp = max(0, target.hp - dmg)
                 return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
 
+            # 4. スタン
             elif self.skill_type == "stun":
                 target_state["stun"] = 2
                 return f"🌀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は動揺して **2ターン行動不能** になった！"
 
+            # 5. チャーム（魅了）
             elif self.skill_type == "charm":
                 if self.charm_target == "ALL" or target.gender == self.charm_target:
                     target_state["charm"] = 3
@@ -174,35 +185,39 @@ class Character:
                 else:
                     return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし **{target.name}** には効かなかった！"
 
-            # 連続3回攻撃
+            # 6. 3連続攻撃 (multi_hit)
             elif self.skill_type == "multi_hit":
                 hits = 3
                 hit_damages = []
                 total_dmg = 0
                 
+                # skill_pow を倍率として計算に組み込む
+                pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 0.5
+                
                 for _ in range(hits):
-                    # 1発あたり：攻撃力の0.5倍（＋微小な乱数振れ幅）
-                    dmg = int((current_atk * 0.5) + random.randint(-1, 2))
-                    dmg = max(1, dmg) # 最低1ダメージ保証
+                    # バフ適用後の current_atk × 倍率 + 乱数
+                    base_dmg = current_atk * pow_val if pow_val < 1.0 else (current_atk * 0.5) + (pow_val / 3)
+                    dmg = int(base_dmg + random.randint(-1, 2))
+                    dmg = max(1, dmg)
                     hit_damages.append(str(dmg))
                     total_dmg += dmg
                 
-                # ダメージ適用
                 target.hp = max(0, target.hp - total_dmg)
-                
-                # ログの作成例: 「15, 14, 16 の計 45 ダメージ！」
                 hits_str = ", ".join(hit_damages)
                 return f"⚡ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **3連続攻撃**（{hits_str}）！ **合計 {total_dmg} ダメージ**！"
 
-            # --------------------------------------------------
-            
+            # 7. その他のデフォルトスキル
             else:
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15.0
                 dmg = int(pow_val + current_atk + random.randint(-3, 3))
                 dmg = max(1, dmg)
                 target.hp = max(0, target.hp - dmg)
                 return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
+
+        # 通常攻撃
         else:
+            if not target:
+                return f"❓ {self.icon} **{self.name}** は攻撃しようとしたが、対象がいなかった！"
             dmg = max(1, current_atk + random.randint(-2, 2))
             target.hp = max(0, target.hp - dmg)
             return f"{type_icon} {self.icon} **{self.name}** の{self.atk_type}攻撃！ **{target.name}** に **{dmg}** ダメージ！"
