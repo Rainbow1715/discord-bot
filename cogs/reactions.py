@@ -147,7 +147,7 @@ class ReactionsCog(commands.Cog):
             else:
                 dislikes_display = "まだわかりません"
 
-            # 🍖 怪しい肉の判定（いずれかの履歴に「怪しい肉」があれば判明済みとみなす）
+            # 🍖 怪しい肉の判定（過去に嫌いな食べ物として記録されたデータも拾う）
             is_meat_revealed = (
                 "怪しい肉" in known_special
                 or "怪しい肉" in known_likes
@@ -156,18 +156,17 @@ class ReactionsCog(commands.Cog):
 
             sections = []
 
-            # 怪しい肉の表示処理
+            # 1. 怪しい肉（判明していれば【怪しい肉】として独立表示）
             if is_meat_revealed:
-                # 1. master_special に書いてあればそれを優先
+                # GACHA_POOL(master_char)の special_reactions や likes/dislikes からセリフを取得
+                meat_reaction = None
+                
                 if isinstance(master_special, dict) and "怪しい肉" in master_special:
                     meat_reaction = master_special["怪しい肉"]
-                # 2. master_likes に書いてあればそれを使用
                 elif isinstance(master_likes, dict) and "怪しい肉" in master_likes:
                     meat_reaction = master_likes["怪しい肉"]
-                # 3. master_dislikes に書いてあればそれを使用
                 elif isinstance(master_dislikes, dict) and "怪しい肉" in master_dislikes:
                     meat_reaction = master_dislikes["怪しい肉"]
-                # 4. マスタにセリフがない場合のデフォルト
                 else:
                     meat_reaction = "「……これ、何の肉だ？」"
 
