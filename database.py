@@ -620,6 +620,10 @@ ADULT_CHARACTERS = [
 def is_adult(char_name: str) -> bool:
     """指定されたキャラクターが大人かどうかを判定する"""
     return char_name in ADULT_CHARACTERS
+
+def is_child(char_name: str) -> bool:
+    """子供（大人リストに含まれない）かどうか判定"""
+    return not is_adult(char_name)
     
 # --------------------------------------------------
 # 🍖 怪しい肉関連の設定
