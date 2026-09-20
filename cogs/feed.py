@@ -173,7 +173,7 @@ class FoodSelectView(discord.ui.View):
 
 
         if food_name == "怪しい肉":
-            reaction_msg = f"怪しんでいる……！🍖\n{meat_msg}"
+            reaction_msg = f"怪しんでいる……！\n「……？」"
             color = discord.Color.purple()
             
         if taste == "like":
