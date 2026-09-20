@@ -147,33 +147,31 @@ class ReactionsCog(commands.Cog):
             else:
                 dislikes_display = "まだわかりません"
 
-            # 🍖 怪しい肉の判定とセリフ取得の柔軟化
+            # 🍖 怪しい肉の判定（いずれかの履歴に「怪しい肉」があれば判明済みとみなす）
             is_meat_revealed = (
                 "怪しい肉" in known_special
                 or "怪しい肉" in known_likes
                 or "怪しい肉" in known_dislikes
             )
 
-            meat_reaction_text = None
-            if is_meat_revealed:
-                # 1. special_reactions にあればそれを優先
-                if "怪しい肉" in master_special:
-                    meat_reaction_text = master_special.get("怪しい肉")
-                # 2. likes に辞書形式であればそれを取得
-                elif isinstance(master_likes, dict) and "怪しい肉" in master_likes:
-                    meat_reaction_text = master_likes.get("怪しい肉")
-                # 3. dislikes に辞書形式であればそれを取得
-                elif isinstance(master_dislikes, dict) and "怪しい肉" in master_dislikes:
-                    meat_reaction_text = master_dislikes.get("怪しい肉")
-                # 4. どれにもテキストがなければデフォルトメッセージ
-                else:
-                    meat_reaction_text = "「……これ、何の肉だ？」"
-
             sections = []
 
-            # 1. 怪しい肉（判明していれば表示）
-            if is_meat_revealed and meat_reaction_text:
-                sections.append(f"**【怪しい肉】**\n・{meat_reaction_text}")
+            # 怪しい肉の表示処理
+            if is_meat_revealed:
+                # 1. master_special に書いてあればそれを優先
+                if isinstance(master_special, dict) and "怪しい肉" in master_special:
+                    meat_reaction = master_special["怪しい肉"]
+                # 2. master_likes に書いてあればそれを使用
+                elif isinstance(master_likes, dict) and "怪しい肉" in master_likes:
+                    meat_reaction = master_likes["怪しい肉"]
+                # 3. master_dislikes に書いてあればそれを使用
+                elif isinstance(master_dislikes, dict) and "怪しい肉" in master_dislikes:
+                    meat_reaction = master_dislikes["怪しい肉"]
+                # 4. マスタにセリフがない場合のデフォルト
+                else:
+                    meat_reaction = "「……これ、何の肉だ？」"
+
+                sections.append(f"**【怪しい肉】**\n・{meat_reaction}")
 
             # 2. 好きな食べ物
             sections.append(f"**【好きな食べ物】**\n{likes_display}")
