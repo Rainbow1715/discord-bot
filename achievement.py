@@ -46,6 +46,11 @@ ACHIEVEMENTS = {
         "desc": "バトルで500回勝利する",
         "reward_rainbow": 10000,
     },
+    "win_1000": {
+        "title": "⚔️ もはやバグだろ",
+        "desc": "バトルで1000回勝利する",
+        "reward_rainbow": 15000,
+    },
     "gacha_1": {
         "title": "🔰 初めてのガチャ",
         "desc": "ガチャを累計1回引く",
@@ -149,8 +154,13 @@ ACHIEVEMENTS = {
         "reward_rainbow": 200,
     },
     "get_rider_higurekou": {
-        "title": "タ・ト・バ！　タトバ タ・ト・バ！",
+        "title": "🦅 タ・ト・バ！　タトバ タ・ト・バ！",
         "desc": "日暮考(仮面ライダーパロ) を獲得する",
+        "reward_rainbow": 200,
+    },
+    "get_halloween_rindouren": {
+        "title": "🎃 お菓子ちょ〜だ〜い",
+        "desc": "竜胆廉(ハロウィン) を獲得する",
         "reward_rainbow": 200,
     },
     # 💔 敗北系実績
@@ -273,6 +283,7 @@ WIN_THRESHOLD_ACHIEVEMENTS = [
     (300, "win_300"),
     (400, "win_400"),
     (500, "win_500"),
+    (1000, "win_1000"),
 ]
 
 
@@ -402,6 +413,7 @@ async def check_character_achievements(
         "ムクロ(トリッカルパロ)": "get_trickal_mukuro",
         "彼方(ハロウィン)": "get_halloween_kanata",  # マッピングを追加
         "日暮考(仮面ライダーパロ)": "get_rider_higurekou",
+        "竜胆廉(ハロウィン)": "get_halloween_rindouren",
     }
 
     for name, ach_id in mapping.items():
