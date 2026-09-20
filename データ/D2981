@@ -36,7 +36,7 @@
 
 # --- スキル関連 ---
 "skill_name": "こうしたらいいの？",       # [文字列] スキル名
-"skill_type": "",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
+"skill_type": "attract",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
 "skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
 "skill_rate": 75,       # [数値] 発動成功率(%)（例: 95 = 95%）※一部キャラのみ
 
