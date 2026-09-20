@@ -59,6 +59,9 @@ class Character:
     def __init__(self, data_dict: dict, is_boss: bool = False):
         self.data = data_dict
         self.name = data_dict.get("name", "謎の敵")
+
+        master_data = next((c for c in GACHA_POOL if c["name"] == self.name), {})
+        
         self.icon = data_dict.get("icon", "👤")
         self.element = data_dict.get("element", "無")
         self.gender = data_dict.get("gender", "不明")
@@ -72,12 +75,12 @@ class Character:
         self.spd = data_dict.get("spd", 10)
         self.rec = data_dict.get("rec", 0)
         
-        self.skill_name = data_dict.get("skill_name", "通常攻撃")
-        self.skill_pow = data_dict.get("skill_pow", 1.0)
-        self.skill_type = data_dict.get("skill_type", "normal")
-        self.charm_target = data_dict.get("charm_target", "ALL")
-        self.skill_trigger = data_dict.get("skill_trigger", "chance")
-        self.skill_rate = data_dict.get("skill_rate", 35)
+        self.skill_name = data_dict.get("skill_name") or master_data.get("skill_name", "通常攻撃")
+        self.skill_pow = data_dict.get("skill_pow") if "skill_pow" in data_dict else master_data.get("skill_pow", 1.0)
+        self.skill_type = data_dict.get("skill_type") or master_data.get("skill_type", "normal")
+        self.charm_target = data_dict.get("charm_target") or master_data.get("charm_target", "ALL")
+        self.skill_trigger = data_dict.get("skill_trigger") or master_data.get("skill_trigger", "chance")
+        self.skill_rate = data_dict.get("skill_rate") if "skill_rate" in data_dict else master_data.get("skill_rate", 35)
 
         self.is_boss = is_boss
         self.buffs = []
