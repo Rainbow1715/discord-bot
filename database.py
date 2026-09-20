@@ -661,8 +661,8 @@ def feed_character(user_info, char_data, food_name):
     if food_name == "怪しい肉":
          if "known_special" not in char_data:
             char_data["known_special"] = []
-        if "怪しい肉" not in char_data["known_special"]:
-            char_data["known_special"].append("怪しい肉")
+            if "怪しい肉" not in char_data["known_special"]:
+                char_data["known_special"].append("怪しい肉")
 
     # ⭕️ 食べたことのある全履歴リストを初期化
     if "eaten_foods" not in char_data:
