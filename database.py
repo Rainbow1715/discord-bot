@@ -398,68 +398,68 @@ GACHA_POOL = [
         "known_dislikes": []
     },
     {
-        "name": "サラ",             # [文字列] キャラクター名
-        "icon": "<:6002_sara:1491351595290722314>",             # [文字列] アイコンデータ（Discord絵文字IDなど）
-        "gender": "男",           # [文字列] 性別（"男", "女", "？"）
-        "rarity": "★3",           # [文字列] レアリティ（"★2" 〜 "★5"）
-        "element": "緑",          # [文字列] 属性（"赤", "青", "紫", "光" など）
-        "role": "ディフェンダー",             # [文字列] 戦闘での役割（"アタッカー", "サポーター"）
-        "atk_type": "物理",         # [文字列] 攻撃タイプ（"物理", "魔法"）
-        "level": 1,            # [数値] 現在のレベル
-        "exp": 0,              # [数値] 現在の獲得経験値
-        "hp": 200,               # [数値] 現在のHP
-        "max_hp": 200,           # [数値] 最大HP
-        "atk": 9,              # [数値] 攻撃力
-        "spd": 22,              # [数値] 素早さ（行動順）
-        "rec": 15,              # [数値] 回復力（回復スキル等の効果量
-        "skill_name": "うわああああああああこっちこないで！！！！！",       # [文字列] スキル名
-        "skill_type": "multi_hit",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など)
-        "skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
-        "skill_rate": 20,       # [数値] 発動成功率(%)（例: 95 = 95%）※一部キャラのみ
-        "best_equip": "片手剣",       # [文字列] 相性の良いモチーフ装備名
-        "equip": None,            # [None / 辞書] 現在装備中のアイテムデータ
+        "name": "サラ", 
+        "icon": "<:6002_sara:1491351595290722314>", 
+        "gender": "男", 
+        "rarity": "★3", 
+        "element": "緑", 
+        "role": "ディフェンダー", 
+        "atk_type": "物理", 
+        "level": 1, 
+        "exp": 0, 
+        "hp": 200, 
+        "max_hp": 200, 
+        "atk": 9, 
+        "spd": 22, 
+        "rec": 15, 
+        "skill_name": "うわああああああああこっちこないで！！！！！", 
+        "skill_type": "multi_hit", 
+        "skill_trigger": "chance", 
+        "skill_rate": 20, 
+        "best_equip": "片手剣", 
+        "equip": None, 
         "likes": {
             "レモンのタルト": "美味しそうにボロボロこぼしながら食べた。",
             "コーンマヨピザ": "ジャンキーなもの好きなんですよねぇ、と言いながら頬張っていた。",
             "レモネード": "少し酸っぱそうだった。",
-        }, # [辞書] 好きな食べ物とリアクション文 {"アイテム名": "テキスト"}
+        },
         "dislikes": {
-            "ブロッコリー": "サラの前に茹でもしていない生のブロッコリーを出した。サラは正気を疑ってきた。",
-            "ナスの肉味噌炒め": "騙されないぞ！　これナス入ってますよね？！　と言って逃げた。",
-            "きのこのバター醤油炒め": "どう見てもきのこ入ってるじゃないですかやだーっ！！　と喚いて逃げた。",
+            "ブロッコリー": "サラの前に茹どもしていない生のブロッコリーを出した。サラは正気を疑ってきた。",
+            "ナスの肉味噌炒め": "騙されないぞ！ これナス入ってますよね？！ と言って逃げた。",
+            "きのこのバター醤油炒め": "どう見てもきのこ入ってるじゃないですかやだーっ！！ と喚いて逃げた。",
             "カプレーゼ": "……………どう見てもトマトじゃないですかこれ。と言われた。サラはこれを食べなかった。",
-            "ピーマンの肉詰め": "これを出すとサラは渋い顔をした。レオでも食べれるぞ、と言っても だから何なんですか？　と言って残した。",
+            "ピーマンの肉詰め": "これを出すとサラは渋い顔をした。レオでも食べれるぞ、と言っても だから何なんですか？ と言って残した。",
         },
         "special_reactions": {"怪しい肉": "すんすんと匂いを嗅ぎ、露骨に嫌そうな顔をした。食べたことはなさそうだった。"},
-        "affection_level": 1,  # [数値] 現在の好感度レベル
-        "affection_exp": 0,    # [数値] 現在の好感度経験値
-        "known_likes": [],      # [リスト] 発見済みの「好きなもの」リスト
-        "known_dislikes": [],   # [リスト] 発見済みの「嫌いなもの」リスト
+        "affection_level": 1, 
+        "affection_exp": 0, 
+        "known_likes": [], 
+        "known_dislikes": [], 
     },
     {
         "name": "しえら(猫)",
         "icon": "<:701_siera:1549700587145269269>",
-        "gender": "女",           # [文字列] 性別（"男", "女", "？"）
-        "rarity": "★1",           # [文字列] レアリティ（"★2" 〜 "★5"）
-        "element": "青",          # [文字列] 属性（"赤", "青", "紫", "光" など）
-        "role": "アタッカー",             # [文字列] 戦闘での役割（"アタッカー", "サポーター"）
-        "atk_type": "物理",         # [文字列] 攻撃タイプ（"物理", "魔法"）
+        "gender": "女", 
+        "rarity": "★1", 
+        "element": "青", 
+        "role": "アタッカー", 
+        "atk_type": "物理", 
         "level": 1,
         "exp": 0,
-        "hp": 45,               # [数値] 現在のHP
-        "max_hp": 45,           # [数値] 最大HP
-        "atk": 11,             # [数値] 攻撃力
-        "spd": 6,             # [数値] 素早さ（行動順）
+        "hp": 45, 
+        "max_hp": 45, 
+        "atk": 11, 
+        "spd": 6, 
         "rec": 3,
-        "skill_name": "引っ掻く",       # [文字列] スキル名
-        "skill_type": "physical",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
-        "skill_pow": 0.8,       # [数値] スキル威力・倍率
-        "skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
+        "skill_name": "引っ掻く", 
+        "skill_type": "physical", 
+        "skill_pow": 0.8, 
+        "skill_trigger": "chance", 
         "skill_rate": 60,
-        "best_equip": "",       # [文字列] 相性の良いモチーフ装備名
+        "best_equip": "", 
         "equip": None,
-        "likes": {},            # [辞書] 好きな食べ物とリアクション文 {"アイテム名": "テキスト"}
-        "dislikes": {},         # [辞書] 嫌いな食べ物とリアクション文 {"アイテム名": "テキスト"}
+        "likes": {}, 
+        "dislikes": {}, 
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
@@ -468,58 +468,58 @@ GACHA_POOL = [
     {
         "name": "彼方(狐)",
         "icon": "<:702_kanata:1549702062261018694>",
-        "gender": "男",           # [文字列] 性別（"男", "女", "？"）
-        "rarity": "★1",           # [文字列] レアリティ（"★2" 〜 "★5"）
-        "element": "緑",          # [文字列] 属性（"赤", "青", "紫", "光" など）
-        "role": "ディフェンダー",             # [文字列] 戦闘での役割（"アタッカー", "サポーター"）
+        "gender": "男", 
+        "rarity": "★1", 
+        "element": "緑", 
+        "role": "ディフェンダー", 
         "atk_type": "物理",
         "level": 1,
         "exp": 0,
-        "hp": 60,              # [数値] 現在のHP
-        "max_hp": 60,          # [数値] 最大HP
-        "atk": 6,             # [数値] 攻撃力
-        "spd": 6,             # [数値] 素早さ（行動順）
+        "hp": 60, 
+        "max_hp": 60, 
+        "atk": 6, 
+        "spd": 6, 
         "rec": 12,
-        "skill_name": "うずくまる",       # [文字列] スキル名
-        "skill_type": "shield",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
-        "skill_pow": 20,       # [数値] スキル威力・倍率
-        "skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
+        "skill_name": "うずくまる", 
+        "skill_type": "shield", 
+        "skill_pow": 20, 
+        "skill_trigger": "chance", 
         "skill_rate": 60,
-        "best_equip": "",       # [文字列] 相性の良いモチーフ装備名
+        "best_equip": "", 
         "equip": None,
-        "likes": {},            # [辞書] 好きな食べ物とリアクション文 {"アイテム名": "テキスト"}
-        "dislikes": {},         # [辞書] 嫌いな食べ物とリアクション文 {"アイテム名": "テキスト"}
+        "likes": {}, 
+        "dislikes": {}, 
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
         "known_dislikes": [],
     },
     {
-        "name": "D2981",             # [文字列] キャラクター名
-        "icon": "<:6_marin:1549696704788439101>",             # [文字列] アイコンデータ（Discord絵文字IDなど）
-        "gender": "女",           # [文字列] 性別（"男", "女", "？"）
-        "rarity": "★1",           # [文字列] レアリティ（"★2" 〜 "★5"）
-        "element": "光",          # [文字列] 属性（"赤", "青", "紫", "光" など）
-        "role": "サポーター",             # [文字列] 戦闘での役割（"アタッカー", "サポーター"）
+        "name": "D2981", 
+        "icon": "<:6_marin:1549696704788439101>", 
+        "gender": "女", 
+        "rarity": "★1", 
+        "element": "光", 
+        "role": "サポーター", 
         "atk_type": "魔法",
-        "level": 1,            # [数値] 現在のレベル
-        "exp": 0,              # [数値] 現在の獲得経験値
-        "hp": 50,               # [数値] 現在のHP
-        "max_hp": 50,           # [数値] 最大HP
-        "atk": 2,              # [数値] 攻撃力
-        "spd": 5,              # [数値] 素早さ（行動順）
+        "level": 1, 
+        "exp": 0, 
+        "hp": 50, 
+        "max_hp": 50, 
+        "atk": 2, 
+        "spd": 5, 
         "rec": 20,
-        "skill_name": "こうしたらいいの？",       # [文字列] スキル名
-        "skill_type": "attract",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
-        "skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
+        "skill_name": "こうしたらいいの？", 
+        "skill_type": "attract", 
+        "skill_trigger": "chance", 
         "skill_rate": 75,
-        "best_equip": "苦いクッキー",       # [文字列] 相性の良いモチーフ装備名
+        "best_equip": "苦いクッキー", 
         "equip": None,
-        "likes": {""},   # [辞書] 好きな食べ物とリアクション文 {"アイテム名": "テキスト"}
-        "dislikes": {""},        # [辞書] 嫌いな食べ物とリアクション文 {"アイテム名": "テキスト"}
-        "affection_level": 1,  # [数値] 現在の好感度レベル
-        "affection_exp": 0,    # [数値] 現在の好感度経験値
-        "known_likes": [],      # [リスト] 発見済みの「好きなもの」リスト
+        "likes": {},   # 👈 setからdictに修正
+        "dislikes": {}, # 👈 setからdictに修正
+        "affection_level": 1, 
+        "affection_exp": 0, 
+        "known_likes": [], 
         "known_dislikes": [],
     }
 ]
@@ -583,7 +583,6 @@ def check_affection_level_up(char_data, user_info):
     MAX_AFFECTION_LEVEL = 30  # 👈 なつき度の上限レベル
 
     while True:
-        # すでに上限レベルに達している場合はレベルアップを行わず、経験値をそのままストックする
         if char_data["affection_level"] >= MAX_AFFECTION_LEVEL:
             char_data["affection_level"] = MAX_AFFECTION_LEVEL
             break
@@ -640,7 +639,6 @@ def feed_character(user_info, char_data, food_name):
 
     # 「怪しい肉」をあげる時の処理イメージ（完全拒否キャラ用の判定）
     if food_name in SUSPICIOUS_MEAT_ITEMS and char_name not in SUSPICIOUS_MEAT_CHARACTERS:
-        # ロイや折原和也のように dislikes にセリフが設定されているキャラは受け取る（ここで弾かない）
         master_char = find_gacha_char(char_name) or {}
         if food_name not in master_char.get("dislikes", {}):
             return {
@@ -658,11 +656,12 @@ def feed_character(user_info, char_data, food_name):
         char_data["known_likes"] = []
     if "known_dislikes" not in char_data:
         char_data["known_dislikes"] = []
+    if "known_special" not in char_data:
+        char_data["known_special"] = []
+
     if food_name == "怪しい肉":
-         if "known_special" not in char_data:
-            char_data["known_special"] = []
-            if "怪しい肉" not in char_data["known_special"]:
-                char_data["known_special"].append("怪しい肉")
+        if "怪しい肉" not in char_data["known_special"]:
+            char_data["known_special"].append("怪しい肉")
 
     # ⭕️ 食べたことのある全履歴リストを初期化
     if "eaten_foods" not in char_data:
@@ -773,10 +772,10 @@ def get_user_profile(user_id):
     # ★既存ユーザー向けのデータ補完処理（データが無い場合に自動追加）
     items = u_info.setdefault("items", {})
     if "装備ガチャチケット" not in items:
-        items["装備ガチャチケット"] = 0  # ★追記：未所持なら0枚で初期化
+        items["装備ガチャチケット"] = 0
 
     if "equipments" not in u_info:
-        u_info["equipments"] = []  # ★追記：未作成なら空リストで初期化
+        u_info["equipments"] = []
 
     all_master_chars = {c["name"]: c for c in GACHA_POOL if c}
 
@@ -816,6 +815,8 @@ def get_user_profile(user_id):
             c["known_likes"] = []
         if "known_dislikes" not in c:
             c["known_dislikes"] = []
+        if "known_special" not in c:
+            c["known_special"] = []
         if "eaten_foods" not in c:
             c["eaten_foods"] = []
 
