@@ -224,6 +224,21 @@ class Character:
                 hits_str = ", ".join(hit_damages)
                 return f"⚡ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **3連続攻撃**（{hits_str}）！ **合計 {total_dmg} ダメージ**！"
 
+            # 8. 注目を惹く（敵1体を1ターン行動不能にする）
+            elif self.skill_type == "attract":
+                # skill_pow の値をターン数として使用（設定がなければデフォルト1ターン）
+                turns = int(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 1
+                target_state["stun"] = turns
+                return f"👀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は目を奪われて **{turns}ターン行動不能** になった！"
+
+            # 敵全体を1ターン行動不能にする場合
+            elif self.skill_type == "attract_all":
+                turns = int(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 1
+                # 敵チーム全員（enemies/partyのうち自分と対立する側）に付与する処理
+                # ※呼び出し側から全敵の states を渡すか、単体対象にするのが一番手軽です
+                target_state["stun"] = turns
+                return f"👀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は目を奪われて **{turns}ターン行動不能** になった！"
+                
             # 7. その他のデフォルトスキル
             else:
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15.0
