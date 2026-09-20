@@ -24,17 +24,17 @@ EQUIPMENT_MASTER = {
     "聖剣エクスカリバー": {"icon": "🗡️", "rarity": 5, "atk": 60, "description": "伝説の聖剣。"},
     "なんか強そうな棒": {"icon": "", "rarity": 3, "atk": 10, "description": "その辺に落ちてそうな棒。強いのか？"},
     "紙パックのいちごオレ": {"icon": "", "rarity": 4, "p_hp": 100, "description": "美味しい。毎ターンHP100回復。"},
-    "ナイフ": {"icon": "", "rarity": 3, "atk": 10, "description": "普通のナイフ。"},
+    "ナイフ": {"icon": "", "rarity": 3, "atk": 50, "description": "普通のナイフ。"},
     "ロケット": {"icon": "", "rarity": 3, "atk": 10, "description": "中に女性の写真が入っている。"},
     "電子機器": {"icon": "", "rarity": 5, "atk": 500, "description": "ばか"},
     "子供用カメラ": {"icon": "", "rarity": 3, "atk": 10, "description": "一応撮れる。"},
-    "ハリセン": {"icon": "", "rarity": 3, "atk": 10, "description": "いい音が鳴りそう。"},
+    "ハリセン": {"icon": "", "rarity": 3, "atk": 35, "description": "いい音が鳴りそう。"},
     "学校の箒": {"icon": "", "rarity": 3, "atk": 10, "description": "掃除でもするんですか？"},
     "鏡": {"icon": "", "rarity": 3, "atk": 10, "description": "この世で1番美しいのはだぁれ？"},
-    "怪しい試験管": {"icon": "", "rarity": 3, "p_hp": 50, "description": "何が入ってるんですかこれ"},
-    "酒瓶": {"icon": "", "rarity": 3, "atk": 10, "description": "割れると痛いですよ。"},
-    "片手剣": {"icon": "", "rarity": 3, "atk": 10, "description": "なんか不思議な力で作られている、黄色い剣。"},
-    
+    "怪しい試験管": {"icon": "", "rarity": 3, "p_hp": 70, "description": "何が入ってるんですかこれ"},
+    "酒瓶": {"icon": "", "rarity": 3, "atk": 50, "description": "割れると痛いですよ。"},
+    "片手剣": {"icon": "", "rarity": 3, "atk": 50, "description": "なんか不思議な力で作られている、黄色い剣。"},
+    "苦いクッキー": {"icon": "", "rarity": 3, "p_hp": 60, "description": "ともだちとお外を眺めてた"},
 }
 
 
