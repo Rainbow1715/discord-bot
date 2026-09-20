@@ -435,6 +435,64 @@ GACHA_POOL = [
         "affection_exp": 0,    # [数値] 現在の好感度経験値
         "known_likes": [],      # [リスト] 発見済みの「好きなもの」リスト
         "known_dislikes": [],   # [リスト] 発見済みの「嫌いなもの」リスト
+    },
+    {
+        "name": "しえら(猫)",
+        "icon": "<:701_siera:1549700587145269269>",
+        "gender": "女",           # [文字列] 性別（"男", "女", "？"）
+        "rarity": "★1",           # [文字列] レアリティ（"★2" 〜 "★5"）
+        "element": "青",          # [文字列] 属性（"赤", "青", "紫", "光" など）
+        "role": "アタッカー",             # [文字列] 戦闘での役割（"アタッカー", "サポーター"）
+        "atk_type": "物理",         # [文字列] 攻撃タイプ（"物理", "魔法"）
+        "level": 1,
+        "exp": 0,
+        "hp": 45,               # [数値] 現在のHP
+        "max_hp": 45,           # [数値] 最大HP
+        "atk": 11,             # [数値] 攻撃力
+        "spd": 6,             # [数値] 素早さ（行動順）
+        "rec": 3,
+        "skill_name": "引っ掻く",       # [文字列] スキル名
+        "skill_type": "physical",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
+        "skill_pow": 0.8,       # [数値] スキル威力・倍率
+        "skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
+        "skill_rate": 60,
+        "best_equip": "",       # [文字列] 相性の良いモチーフ装備名
+        "equip": None,
+        "likes": {},            # [辞書] 好きな食べ物とリアクション文 {"アイテム名": "テキスト"}
+        "dislikes": {},         # [辞書] 嫌いな食べ物とリアクション文 {"アイテム名": "テキスト"}
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": [],
+    },
+    {
+        "name": "彼方(狐)",
+        "icon": "<:702_kanata:1549702062261018694>",
+        "gender": "男",           # [文字列] 性別（"男", "女", "？"）
+        "rarity": "★1",           # [文字列] レアリティ（"★2" 〜 "★5"）
+        "element": "緑",          # [文字列] 属性（"赤", "青", "紫", "光" など）
+        "role": "ディフェンダー",             # [文字列] 戦闘での役割（"アタッカー", "サポーター"）
+        "atk_type": "物理",
+        "level": 1,
+        "exp": 0,
+        "hp": 60,              # [数値] 現在のHP
+        "max_hp": 60,          # [数値] 最大HP
+        "atk": 6,             # [数値] 攻撃力
+        "spd": 6,             # [数値] 素早さ（行動順）
+        "rec": 12,
+        "skill_name": "うずくまる",       # [文字列] スキル名
+        "skill_type": "shield",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
+        "skill_pow": 20,       # [数値] スキル威力・倍率
+        "skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
+        "skill_rate": 60,
+        "best_equip": "",       # [文字列] 相性の良いモチーフ装備名
+        "equip": None,
+        "likes": {},            # [辞書] 好きな食べ物とリアクション文 {"アイテム名": "テキスト"}
+        "dislikes": {},         # [辞書] 嫌いな食べ物とリアクション文 {"アイテム名": "テキスト"}
+        "affection_level": 1,
+        "affection_exp": 0,
+        "known_likes": [],
+        "known_dislikes": [],
     }
 ]
 
