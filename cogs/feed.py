@@ -171,9 +171,15 @@ class FoodSelectView(discord.ui.View):
         taste = result["taste_type"]
         char_name = char_data["name"]
 
+
+        if food_name == "怪しい肉":
+            reaction_msg = f"怪しんでいる……！🍖\n{meat_msg}"
+            color = discord.Color.purple()
+            
         if taste == "like":
             reaction_msg = f"大喜びしている！✨\n「わーい！ {food_name} 大好き！」"
             color = discord.Color.pink()
+            
         elif taste == "dislike":
             reaction_msg = f"微妙な表情。\n「……」"
             color = discord.Color.dark_gray()
