@@ -148,7 +148,12 @@ class Character:
         type_icon = "⚔️" if self.atk_type == "物理" else "🔮"
         current_atk = self.get_effective_atk()
 
+        if target and target.skill_type == "shield":
+            if random.randint(1, 100) <= target.skill_rate:
+                return f"⚔️ {self.icon} **{self.name}** の攻撃！ → ✨ **{target.name}** はスキル【{target.skill_name}】でひらりと攻撃を受け流した！（ダメージ: 0）"
+
         if self.should_use_skill(current_turn):
+                
             # 1. 味方全体回復
             if self.skill_type == "heal_all":
                 healed_names = []
