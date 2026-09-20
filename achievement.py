@@ -51,6 +51,11 @@ ACHIEVEMENTS = {
         "desc": "バトルで1000回勝利する",
         "reward_rainbow": 15000,
     },
+    "win_1500": {
+        "title": "⚔️ なんで解除できてるんですかこれ",
+        "desc": "バトルで1500回勝利する",
+        "reward_rainbow": 15000,
+    },
     "gacha_1": {
         "title": "🔰 初めてのガチャ",
         "desc": "ガチャを累計1回引く",
@@ -284,6 +289,7 @@ WIN_THRESHOLD_ACHIEVEMENTS = [
     (400, "win_400"),
     (500, "win_500"),
     (1000, "win_1000"),
+    (1500, "win_1500"),
 ]
 
 
