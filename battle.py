@@ -97,11 +97,11 @@ class Character:
         if not candidates:
             return None
 
-        # 重み付けリストの作成（ディフェンダーは確率5倍、その他は1）
+        # 重み付けリストの作成（ディフェンダーは確率6倍、その他は1）
         weights = []
         for target in candidates:
             if target.role in ["ディフェンダー", "defender"]:
-                weights.append(6)  # 狙われやすさ倍率（好みに応じて変更可能）
+                weights.append(6)
             else:
                 weights.append(1)
 
@@ -144,7 +144,7 @@ class Character:
         else:
             return random.randint(1, 100) <= self.skill_rate
 
-    def action(self, target, party, current_turn: int, target_state: dict) -> str:
+    def action(self, target, party, current_turn: int, target_state: dict = None, all_states: dict = None) -> str:
         type_icon = "⚔️" if self.atk_type == "物理" else "🔮"
         current_atk = self.get_effective_atk()
 
@@ -168,8 +168,6 @@ class Character:
             # 2. 攻撃力上昇バフ（自分＋味方グループ全体に付与）
             elif self.skill_type == "buff_all_atk":
                 boost_rate = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 0.20
-                
-                # 自分を含む「味方チーム全員(party)」を対象にする
                 buffed_names = []
                 for member in party:
                     if member.hp > 0:
@@ -179,41 +177,55 @@ class Character:
                 percent = int(boost_rate * 100)
                 return f"🔥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(buffed_names)}** の攻撃力が3ターンの間 **{percent}%** アップ！"
 
-            # 単体対象スキルでターゲットがいない場合の安全装置
+            # 3. 敵全体を1ターン行動不能にする（attract_all）
+            elif self.skill_type == "attract_all":
+                turns = int(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 1
+                stunned_names = []
+                if all_states:
+                    for unit, state in all_states.items():
+                        # 自分と同じパーティ(味方)ではなく、かつ生存している敵ユニットに付与
+                        if unit not in party and unit.hp > 0:
+                            state["stun"] = turns
+                            stunned_names.append(unit.name)
+                
+                if stunned_names:
+                    return f"👀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(stunned_names)}** は全員目を奪われて **{turns}ターン行動不能** になった！"
+                return f"👀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし誰も注目しなかった…"
+
+            # --- ここから下は単体対象スキルなので、ターゲット不在なら中断 ---
             if not target:
                 return f"❓ {self.icon} **{self.name}** は攻撃しようとしたが、対象がいなかった！"
 
-            # 3. 物理単体攻撃
-            if self.skill_type == "physical":
+            # 4. 物理単体攻撃
+            elif self.skill_type == "physical":
                 dmg = int(self.skill_pow + (current_atk * 0.5))
                 dmg = max(1, dmg)
                 target.hp = max(0, target.hp - dmg)
                 return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
 
-            # 4. スタン
+            # 5. スタン
             elif self.skill_type == "stun":
-                target_state["stun"] = 2
+                if target_state is not None:
+                    target_state["stun"] = 2
                 return f"🌀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は動揺して **2ターン行動不能** になった！"
 
-            # 5. チャーム（魅了）
+            # 6. チャーム（魅了）
             elif self.skill_type == "charm":
                 if self.charm_target == "ALL" or target.gender == self.charm_target:
-                    target_state["charm"] = 3
+                    if target_state is not None:
+                        target_state["charm"] = 3
                     return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は魅了されて **3ターン行動不能** になった！"
                 else:
                     return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし **{target.name}** には効かなかった！"
 
-            # 6. 3連続攻撃 (multi_hit)
+            # 7. 3連続攻撃 (multi_hit)
             elif self.skill_type == "multi_hit":
                 hits = 3
                 hit_damages = []
                 total_dmg = 0
-                
-                # skill_pow を倍率として計算に組み込む
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 0.5
                 
                 for _ in range(hits):
-                    # バフ適用後の current_atk × 倍率 + 乱数
                     base_dmg = current_atk * pow_val if pow_val < 1.0 else (current_atk * 0.5) + (pow_val / 3)
                     dmg = int(base_dmg + random.randint(-1, 2))
                     dmg = max(1, dmg)
@@ -224,22 +236,14 @@ class Character:
                 hits_str = ", ".join(hit_damages)
                 return f"⚡ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **3連続攻撃**（{hits_str}）！ **合計 {total_dmg} ダメージ**！"
 
-            # 8. 注目を惹く（敵1体を1ターン行動不能にする）
+            # 8. 注目を惹く（敵1体を行動不能にする）
             elif self.skill_type == "attract":
-                # skill_pow の値をターン数として使用（設定がなければデフォルト1ターン）
                 turns = int(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 1
-                target_state["stun"] = turns
+                if target_state is not None:
+                    target_state["stun"] = turns
                 return f"👀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は目を奪われて **{turns}ターン行動不能** になった！"
 
-            # 敵全体を1ターン行動不能にする場合
-            elif self.skill_type == "attract_all":
-                turns = int(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 1
-                # 敵チーム全員（enemies/partyのうち自分と対立する側）に付与する処理
-                # ※呼び出し側から全敵の states を渡すか、単体対象にするのが一番手軽です
-                target_state["stun"] = turns
-                return f"👀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は目を奪われて **{turns}ターン行動不能** になった！"
-                
-            # 7. その他のデフォルトスキル
+            # 9. その他のデフォルトスキル（※一番最後に else を配置）
             else:
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15.0
                 dmg = int(pow_val + current_atk + random.randint(-3, 3))
@@ -386,16 +390,12 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         
         # 🎁 敵の体数に応じた報酬テーブルの設定（ゴールド, 虹の欠片, 経験値）
         if enemy_count == 3:
-            # 3体の場合の報酬
             rewards = ((3000, 6000), (150, 300), (2000, 3000))
         elif enemy_count == 2:
-            # 2体の場合の報酬
             rewards = ((1800, 4000), (90, 180), (1000, 2000))
         else:
-            # 1体の場合の報酬
             rewards = ((1000, 2000), (50, 100), (50, 100))
 
-        # 個別設定した報酬をそのまま使うため、倍率は1にしておく
         enemy_multiplier = 1
 
     enemy_desc = ", ".join([f"**{e.name}**" for e in enemies])
@@ -426,7 +426,6 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         # 1. 味方のターン
         for p in party:
             if p.hp > 0 and any(e.hp > 0 for e in enemies):
-                # 💚 ターン開始時のリジェネ（自動回復）処理を追加
                 turn_log += p.process_turn_start()
 
                 p_state = states[p]
@@ -442,12 +441,12 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
                 else:
                     alive_enemies = [e for e in enemies if e.hp > 0]
                     target_enemy = p.select_target(alive_enemies)
-                    turn_log += p.action(target_enemy, party, turn, states[target_enemy]) + "\n"
+                    t_state = states.get(target_enemy) if target_enemy else None
+                    turn_log += p.action(target_enemy, party, turn, t_state, states) + "\n"
 
         # 2. 敵のターン
         for enemy in enemies:
             if enemy.hp > 0 and any(p.hp > 0 for p in party):
-                # 💚 敵側の自動回復（装備している場合）
                 turn_log += enemy.process_turn_start()
 
                 enemy_state = states[enemy]
@@ -464,7 +463,8 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
                     alive_party = [p for p in party if p.hp > 0]
                     if alive_party:
                         target_player = enemy.select_target(alive_party)
-                        turn_log += enemy.action(target_player, enemies, turn, states[target_player]) + "\n"
+                        t_state = states.get(target_player) if target_player else None
+                        turn_log += enemy.action(target_player, enemies, turn, t_state, states) + "\n"
 
         # バフ減衰処理
         all_units = party + enemies
@@ -520,7 +520,6 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         if is_event:
             defeated_names = [e.name for e in enemies]
             await check_boss_kill_achievements(interaction, defeated_names)
-
 
         MAX_LEVEL = 99
         lvl_up_msgs = []
@@ -590,7 +589,7 @@ class BattleCog(commands.Cog):
     async def battle(self, interaction: discord.Interaction):
         await execute_battle(interaction, is_event=False)
 
-    @app_commands.command(name="battle_event", description="【9月イベ vsカス】強力なカスに挑みます！")
+    @app_commands.command(name="battle_event", description="【特別イベント】強敵に挑みます！")
     async def event_battle_cmd(self, interaction: discord.Interaction):
         view = EventModeSelectView(user_id=interaction.user.id)
         embed = discord.Embed(
