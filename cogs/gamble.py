@@ -10,9 +10,25 @@ from database import user_data
 # --------------------------------------------------
 TARGET_FORUM_ID = 1550759772930838558
 
+# ーーーーーーーーーーーーーーー
+async def character_autocomplete(
+    interaction: discord.Interaction,
+    current: str
+) -> list[app_commands.Choice[str]]:
+    # 入力中の文字が含まれるキャラを検索して最大25件まで返す
+    return [
+        app_commands.Choice(name=char, value=char)
+        for char in CHARACTER_CHOICES
+        if current.lower() in char.lower()
+    ][:25]
+
+CHARACTER_CHOICES = [
+    "サラ", "竹村しえら", 
+]
+
 # --------------------------------------------------
 # 💬 キャラクターごとの「累計負け数に応じた」セリフ設定
-# --------------------------------------------------
+# --------------------------------------------------    
 CHAR_REACTIONS = {
     "サラ": {
         1: {
@@ -309,10 +325,18 @@ class GambleCog(commands.Cog):
         name="gamble",
         description="【指定フォーラム限定】指名したキャラと10ターンのハイ＆ロー対決を行います",
     )
-    @app_commands.describe(char_name="勝負を挑むキャラクターの名前")
+    @app_commands.describe(char_name="勝負を挑むキャラクターを選択してください")
+    @app_commands.autocomplete(char_name=character_autocomplete)  # 👈 引数名 char_name に合わせる
     async def gamble_command(
         self, interaction: discord.Interaction, char_name: str
     ):
+        # リストにない文字が直接入力された場合のガード
+        if char_name not in CHARACTER_CHOICES:
+            await interaction.response.send_message(
+                "リストにあるキャラクターを選択してください！", ephemeral=True
+            )
+            return
+
         channel = interaction.channel
 
         # --------------------------------------------------
