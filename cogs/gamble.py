@@ -172,6 +172,11 @@ class HighAndLowView(discord.ui.View):
         # GMの得点・キャラの得点/負け数の計算
         if gm_correct:
             self.gm_wins += 1
+            
+            # 🏆 ターン毎のGM正解時に実績カウント＆解除チェック
+            u_data = user_data.setdefault(self.user_id, {})
+            await on_gamble_win(interaction, u_data)
+            
         if char_correct:
             self.char_wins += 1
         else:
