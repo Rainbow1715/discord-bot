@@ -210,6 +210,17 @@ ACHIEVEMENTS = {
         "desc": "イベント戦で サラ を撃破する",
         "reward_rainbow": 1000,
     },
+    # 🎰 ギャンブル実績
+    "win_gamble_1": {
+        "title": "🔰 ギャンカスの一歩",
+        "desc": "ギャンブルで一回勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_gamble_10": {
+        "title": "🃏 まさか一発でこんだけ勝ったわけあるまいな",
+        "desc": "ギャンブルで10回勝利する",
+        "reward_rainbow": 500,
+    },
     # 🍽️ 飯実績
     "eat_siera": {
         "title": "🍽️ しえらの嫌いなもの",
