@@ -271,6 +271,32 @@ ACHIEVEMENTS = {
         "desc": "サラ に嫌いなものを食べさせた",
         "reward_rainbow": 100,
     },
+    # 怪しい肉
+    "meat_akakun": {
+        "title": "🍖 赤くんになんか食べさせた",
+        "desc": "Branch Coral に怪しい肉を食べさせた",
+        "reward_rainbow": 100,
+    },
+    "meat_sangokun": {
+        "title": "🍖 珊瑚くんになんか食べさせた",
+        "desc": "Root Coral に怪しい肉を食べさせた",
+        "reward_rainbow": 100,
+    },
+    "meat_roi": {
+        "title": "🍖 ロイになんか食べさせようとした",
+        "desc": "ロイ に怪しい肉をあげた",
+        "reward_rainbow": 100,
+    },
+    "meat_orihara": {
+        "title": "🍖 折原さんになんか食べさせようとした",
+        "desc": "折原和也 に怪しい肉をあげた",
+        "reward_rainbow": 100,
+    },
+    "meat_sara": {
+        "title": "🍖 サラになんか食べさせようとした",
+        "desc": "サラ に怪しい肉をあげた",
+        "reward_rainbow": 100,
+    },
 }
 
 LOG_CHANNEL_ID = 1547122457062940712
