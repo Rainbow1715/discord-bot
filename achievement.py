@@ -577,6 +577,23 @@ async def check_eat_suspicious_meat_achievement(
         if ach_id:
             await check_and_unlock_achievement(interaction, ach_id)
 
+# --------------------------------------------------
+# 🎰 ギャンブル勝利時の自動実績チェック
+# --------------------------------------------------
+async def on_gamble_win(interaction: discord.Interaction, u_data: dict):
+    """ギャンブルで勝利した際に呼び出す"""
+    # ギャンブル勝利数を加算
+    u_data["gamble_win_count"] = u_data.get("gamble_win_count", 0) + 1
+    gamble_wins = u_data["gamble_win_count"]
+
+    # 1勝で解除
+    if gamble_wins >= 1:
+        await check_and_unlock_achievement(interaction, "win_gamble_1")
+
+    # 10勝で解除
+    if gamble_wins >= 10:
+        await check_and_unlock_achievement(interaction, "win_gamble_10")
+
 
 # --------------------------------------------------
 # 🔓 実績解除・通知共通関数
