@@ -190,8 +190,19 @@ class HighAndLowView(discord.ui.View):
     ):
         await interaction.response.defer()
 
-        # 1. キャラの予想を決定
-        char_choice = random.choice(["HIGH", "LOW"])
+        # --------------------------------------------------
+        # 🎯 1. キャラの予想決定 & 5回以上負け時の「ヘマ（パニック）」処理
+        # --------------------------------------------------
+        # 基本の予想
+        base_choice = random.choice(["HIGH", "LOW"])
+        is_panic_hema = False
+
+        # 5回以上負けている場合、50%の確率で動揺して判定ミス（逆を選ぶ）
+        if self.char_losses >= 5 and random.random() < 0.50:
+            char_choice = "LOW" if base_choice == "HIGH" else "HIGH"
+            is_panic_hema = True
+        else:
+            char_choice = base_choice
 
         # 2. 次のカードを引く
         next_card = random.randint(1, 13)
@@ -235,29 +246,29 @@ class HighAndLowView(discord.ui.View):
             win_quotes = CHAR_WIN_QUOTES.get(self.char_name, DEFAULT_WIN_QUOTES)
             quote = random.choice(win_quotes)
             
-            reaction_text = (
-                f"\n\n✨ **{self.char_name}**: {quote}"
-            )
+            # ヘマしそうになったけど奇跡的に当たった場合の演出（お好みで）
+            if is_panic_hema:
+                reaction_text = f"\n\n💦 **{self.char_name}**: （あせって押し間違えたのに当たった…！？）\n✨ **{self.char_name}**: {quote}"
+            else:
+                reaction_text = f"\n\n✨ **{self.char_name}**: {quote}"
         else:
-            # キャラの負け数に応じたデータ（アイテム＋セリフ）を取得
-            char_dict = CHAR_REACTIONS.get(
-                self.char_name, DEFAULT_REACTIONS
-            )
+            char_dict = CHAR_REACTIONS.get(self.char_name, DEFAULT_REACTIONS)
             data = char_dict.get(
                 self.char_losses,
-                DEFAULT_REACTIONS.get(
-                    self.char_losses,
-                    {"item": "???", "quote": "「くっ……！」"},
-                ),
+                {"item": "???", "quote": "「くっ……！」"}
             )
 
             stripped_item = data["item"]
             quote = data["quote"]
 
-            # Embedに表示する演出テキストを組み立て
+            hema_notice = ""
+            if is_panic_hema:
+                hema_notice = f"\n😰 **（{self.char_name} は極度の緊張でパニックになり、焦って予想を言い間違えてしまった！）**"
+
             reaction_text = (
-                f"\n\n⚠️ **{self.char_name} が脱いだもの**: **【 {stripped_item} 】**\n"
-                f"**{self.char_name}（累計 {self.char_losses} 回目の失敗）**: {quote}"
+                f"{hema_notice}\n\n"
+                f"⚠️ **{self.char_name} が脱いだもの**: **【 {stripped_item} 】**\n"
+                f"**{self.char_name}（通算 {self.char_losses} 回目の失敗）**: {quote}"
             )
 
         # 10ターン終了チェック
