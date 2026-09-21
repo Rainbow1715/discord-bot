@@ -231,8 +231,12 @@ class HighAndLowView(discord.ui.View):
 
         reaction_text = ""
         if char_correct:
+            # ⭕ キャラの勝利時：専用セリフリストからランダムに1つ選択
+            win_quotes = CHAR_WIN_QUOTES.get(self.char_name, DEFAULT_WIN_QUOTES)
+            quote = random.choice(win_quotes)
+            
             reaction_text = (
-                f"\n\n**{self.char_name}**: 「よし！ 私の予想通りですね！」"
+                f"\n\n✨ **{self.char_name}**: {quote}"
             )
         else:
             # キャラの負け数に応じたデータ（アイテム＋セリフ）を取得
