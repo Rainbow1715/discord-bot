@@ -4,45 +4,67 @@ from discord import app_commands
 from discord.ext import commands
 
 # --------------------------------------------------
-# 💬 キャラクターごとの敗北（焦り・反応）メッセージ設定
+# 💬 キャラクターごとの「累計負け数に応じた」セリフ設定
 # --------------------------------------------------
 CHAR_REACTIONS = {
-    "折原和也": [
-        "「くっ……論理的には説明がつかないな……もう一度だ」",
-        "「おいおい、GM……手加減って言葉を知らないのかい？」",
-        "「冷や汗が出てきたな……これ以上負けるわけにはいかない」",
-    ],
-    "西谷しえら": [
-        "「えっ嘘でしょ！？ GMちゃん強すぎない！？！？」",
-        "「やばいやばい配信事故レベルで負けてるんだけど！！」",
-        "「うぐぐ……リスナーに見せられない顔になっちゃう……！」",
-    ],
-    "DEFAULT": [
-        "「くっ……負けたか……！」",
-        "「GM、なかなかやるな……次は負けないぞ！」",
-        "「うそだろ……もう後がないぞ……！？」",
-    ],
+    "折原和也": {
+        1: "「ふむ、1回目のミスか。まあ確率の偏りだな」",
+        2: "「2連続で外すとは…計算に誤差があったようだ」",
+        3: "「くっ……論理的には説明がつかないな……」",
+        4: "「4回目…おいおいGM、手加減って言葉を知らないのかい？」",
+        5: "「半分終わってこのザマか…冷や汗が出てきたな」",
+        6: "「……笑えないぞ。僕のシミュレーションが崩れている」",
+        7: "「嘘だろ！？ なぜ裏目ばかり出るんだ！」",
+        8: "「心が乱れる…落ち着け…落ち着くんだ僕…」",
+        9: "「あとがない…頼む、次こそは正解であってくれ…！」",
+        10: "「完敗だ……僕の負けだよ、GM……」",
+    },
+    "西谷しえら": {
+        1: "「あれっ！？ 違った！？ ま、まあ最初はウォームアップだしね！」",
+        2: "「えっ2回目！？ GMちゃん強すぎない！？」",
+        3: "「やばいやばい、リスナーに見せられない顔になってきた…！」",
+        4: "「ちょっと待って！ カード絶対仕込んでるでしょ！？」",
+        5: "「うぐぐ……半分負けてるんだけどどういうこと〜〜！？」",
+        6: "「だ、誰か助けてー！ GMちゃんが容赦ないよ〜！」",
+        7: "「もうヤダ〜〜！ 次外したら泣くからね！？」",
+        8: "「たのむうううう！ 当たってくれええええ！！」",
+        9: "「ひ、配信事故です…これ完全に配信事故です……」",
+        10: "「うわああああん！！ GMちゃんのバカーー！！」",
+    },
+}
+
+# 設定がないキャラ・回数用のデフォルトセリフ
+DEFAULT_REACTIONS = {
+    1: "「くっ、外したか……まあ次だ！」",
+    2: "「2回目……焦るな、まだいける」",
+    3: "「うそだろ、また外れたのか！？」",
+    4: "「GM、なかなかやるな……！」",
+    5: "「くそっ、もう後がないぞ……！？」",
+    6: "「冷や汗が止まらない……」",
+    7: "「おいおい冗談だろ！？」",
+    8: "「頼む……当たってくれ……！」",
+    9: "「もう崖っぷちだ……！」",
+    10: "「完敗だ……参りました……」",
 }
 
 
 # --------------------------------------------------
-# 🃏 ハイアンドローのゲームView（UIとロジック）
+# 🃏 ハイアンドロー View
 # --------------------------------------------------
 class HighAndLowView(discord.ui.View):
 
     def __init__(
         self, user_id: int, char_name: str, total_turns: int = 10
     ):
-        super().__init__(timeout=300)  # 5分タイムアウト
+        super().__init__(timeout=300)
         self.user_id = user_id
         self.char_name = char_name
         self.total_turns = total_turns
 
         self.current_turn = 1
-        self.gm_wins = 0
-        self.char_wins = 0
+        self.gm_wins = 0  # GMの勝ち数（＝キャラの負け数）
+        self.char_wins = 0  # キャラの勝ち数
 
-        # 最初のカードを引く (1〜13)
         self.current_card = random.randint(1, 13)
 
     async def interaction_check(
@@ -57,70 +79,74 @@ class HighAndLowView(discord.ui.View):
         return True
 
     def get_card_display(self, num: int) -> str:
-        # トランプ風表示用
         names = {1: "A", 11: "J", 12: "Q", 13: "K"}
         return names.get(num, str(num))
 
-    async def process_choice(
-        self, interaction: discord.Interaction, choice: str
+    async def process_turn(
+        self, interaction: discord.Interaction, char_choice: str
     ):
         await interaction.response.defer()
 
         # 次のカードを引く
         next_card = random.randint(1, 13)
-
-        # あいこ（同じ数字）の場合はもう一度引き直す
         while next_card == self.current_card:
             next_card = random.randint(1, 13)
 
-        # 勝敗判定
-        is_high = next_card > self.current_card
-        user_won = (choice == "high" and is_high) or (
-            choice == "low" and not is_high
+        # 実際の結果（HIGHかLOWか）
+        actual_result = (
+            "HIGH" if next_card > self.current_card else "LOW"
         )
+        char_won = char_choice == actual_result
 
         curr_str = self.get_card_display(self.current_card)
         next_str = self.get_card_display(next_card)
 
-        # メッセージの組み立て
-        result_title = ""
-        reaction_text = ""
+        # メッセージ構築
+        choice_str = "HIGH ⬆️" if char_choice == "HIGH" else "LOW ⬇️"
 
-        if user_won:
-            self.gm_wins += 1
-            result_title = "⭕ GMの勝ち！"
-
-            # キャラが負けた時のリアクションを取得
-            reactions = CHAR_REACTIONS.get(
-                self.char_name, CHAR_REACTIONS["DEFAULT"]
-            )
-            reaction_text = f"\n\n**{self.char_name}**: {random.choice(reactions)}"
-        else:
+        if char_won:
             self.char_wins += 1
-            result_title = f"❌ {self.char_name} の勝ち！"
+            result_title = f"⭕ {self.char_name} の予想的中！"
             reaction_text = (
-                f"\n\n**{self.char_name}**: 「ふふっ、GMの読みも甘いですね」"
+                f"\n\n**{self.char_name}**: 「よし！ 予想通りですね！」"
             )
+        else:
+            self.gm_wins += 1  # キャラの負け数をカウント
+            result_title = f"❌ {self.char_name} は不正解！（GMのポイント）"
+
+            # 負けた回数に応じた段階的セリフを取得
+            char_dict = CHAR_REACTIONS.get(
+                self.char_name, DEFAULT_REACTIONS
+            )
+            reaction_quote = char_dict.get(
+                self.gm_wins,
+                DEFAULT_REACTIONS.get(
+                    self.gm_wins, "「くっ……！」"
+                ),
+            )
+
+            reaction_text = f"\n\n**{self.char_name}（累計 {self.gm_wins} 回目の敗北）**: {reaction_quote}"
 
         # 10ターン終了チェック
         if self.current_turn >= self.total_turns:
             self.stop_game()
 
-            # 最終結果判定
             if self.gm_wins > self.char_wins:
-                final_msg = f"🏆 **勝負終了！ GMの勝利です！** ({self.gm_wins}勝 {self.char_wins}敗)"
+                final_msg = f"🏆 **勝負終了！ GMの勝利です！** ({self.gm_wins}敗させて追い詰めました！)"
             elif self.char_wins > self.gm_wins:
-                final_msg = f"💀 **勝負終了！ {self.char_name} の勝利です…** ({self.gm_wins}勝 {self.char_wins}敗)"
+                final_msg = f"💀 **勝負終了！ {self.char_name} の勝利です！** ({self.char_wins}勝達成)"
             else:
-                final_msg = f"⚖️ **勝負終了！ 引き分けです！** ({self.gm_wins}勝 {self.char_wins}敗)"
+                final_msg = f"⚖️ **勝負終了！ 引き分けです！** ({self.char_wins}勝 {self.gm_wins}敗)"
 
             embed = discord.Embed(
                 title=f"🎲 ハイアンドロー対決 【最終結果】",
                 description=(
                     f"**【Turn {self.current_turn}/{self.total_turns}】**\n"
-                    f"前のカード: **[{curr_str}]** ➔ 新しいカード: **[{next_str}]**\n"
+                    f"現在のカード: **[{curr_str}]**\n"
+                    f"👉 **{self.char_name}** の選択: **{choice_str}**\n"
+                    f"開いたカード: **[{next_str}]** （正解: {actual_result}）\n\n"
                     f"判定: **{result_title}**{reaction_text}\n\n"
-                    f"-----------------------------------\n"
+                    f"===================================\n"
                     f"{final_msg}"
                 ),
                 color=discord.Color.gold(),
@@ -138,17 +164,19 @@ class HighAndLowView(discord.ui.View):
             title=f"🎲 {self.char_name} とのハイアンドロー対決",
             description=(
                 f"**【Turn {self.current_turn - 1}/{self.total_turns} の結果】**\n"
-                f"前のカード: **[{curr_str}]** ➔ 開いたカード: **[{next_str}]**\n"
+                f"前のカード: **[{curr_str}]**\n"
+                f"👉 **{self.char_name}** は **{choice_str}** を選択！\n"
+                f"開いたカード: **[{next_str}]** （正解: {actual_result}）\n"
                 f"判定: **{result_title}**{reaction_text}\n\n"
                 f"===================================\n"
                 f"**【Turn {self.current_turn}/{self.total_turns}】**\n"
                 f"現在のカード: 🎴 **[{self.get_card_display(self.current_card)}]**\n\n"
-                f"次のカードはこれより **HIGH** か **LOW** か？"
+                f"GMよ、**{self.char_name}** にどちらを選ばせますか？（または選択を見守りますか？）"
             ),
             color=discord.Color.blue(),
         )
         embed.set_footer(
-            text=f"現在の戦績: GM {self.gm_wins}勝 - {self.char_wins}勝 {self.char_name}"
+            text=f"現在の戦績: {self.char_name} {self.char_wins}成功 / GM {self.gm_wins}失敗（キャラ負け）"
         )
 
         await interaction.followup.edit_message(
@@ -160,28 +188,26 @@ class HighAndLowView(discord.ui.View):
             child.disabled = True
 
     @discord.ui.button(
-        label="HIGH (高い)",
+        label="キャラに HIGH を選ばせる",
         style=discord.ButtonStyle.primary,
-        custom_id="btn_high",
     )
     async def high_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await self.process_choice(interaction, "high")
+        await self.process_turn(interaction, "HIGH")
 
     @discord.ui.button(
-        label="LOW (低い)",
+        label="キャラに LOW を選ばせる",
         style=discord.ButtonStyle.danger,
-        custom_id="btn_low",
     )
     async def low_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await self.process_choice(interaction, "low")
+        await self.process_turn(interaction, "LOW")
 
 
 # --------------------------------------------------
-# ⚙️ コマンド Cog 本体
+# ⚙️ コマンド Cog
 # --------------------------------------------------
 class GambleCog(commands.Cog):
 
@@ -212,7 +238,6 @@ class GambleCog(commands.Cog):
             )
             return
 
-        # ゲーム開始処理
         view = HighAndLowView(
             user_id=interaction.user.id, char_name=char_name
         )
@@ -224,11 +249,10 @@ class GambleCog(commands.Cog):
                 f"**対戦相手**: {char_name}\n\n"
                 f"**【Turn 1/10】**\n"
                 f"最初のカード: 🎴 **[{view.get_card_display(view.current_card)}]**\n\n"
-                f"次のカードはこれより **HIGH** か **LOW** か？"
+                f"**{char_name}** に HIGH か LOW のどちらを選ばせますか？"
             ),
             color=discord.Color.gold(),
         )
-        embed.set_footer(text="選択ボタンを押してゲームを進めてください。")
 
         await interaction.response.send_message(embed=embed, view=view)
 
