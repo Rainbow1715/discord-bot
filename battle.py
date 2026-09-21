@@ -3,7 +3,7 @@ import random
 import discord
 from discord import app_commands
 from discord.ext import commands
-from database import get_user_profile, save_data, GACHA_POOL
+from database import get_user_profile, save_data, GACHA_POOL, is_adult, is_child
 from achievement import on_battle_win, on_battle_lose, check_boss_kill_achievements
 
 # 🗡️ 装備マスタをインポート
@@ -203,6 +203,20 @@ class Character:
                 target.hp = max(0, target.hp - dmg)
                 return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
 
+            # 4-2. 物理・子供特効攻撃（Physical派生） 👈★ここを追加！
+            elif self.skill_type in ["child_slayer", "physical_child_slayer"]:
+                base_dmg = int(self.skill_pow + (current_atk * 0.5))
+                
+                # 相手が子供（大人ではない）の場合ダメージ2倍
+                if is_child(target.name):
+                    dmg = max(1, int(base_dmg * 2.0))
+                    target.hp = max(0, target.hp - dmg)
+                    return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **子供特効**が発動！ **{target.name}** に **{dmg}** の大ダメージ！（2倍）"
+                else:
+                    dmg = max(1, base_dmg)
+                    target.hp = max(0, target.hp - dmg)
+                    return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
+            
             # 5. スタン
             elif self.skill_type == "stun":
                 if target_state is not None:
