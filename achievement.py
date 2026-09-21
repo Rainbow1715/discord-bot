@@ -515,7 +515,7 @@ async def check_character_achievements(
 
 
 # --------------------------------------------------
-# 🍽️ 食事実行時の自動実績チェック
+# 🍽️ 食事実行時の自動実績チェック（追加拡張分）
 # --------------------------------------------------
 async def check_eat_dislike_achievement(
     interaction: discord.Interaction,
@@ -523,18 +523,48 @@ async def check_eat_dislike_achievement(
     food_name: str,
     char_data: dict,
 ):
-    """/chara で食べ物をあげた時に呼び出す関数
-
-    :param char_id: キャラのIDや識別キー（例: "siera", "orihara", "retyan" など）
-    :param food_name: あげた食べ物の名前
-    :param char_data: DBから取得した該当キャラのデータ辞書
-    """
+    """嫌いなものをあげた時"""
     dislikes = char_data.get("dislikes", [])
     is_disliked = any(dislike_item in food_name for dislike_item in dislikes)
 
     if is_disliked:
         ach_id = f"eat_{char_id}"
         await check_and_unlock_achievement(interaction, ach_id)
+
+
+async def check_eat_like_achievement(
+    interaction: discord.Interaction,
+    char_id: str,
+    food_name: str,
+    char_data: dict,
+):
+    """好きなものをあげた時"""
+    likes = char_data.get("likes", [])
+    is_liked = any(like_item in food_name for like_item in likes)
+
+    if is_liked:
+        ach_id = f"eatlike_{char_id}"
+        await check_and_unlock_achievement(interaction, ach_id)
+
+
+async def check_eat_suspicious_meat_achievement(
+    interaction: discord.Interaction,
+    char_id: str,
+    food_name: str,
+):
+    """怪しい肉をあげた時"""
+    if "怪しい肉" in food_name:
+        # キャラIDに応じた実績IDのマッピング
+        meat_mapping = {
+            "Branch Coral": "meat_akakun",
+            "Root Coral": "meat_sangokun",
+            "ロイ": "meat_roi",
+            "折原和也": "meat_orihara",
+            "サラ": "meat_sara",
+        }
+        ach_id = meat_mapping.get(char_id)
+        if ach_id:
+            await check_and_unlock_achievement(interaction, ach_id)
 
 
 # --------------------------------------------------
