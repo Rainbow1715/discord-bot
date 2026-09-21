@@ -16,31 +16,31 @@ CHAR_REACTIONS = {
     "サラ": {
     1: {
         "item": "耳の謎アクセ",
-        "quote": "「ふん、まだ一回ですから。これくらいで勝った気になられちゃ困りますよ。」", # 耳のやつ
+        "quote": "「ふん、まだ一回ですから。これくらいで勝った気になられちゃ困りますよ。」",
     },
     2: {
         "item": "上着",
-        "quote": "「いや、いやまだ、あの、次で取り返せますから、こんなもの……」", # 上着
+        "quote": "「いや、いやまだ、あの、次で取り返せますから、こんなもの……」",
     },
     3: {
         "item": "セーター",
-        "quote": "「つ、次こそ取り返せるから……」",                        # セーター
+        "quote": "「つ、次こそ取り返せるから……」",
     },
     4: {
         "item": "シャツのボタンを外す",
-        "quote": "「あ、あの……ボタンで勘弁してくれませんか……？；；」",        # シャツのボタン外し
+        "quote": "「あ、あの……ボタンで勘弁してくれませんか……？；；」",
     },
     5: {
         "item": "シャツ",
-        "quote": "「はい！　脱げばいいんでしょ脱げば！！」",               # シャツ
+        "quote": "「はい！　脱げばいいんでしょ脱げば！！」",
     },
     6: {
         "item": "靴と靴下",
-        "quote": "「な、なんか……世の中には足で興奮する人がいるとかいないとか……。……俺男ですよ…？」",    # 靴とか
+        "quote": "「な、なんか……世の中には足で興奮する人がいるとかいないとか……。……俺男ですよ…？」",
     },
     7: {
         "item": "ズボン",
-        "quote": "「逆になんかイカサマやってるでしょあなた！！　ほらズボン！　はい！」",            # ズボン
+        "quote": "「逆になんかイカサマやってるでしょあなた！！　ほらズボン！　はい！」",
     },
     8: {
         "item": "サラは何も脱がなかった！",
@@ -190,17 +190,26 @@ class HighAndLowView(discord.ui.View):
                 f"\n\n**{self.char_name}**: 「よし！ 私の予想通りですね！」"
             )
         else:
-            # キャラの負け（ミス）回数に応じた段階的セリフ
+            # キャラの負け数に応じたデータ（アイテム＋セリフ）を取得
             char_dict = CHAR_REACTIONS.get(
                 self.char_name, DEFAULT_REACTIONS
             )
-            reaction_quote = char_dict.get(
+            data = char_dict.get(
                 self.char_losses,
                 DEFAULT_REACTIONS.get(
-                    self.char_losses, "「くっ……！」"
+                    self.char_losses,
+                    {"item": "???", "quote": "「くっ……！」"},
                 ),
             )
-            reaction_text = f"\n\n**{self.char_name}（累計 {self.char_losses} 回目の失敗）**: {reaction_quote}"
+
+            stripped_item = data["item"]
+            quote = data["quote"]
+
+            # Embedに表示する演出テキストを組み立て
+            reaction_text = (
+                f"\n\n⚠️ **{self.char_name} が脱いだもの**: **【 {stripped_item} 】**\n"
+                f"**{self.char_name}（累計 {self.char_losses} 回目の失敗）**: {quote}"
+            )
 
         # 10ターン終了チェック
         if self.current_turn >= self.total_turns:
