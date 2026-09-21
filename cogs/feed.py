@@ -172,24 +172,56 @@ class FoodSelectView(discord.ui.View):
         char_name = char_data["name"]
 
 
+        # --------------------------------------------------
+        # 🏆 実績IDの特定用マッピング
+        # --------------------------------------------------
+        # EAT_ACHIEVEMENT_MAP の "eat_xxx" から "xxx" (キャラID) 部分を抽出
+        ach_base_id = EAT_ACHIEVEMENT_MAP.get(char_name, "").replace(
+            "eat_", ""
+        )
+
+        # 1. 🥩 怪しい肉をあげたときの実績チェック
         if food_name == "怪しい肉":
             reaction_msg = f"怪しんでいる……！\n「……？」"
             color = discord.Color.purple()
-            
+
+            meat_ach_id = f"meat_{ach_base_id}"
+            if meat_ach_id in achievement.ACHIEVEMENTS:
+                try:
+                    await achievement.check_and_unlock_achievement(
+                        interaction, meat_ach_id
+                    )
+                except Exception as e:
+                    print(f"[実績解除エラー - 怪しい肉] {e}")
+
+        # 2. ❤️ 好きなものをあげたときの実績チェック
         elif taste == "like":
             reaction_msg = f"大喜びしている！✨\n「わーい！ {food_name} 大好き！」"
             color = discord.Color.pink()
-            
+
+            like_ach_id = f"eatlike_{ach_base_id}"
+            if like_ach_id in achievement.ACHIEVEMENTS:
+                try:
+                    await achievement.check_and_unlock_achievement(
+                        interaction, like_ach_id
+                    )
+                except Exception as e:
+                    print(f"[実績解除エラー - 好き] {e}")
+
+        # 3. 💔 嫌いなものをあげたときの実績チェック
         elif taste == "dislike":
             reaction_msg = f"微妙な表情。\n「……」"
             color = discord.Color.dark_gray()
-            # 🔻 💔 嫌いなものを食べた時の実績チェック
-            ach_id = EAT_ACHIEVEMENT_MAP.get(char_name)
-            if ach_id:
+
+            dislike_ach_id = f"eat_{ach_base_id}"
+            if dislike_ach_id in achievement.ACHIEVEMENTS:
                 try:
-                    await achievement.check_and_unlock_achievement(interaction, ach_id)
+                    await achievement.check_and_unlock_achievement(
+                        interaction, dislike_ach_id
+                    )
                 except Exception as e:
-                    print(f"[実績解除エラー] {e}")
+                    print(f"[実績解除エラー - 嫌い] {e}")
+                    
         else:
             reaction_msg = f"おいしそうに食べている！😋\n「もぐもぐ… {food_name} 、ごちそうさま！」"
             color = discord.Color.green()
