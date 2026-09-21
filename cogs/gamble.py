@@ -4,6 +4,12 @@ from discord import app_commands
 from discord.ext import commands
 
 # --------------------------------------------------
+# ⚙️ 設定: コマンドの使用を許可するフォーラムチャンネルのID
+# --------------------------------------------------
+# ※ Discordでフォーラムチャンネルを右クリックして「チャンネルIDをコピー」した数字を入れてください
+TARGET_FORUM_ID =　1550759772930838558
+
+# --------------------------------------------------
 # 💬 キャラクターごとの「累計負け数に応じた」セリフ設定
 # --------------------------------------------------
 CHAR_REACTIONS = {
@@ -231,28 +237,35 @@ class GambleCog(commands.Cog):
 
     @app_commands.command(
         name="gamble",
-        description="【フォーラム限定】指名したキャラと10ターンのハイ＆ロー対決を行います",
+        description="【指定フォーラム限定】指名したキャラと10ターンのハイ＆ロー対決を行います",
     )
     @app_commands.describe(char_name="勝負を挑むキャラクターの名前")
     async def gamble_command(
         self, interaction: discord.Interaction, char_name: str
     ):
-        # 🛡️ フォーラム判定
         channel = interaction.channel
-        is_forum_thread = (
-            isinstance(channel, discord.Thread)
-            and channel.parent
-            and channel.parent.type == discord.ChannelType.forum
-        )
-        is_forum_direct = channel.type == discord.ChannelType.forum
 
-        if not (is_forum_thread or is_forum_direct):
+        # --------------------------------------------------
+        # 🎯 指定されたフォーラムチャンネル（またはその中のスレッド）か判定
+        # --------------------------------------------------
+        # 1. チャンネル本体のIDを取得（スレッドの中なら親チャンネルのID、直下ならそのもののID）
+        current_forum_id = (
+            channel.parent_id
+            if isinstance(channel, discord.Thread)
+            else channel.id
+        )
+
+        # 2. 指定されたフォーラムIDと一致するかチェック
+        if current_forum_id != TARGET_FORUM_ID:
             await interaction.response.send_message(
-                "❌ このコマンドはフォーラムチャンネル（またはフォーラム内のスレッド）でのみ使用できます！",
+                "❌ このコマンドは指定されたフォーラムチャンネルでのみ使用できます！",
                 ephemeral=True,
             )
             return
 
+        # --------------------------------------------------
+        # ⭕ IDが一致した場合のみゲームを開始
+        # --------------------------------------------------
         view = HighAndLowView(
             user_id=interaction.user.id, char_name=char_name
         )
