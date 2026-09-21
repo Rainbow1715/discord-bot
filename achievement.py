@@ -271,6 +271,67 @@ ACHIEVEMENTS = {
         "desc": "サラ に嫌いなものを食べさせた",
         "reward_rainbow": 100,
     },
+    # 🍽️ 好きな飯実績
+    "eatlike_siera": {
+        "title": "🍽️ しえらの好きなもの",
+        "desc": "竹村しえら に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_retyan": {
+        "title": "🍽️ れーちゃんの好きなもの",
+        "desc": "れーちゃん に好きなものを食べさせた",
+        "reward_rainbow": 150,
+    },
+    "eatlike_reo": {
+        "title": "🍽️ レオの好きなもの",
+        "desc": "レオ に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_touwata": {
+        "title": "🍽️ 唐綿さんの好きなもの",
+        "desc": "Gerânio に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_skrei": {
+        "title": "🍽️ xX神Xxの好きなもの",
+        "desc": "白黒レイ に好きなものを食べさせた",
+        "reward_rainbow": 500,
+    },
+    "eatlike_marin": {
+        "title": "🍽️ 茉鈴の好きなもの",
+        "desc": "茉鈴 に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_syuuto": {
+        "title": "🍽️ 柊人の好きなもの",
+        "desc": "橘柊人 に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_mikan": {
+        "title": "🍽️ 河野蜜柑の好きなもの",
+        "desc": "河野蜜柑 に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_roi": {
+        "title": "🍽️ ロイの好きなもの",
+        "desc": "ロイ に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_orihara": {
+        "title": "🍽️ 折原さんの好きなもの",
+        "desc": "折原和也 に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_tatuya": {
+        "title": "🍽️ 神明龍矢の好きなもの",
+        "desc": "神明龍矢 に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_sara": {
+        "title": "🍽️ サラの好きなもの",
+        "desc": "サラ に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
     # 怪しい肉
     "meat_akakun": {
         "title": "🍖 赤くんになんか食べさせた",
