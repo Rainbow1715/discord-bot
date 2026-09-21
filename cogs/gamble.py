@@ -2,6 +2,8 @@ import random
 import discord
 from discord import app_commands
 from discord.ext import commands
+from achievements import on_gamble_win
+from database import user_data
 
 # --------------------------------------------------
 # ⚙️ 設定: コマンドの使用を許可するフォーラムチャンネルのID
