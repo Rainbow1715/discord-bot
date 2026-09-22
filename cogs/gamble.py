@@ -559,7 +559,7 @@ class CollectionCog(commands.Cog):
 
     @app_commands.command(
         name="collection",
-        description="解放したキャラクターの脱衣・敗北セリフ図鑑を表示します",
+        description="【指定フォーラム限定】解放したキャラクターの脱衣・敗北セリフ図鑑を表示します",
     )
     @app_commands.describe(char_name="確認したいキャラクターを選択してください")
     @app_commands.autocomplete(char_name=character_autocomplete)
