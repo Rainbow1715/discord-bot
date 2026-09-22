@@ -449,6 +449,23 @@ class CollectionCog(commands.Cog):
     async def collection_command(
         self, interaction: discord.Interaction, char_name: str
     ):
+        # --------------------------------------------------
+        # ⚙️ チャンネル制限のチェックを追加
+        # --------------------------------------------------
+        channel = interaction.channel
+        current_forum_id = (
+            channel.parent_id
+            if isinstance(channel, discord.Thread)
+            else channel.id
+        )
+
+        if current_forum_id != TARGET_FORUM_ID:
+            await interaction.response.send_message(
+                "❌ このコマンドは指定されたフォーラムチャンネルでのみ使用できます！",
+                ephemeral=True,
+            )
+            return
+            
         if char_name not in CHARACTER_CHOICES:
             await interaction.response.send_message(
                 "リストにあるキャラクターを選択してください！", ephemeral=True
