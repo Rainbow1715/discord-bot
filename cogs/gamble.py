@@ -440,7 +440,58 @@ class GambleCog(commands.Cog):
         )
 
         await interaction.response.send_message(embed=embed, view=view)
+        
+# --------------------------------
+# コレクションっす
+# --------------------------------
+class CollectionCog(commands.Cog):
 
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(
+        name="collection",
+        description="解放したキャラクターの脱衣・敗北セリフ図鑑を表示します",
+    )
+    @app_commands.describe(char_name="確認したいキャラクターを選択してください")
+    @app_commands.autocomplete(char_name=character_autocomplete)
+    async def collection_command(
+        self, interaction: discord.Interaction, char_name: str
+    ):
+        if char_name not in CHARACTER_CHOICES:
+            await interaction.response.send_message(
+                "リストにあるキャラクターを選択してください！", ephemeral=True
+            )
+            return
+
+        u_data = user_data.get(interaction.user.id, {})
+        unlocked_set = u_data.get("unlocked_reactions", {}).get(char_name, set())
+
+        char_dict = CHAR_REACTIONS.get(char_name, {})
+        
+        description_lines = []
+        for i in range(1, 11):
+            data = char_dict.get(i, {"item": "???", "quote": "？？？"})
+            
+            if i in unlocked_set:
+                # 🔓 解放済み：アイテム名とセリフを表示
+                item = data["item"]
+                quote = data["quote"]
+                description_lines.append(f"**[{i}回目]** 👗 **【 {item} 】**\n💬 {quote}")
+            else:
+                # 🔒 未解放：ハテナ表示
+                description_lines.append(f"**[{i}回目]** 🔒 **【 ？？？ 】**\n💬 「？？？」")
+
+        unlocked_count = len(unlocked_set)
+        
+        embed = discord.Embed(
+            title=f"📖 {char_name} の脱衣・セリフ図鑑 ({unlocked_count}/10)",
+            description="\n\n".join(description_lines),
+            color=discord.Color.purple()
+        )
+        embed.set_footer(text=f"{interaction.user.display_name} のコレクション")
+
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(GambleCog(bot))
