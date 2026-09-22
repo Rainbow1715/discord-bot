@@ -10,6 +10,10 @@ from database import user_data
 # --------------------------------------------------
 TARGET_FORUM_ID = 1550759772930838558
 
+CHARACTER_CHOICES = [
+    "サラ", "竹村しえら", 
+]
+
 # ーーーーーーーーーーーーーーー
 async def character_autocomplete(
     interaction: discord.Interaction,
@@ -21,10 +25,6 @@ async def character_autocomplete(
         for char in CHARACTER_CHOICES
         if current.lower() in char.lower()
     ][:25]
-
-CHARACTER_CHOICES = [
-    "サラ", "竹村しえら", 
-]
 
 # --------------------------------------------------
 # 💬 キャラクターごとの「累計負け数に応じた」セリフ設定
@@ -193,11 +193,9 @@ class HighAndLowView(discord.ui.View):
         # --------------------------------------------------
         # 🎯 1. キャラの予想決定 & 5回以上負け時の「ヘマ（パニック）」処理
         # --------------------------------------------------
-        # 基本の予想
         base_choice = random.choice(["HIGH", "LOW"])
         is_panic_hema = False
 
-        # 5回以上負けている場合、50%の確率で動揺して判定ミス（逆を選ぶ）
         if self.char_losses >= 5 and random.random() < 0.50:
             char_choice = "LOW" if base_choice == "HIGH" else "HIGH"
             is_panic_hema = True
@@ -232,8 +230,7 @@ class HighAndLowView(discord.ui.View):
             self.char_wins += 1
         else:
             self.char_losses += 1
-
-        # 📖 図鑑データ（解放済みフラグ）の保存
+            # 📖 図鑑データ（解放済みフラグ）の保存
             u_data = user_data.setdefault(self.user_id, {})
             unlocked = u_data.setdefault("unlocked_reactions", {}).setdefault(self.char_name, set())
             unlocked.add(self.char_losses)  # 失敗回数を登録
@@ -251,7 +248,6 @@ class HighAndLowView(discord.ui.View):
             win_quotes = CHAR_WIN_QUOTES.get(self.char_name, DEFAULT_WIN_QUOTES)
             quote = random.choice(win_quotes)
             
-            # ヘマしそうになったけど奇跡的に当たった場合の演出（お好みで）
             if is_panic_hema:
                 reaction_text = f"\n\n💦 **{self.char_name}**: （あせって押し間違えたのに当たった…！？）\n✨ **{self.char_name}**: {quote}"
             else:
@@ -283,7 +279,7 @@ class HighAndLowView(discord.ui.View):
             self.stop_game()
 
             # 🔥 GMが8勝以上した場合、強制的に10番目の敗北演出を適用
-            if self.gm_wins >= 8:
+            if self.gm_wins >= 8 and self.char_losses < 10:
                 char_dict = CHAR_REACTIONS.get(self.char_name, DEFAULT_REACTIONS)
                 data_10 = char_dict.get(10, {"item": "???", "quote": "「……っ！！」"})
                 
@@ -392,11 +388,10 @@ class GambleCog(commands.Cog):
         description="【指定フォーラム限定】指名したキャラと10ターンのハイ＆ロー対決を行います",
     )
     @app_commands.describe(char_name="勝負を挑むキャラクターを選択してください")
-    @app_commands.autocomplete(char_name=character_autocomplete)  # 👈 引数名 char_name に合わせる
+    @app_commands.autocomplete(char_name=character_autocomplete)
     async def gamble_command(
         self, interaction: discord.Interaction, char_name: str
     ):
-        # リストにない文字が直接入力された場合のガード
         if char_name not in CHARACTER_CHOICES:
             await interaction.response.send_message(
                 "リストにあるキャラクターを選択してください！", ephemeral=True
@@ -405,16 +400,12 @@ class GambleCog(commands.Cog):
 
         channel = interaction.channel
 
-        # --------------------------------------------------
-        # 🎯 指定されたフォーラムチャンネル（またはその中のスレッド）か判定
-        # --------------------------------------------------
         current_forum_id = (
             channel.parent_id
             if isinstance(channel, discord.Thread)
             else channel.id
         )
 
-        # 指定フォーラムチェック
         if current_forum_id != TARGET_FORUM_ID:
             await interaction.response.send_message(
                 "❌ このコマンドは指定されたフォーラムチャンネルでのみ使用できます！",
@@ -422,7 +413,6 @@ class GambleCog(commands.Cog):
             )
             return
 
-        # ゲームスタート
         view = HighAndLowView(
             user_id=interaction.user.id, char_name=char_name
         )
@@ -440,7 +430,8 @@ class GambleCog(commands.Cog):
         )
 
         await interaction.response.send_message(embed=embed, view=view)
-        
+
+
 # --------------------------------
 # コレクションっす
 # --------------------------------
@@ -474,12 +465,10 @@ class CollectionCog(commands.Cog):
             data = char_dict.get(i, {"item": "???", "quote": "？？？"})
             
             if i in unlocked_set:
-                # 🔓 解放済み：アイテム名とセリフを表示
                 item = data["item"]
                 quote = data["quote"]
                 description_lines.append(f"**[{i}回目]** 👗 **【 {item} 】**\n💬 {quote}")
             else:
-                # 🔒 未解放：ハテナ表示
                 description_lines.append(f"**[{i}回目]** 🔒 **【 ？？？ 】**\n💬 「？？？」")
 
         unlocked_count = len(unlocked_set)
@@ -493,5 +482,7 @@ class CollectionCog(commands.Cog):
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+
 async def setup(bot):
     await bot.add_cog(GambleCog(bot))
+    await bot.add_cog(CollectionCog(bot))
