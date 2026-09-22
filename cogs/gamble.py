@@ -10,8 +10,9 @@ from database import user_data
 # --------------------------------------------------
 TARGET_FORUM_ID = 1550759772930838558
 
-CHARACTER_CHOICES = [
+SPECIAL_CHAR_RESTRICTIONS = [
     "サラ", "竹村しえら", "折原(にょた)",
+    "アリエスちゃん": [1221666245070557237],
 ]
 
 # ーーーーーーーーーーーーーーー
@@ -19,12 +20,19 @@ async def character_autocomplete(
     interaction: discord.Interaction,
     current: str
 ) -> list[app_commands.Choice[str]]:
-    # 入力中の文字が含まれるキャラを検索して最大25件まで返す
-    return [
-        app_commands.Choice(name=char, value=char)
-        for char in CHARACTER_CHOICES
-        if current.lower() in char.lower()
-    ][:25]
+    choices = []
+    user_id = interaction.user.id
+
+    for char in CHARACTER_CHOICES:
+        # 🔒 特定ユーザー制限のチェック
+        allowed_users = SPECIAL_CHAR_RESTRICTIONS.get(char, [])
+        if allowed_users and user_id not in allowed_users:
+            continue  # 許可されていないユーザーには候補すら表示しない
+
+        if current.lower() in char.lower():
+            choices.append(app_commands.Choice(name=char, value=char))
+
+    return choices[:25]
 
 # --------------------------------------------------
 # 💬 キャラクターごとの「累計負け数に応じた」セリフ設定
@@ -434,6 +442,12 @@ class GambleCog(commands.Cog):
     async def gamble_command(
         self, interaction: discord.Interaction, char_name: str
     ):
+        if not check_character_permission(interaction.user.id, char_name):
+            await interaction.response.send_message(
+                "❌ このキャラクターを選択する権限がないか、存在しないキャラクターです！",
+                ephemeral=True
+            )
+            return
         if char_name not in CHARACTER_CHOICES:
             await interaction.response.send_message(
                 "リストにあるキャラクターを選択してください！", ephemeral=True
