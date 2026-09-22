@@ -10,12 +10,16 @@ from database import user_data
 # --------------------------------------------------
 TARGET_FORUM_ID = 1550759772930838558
 
-SPECIAL_CHAR_RESTRICTIONS = [
+# キャラクターの選択肢一覧リスト（定義が抜けていたため追加）
+CHARACTER_CHOICES = ["サラ", "竹村しえら", "折原(にょた)", "アリエスちゃん"]
+
+# 🔒 特定ユーザー制限（辞書構文とIDリストの不備を修正）
+SPECIAL_CHAR_RESTRICTIONS = {
     "サラ": [],
     "竹村しえら": [],
     "折原(にょた)": [],
-    "アリエスちゃん": [1221666245070557237],[837631984280666162],
-]
+    "アリエスちゃん": [1221666245070557237, 837631984280666162],
+}
 
 def check_character_permission(user_id: int, char_name: str) -> bool:
     allowed_users = SPECIAL_CHAR_RESTRICTIONS.get(char_name, [])
@@ -23,7 +27,7 @@ def check_character_permission(user_id: int, char_name: str) -> bool:
     if not allowed_users:
         return True
     return user_id in allowed_users
-    
+
 # ーーーーーーーーーーーーーーー
 async def character_autocomplete(
     interaction: discord.Interaction,
@@ -170,7 +174,7 @@ CHAR_REACTIONS = {
         },
         10: {
             "item": "パンツ",
-            "quote": "「………それで？　このあと私に何かするんですか？」",
+            "quote": "「………それで？ このあと私に何かするんですか？」",
         },
     },
 }
@@ -377,9 +381,7 @@ class HighAndLowView(discord.ui.View):
                 ),
                 color=discord.Color.gold(),
             )
-            await interaction.followup.edit_message(
-                message_id=interaction.message.id, embed=embed, view=None
-            )
+            await interaction.edit_original_response(embed=embed, view=None)
             return
 
         # 次のターンへ継続
@@ -405,9 +407,7 @@ class HighAndLowView(discord.ui.View):
             text=f"現在の的中数 ➔ GM: {self.gm_wins}勝 | {self.char_name}: {self.char_wins}勝 (失敗 {self.char_losses}回)"
         )
 
-        await interaction.followup.edit_message(
-            message_id=interaction.message.id, embed=embed, view=self
-        )
+        await interaction.edit_original_response(embed=embed, view=self)
 
     def stop_game(self):
         for child in self.children:
@@ -514,8 +514,16 @@ class CollectionCog(commands.Cog):
     async def collection_command(
         self, interaction: discord.Interaction, char_name: str
     ):
+        # 🔒 【修正】特定ユーザー権限のチェックを追加
+        if not check_character_permission(interaction.user.id, char_name):
+            await interaction.response.send_message(
+                "❌ このキャラクターの図鑑を閲覧する権限がありません！",
+                ephemeral=True
+            )
+            return
+
         # --------------------------------------------------
-        # ⚙️ チャンネル制限のチェックを追加
+        # ⚙️ チャンネル制限のチェック
         # --------------------------------------------------
         channel = interaction.channel
         current_forum_id = (
@@ -537,6 +545,7 @@ class CollectionCog(commands.Cog):
             )
             return
 
+        # ---（以下、図鑑表示処理）---
         u_data = user_data.get(interaction.user.id, {})
         unlocked_set = u_data.get("unlocked_reactions", {}).get(char_name, set())
 
