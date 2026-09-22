@@ -11,10 +11,19 @@ from database import user_data
 TARGET_FORUM_ID = 1550759772930838558
 
 SPECIAL_CHAR_RESTRICTIONS = [
-    "サラ", "竹村しえら", "折原(にょた)",
-    "アリエスちゃん": [1221666245070557237],
+    "サラ": [],
+    "竹村しえら": [],
+    "折原(にょた)": [],
+    "アリエスちゃん": [1221666245070557237],[837631984280666162],
 ]
 
+def check_character_permission(user_id: int, char_name: str) -> bool:
+    allowed_users = SPECIAL_CHAR_RESTRICTIONS.get(char_name, [])
+    # 制限リストが空なら全員OK、IDが指定されていればそのユーザーのみOK
+    if not allowed_users:
+        return True
+    return user_id in allowed_users
+    
 # ーーーーーーーーーーーーーーー
 async def character_autocomplete(
     interaction: discord.Interaction,
