@@ -34,16 +34,16 @@ async def character_autocomplete(
     current: str
 ) -> list[app_commands.Choice[str]]:
     user_id = interaction.user.id
-    choices = []
+    current_lower = current.lower()
 
-    for char in CHARACTER_CHOICES:
-        # 🔒 特定ユーザー制限のチェック
-        allowed_users = SPECIAL_CHAR_RESTRICTIONS.get(char, [])
-        if allowed_users and user_id not in allowed_users:
-            continue  # 許可されていないユーザーには候補すら表示しない
-
-        if current.lower() in char.lower():
-            choices.append(app_commands.Choice(name=char, value=char))
+    # ユーザーが権限を持つキャラだけをあらかじめ抽出（内包表記で高速化）
+    # 入力文字列（current）が含まれるものだけに絞り込んで Choice を作成
+    choices = [
+        app_commands.Choice(name=char, value=char)
+        for char, allowed_users in SPECIAL_CHAR_RESTRICTIONS.items()
+        if (not allowed_users or user_id in allowed_users)  # 権限チェック
+        and (not current_lower or current_lower in char.lower())  # 文字列一致チェック
+    ]
 
     return choices[:25]
 
