@@ -33,8 +33,8 @@ async def character_autocomplete(
     interaction: discord.Interaction,
     current: str
 ) -> list[app_commands.Choice[str]]:
-    choices = []
     user_id = interaction.user.id
+    choices = []
 
     for char in CHARACTER_CHOICES:
         # 🔒 特定ユーザー制限のチェック
