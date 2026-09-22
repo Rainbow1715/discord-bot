@@ -233,6 +233,11 @@ class HighAndLowView(discord.ui.View):
         else:
             self.char_losses += 1
 
+        # 📖 図鑑データ（解放済みフラグ）の保存
+            u_data = user_data.setdefault(self.user_id, {})
+            unlocked = u_data.setdefault("unlocked_reactions", {}).setdefault(self.char_name, set())
+            unlocked.add(self.char_losses)  # 失敗回数を登録
+
         # 表示テキストの組み立て
         gm_choice_str = "HIGH ⬆️" if gm_choice == "HIGH" else "LOW ⬇️"
         char_choice_str = "HIGH ⬆️" if char_choice == "HIGH" else "LOW ⬇️"
@@ -284,6 +289,11 @@ class HighAndLowView(discord.ui.View):
                 
                 stripped_item_10 = data_10["item"]
                 quote_10 = data_10["quote"]
+                
+                # 📖 図鑑データ（解放済みフラグ）の保存
+                u_data = user_data.setdefault(self.user_id, {})
+                unlocked = u_data.setdefault("unlocked_reactions", {}).setdefault(self.char_name, set())
+                unlocked.add(10)  # 失敗回数を登録
 
                 reaction_text += (
                     f"\n\n💥 **【大圧勝ボーナス演出】**\n"
