@@ -271,9 +271,26 @@ class HighAndLowView(discord.ui.View):
                 f"**{self.char_name}（通算 {self.char_losses} 回目の失敗）**: {quote}"
             )
 
-        # 10ターン終了チェック
+        # --------------------------------------------------
+        # 🏁 10ターン終了（ゲームセット）処理
+        # --------------------------------------------------
         if self.current_turn >= self.total_turns:
             self.stop_game()
+
+            # 🔥 GMが8勝以上した場合、強制的に10番目の敗北演出を適用
+            if self.gm_wins >= 8:
+                char_dict = CHAR_REACTIONS.get(self.char_name, DEFAULT_REACTIONS)
+                data_10 = char_dict.get(10, {"item": "???", "quote": "「……っ！！」"})
+                
+                stripped_item_10 = data_10["item"]
+                quote_10 = data_10["quote"]
+
+                reaction_text += (
+                    f"\n\n💥 **【大圧勝ボーナス演出】**\n"
+                    f"GMが8勝以上したため、{self.char_name} は完全に追い詰められた！\n"
+                    f"⚠️ **{self.char_name} の最終脱衣**: **【 {stripped_item_10} 】**\n"
+                    f"**{self.char_name}（完全敗北）**: {quote_10}"
+                )
 
             if self.gm_wins > self.char_wins:
                 final_msg = f"🏆 **勝負終了！ GMの勝利です！** (GM: {self.gm_wins}勝 / {self.char_name}: {self.char_wins}勝)"
