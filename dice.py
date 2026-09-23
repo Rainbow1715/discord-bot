@@ -3,8 +3,14 @@ import discord
 from discord import app_commands
 
 # --------------------------------------------------
-# 1. グループごとの絵文字リストを定義
-# "<:custom_emoji_name:123456789012345678>",
+# 1. Aグループ（または特定機能）を使用できるユーザーIDのリスト
+# --------------------------------------------------
+ALLOWED_USER_IDS = [
+    837631984280666162,  # あなたのDiscordユーザーIDなどを指定
+]
+
+# --------------------------------------------------
+# 2. グループごとの絵文字リストを定義
 # --------------------------------------------------
 EMOJI_GROUPS = {
     "A": [
@@ -58,34 +64,46 @@ EMOJI_GROUPS = {
         "<:6_43_karen:1539928597811167392>", "<:6_44_satoru:1539928640685608971>",
         "<:6_45_touma:1539928683010064514>", "<:6_46_asahi:1539928722931585054>",
     ]
-    
 }
 
 # --------------------------------------------------
-# 2. スラッシュコマンド（/dice）の定義
+# 3. スラッシュコマンド（/dice）の定義
 # --------------------------------------------------
 @tree.command(name="dice", description="指定したグループの中からランダムで絵文字を選びます")
 @app_commands.choices(
     group=[
         app_commands.Choice(name="Aグループ", value="A"),
-        app_commands.Choice(name="Bグループ", value="B"),
-        app_commands.Choice(name="AとBの両方", value="AB"),
+        app_commands.Choice(name="呪福", value="呪福"),
+        app_commands.Choice(name="断罪", value="断罪"),
+        app_commands.Choice(name="他", value="他"),
+        app_commands.Choice(name="卓", value="卓"),
+        app_commands.Choice(name="施設っ子", value="施設っ子"),
+        app_commands.Choice(name="全グループ（A除く）", value="ALL"),
     ]
 )
 async def dice(interaction: discord.Interaction, group: app_commands.Choice[str]):
     selected_val = group.value
+
+    # 1. 権限チェック（Aグループを選んだ場合）
+    if selected_val == "A" and interaction.user.id not in ALLOWED_USER_IDS:
+        await interaction.response.send_message(
+            "⚠️ Aグループのダイスを使用する権限がありません。",
+            ephemeral=True  # 実行した本人にしか見えない警告メッセージ
+        )
+        return
+
+    # 2. 対象となる絵文字リストの組み立て
     target_emojis = []
 
-    # 選択されたグループに応じて対象の絵文字リストを準備
-    if selected_val == "A":
-        target_emojis = EMOJI_GROUPS["A"]
-    elif selected_val == "B":
-        target_emojis = EMOJI_GROUPS["B"]
-    elif selected_val == "AB":
-        # AとBのリストを合体させる
-        target_emojis = EMOJI_GROUPS["A"] + EMOJI_GROUPS["B"]
+    if selected_val == "ALL":
+        # Aグループ以外の全グループの絵文字を合体
+        for key, emojis in EMOJI_GROUPS.items():
+            if key != "A":
+                target_emojis.extend(emojis)
+    else:
+        target_emojis = EMOJI_GROUPS.get(selected_val, [])
 
-    # リストが空でなければランダムで1つ選ぶ
+    # 3. ダイス結果の出力
     if target_emojis:
         chosen_emoji = random.choice(target_emojis)
         await interaction.response.send_message(
@@ -93,5 +111,5 @@ async def dice(interaction: discord.Interaction, group: app_commands.Choice[str]
         )
     else:
         await interaction.response.send_message(
-            "絵文字リストが空です。", ephemeral=True
+            "絵文字リストが見つからないか、空です。", ephemeral=True
         )
