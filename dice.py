@@ -1,6 +1,7 @@
 import random
 import discord
 from discord import app_commands
+from discord.ext import commands
 
 # --------------------------------------------------
 # 1. Aグループ（または特定機能）を使用できるユーザーIDのリスト
@@ -85,35 +86,38 @@ class DiceCog(commands.Cog):
             app_commands.Choice(name="全グループ（A除く）", value="ALL"),
         ]
     )
-async def dice(interaction: discord.Interaction, group: app_commands.Choice[str]):
-    selected_val = group.value
+    async def dice(self, interaction: discord.Interaction, group: app_commands.Choice[str]):
+        selected_val = group.value
 
-    # 1. 権限チェック（Aグループを選んだ場合）
-    if selected_val == "A" and interaction.user.id not in ALLOWED_USER_IDS:
-        await interaction.response.send_message(
-            "⚠️ Aグループのダイスを使用する権限がありません。",
-            ephemeral=True  # 実行した本人にしか見えない警告メッセージ
-        )
-        return
+        # 1. 権限チェック（Aグループを選んだ場合）
+        if selected_val == "A" and interaction.user.id not in ALLOWED_USER_IDS:
+            await interaction.response.send_message(
+                "⚠️ Aグループのダイスを使用する権限がありません。",
+                ephemeral=True
+            )
+            return
 
-    # 2. 対象となる絵文字リストの組み立て
-    target_emojis = []
+        # 2. 対象となる絵文字リストの組み立て
+        target_emojis = []
 
-    if selected_val == "ALL":
-        # Aグループ以外の全グループの絵文字を合体
-        for key, emojis in EMOJI_GROUPS.items():
-            if key != "A":
-                target_emojis.extend(emojis)
-    else:
-        target_emojis = EMOJI_GROUPS.get(selected_val, [])
+        if selected_val == "ALL":
+            for key, emojis in EMOJI_GROUPS.items():
+                if key != "A":
+                    target_emojis.extend(emojis)
+        else:
+            target_emojis = EMOJI_GROUPS.get(selected_val, [])
 
-    # 3. ダイス結果の出力
-    if target_emojis:
-        chosen_emoji = random.choice(target_emojis)
-        await interaction.response.send_message(
-            f"🎲 **{interaction.user.display_name}** さんのダイス結果（{group.name}）： {chosen_emoji}"
-        )
-    else:
-        await interaction.response.send_message(
-            "絵文字リストが見つからないか、空です。", ephemeral=True
-        )
+        # 3. ダイス結果の出力
+        if target_emojis:
+            chosen_emoji = random.choice(target_emojis)
+            await interaction.response.send_message(
+                f"🎲 **{interaction.user.display_name}** さんのダイス結果（{group.name}）： {chosen_emoji}"
+            )
+        else:
+            await interaction.response.send_message(
+                "絵文字リストが見つからないか、空です。", ephemeral=True
+            )
+
+# Botがこのファイルを読み込むための関数（必須）
+async def setup(bot: commands.Bot):
+    await bot.add_cog(DiceCog(bot))
