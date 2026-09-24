@@ -115,8 +115,11 @@ class DiceCog(commands.Cog):
                 title="🎲 ダイス結果",
                 color=0x3498DB  # 枠線の色（青系）
             )
-            # コマンド実行者のアイコンを右上に表示
-            embed.set_thumbnail(url=interaction.user.display_avatar.url)
+            # 左上に実行者のアイコンと名前を小さく表示
+            embed.set_author(
+                name=f"{interaction.user.display_name} のダイス結果",
+                icon_url=interaction.user.display_avatar.url
+            )
             
             # 結果フィールドを追加
             embed.add_field(name="実行者", value=interaction.user.display_name, inline=True)
