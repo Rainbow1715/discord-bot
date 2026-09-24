@@ -112,18 +112,14 @@ class DiceCog(commands.Cog):
             chosen_emoji = random.choice(target_emojis)
             
             embed = discord.Embed(
-                title="🎲 ダイス結果",
+                description=f"**グループ**: {group.name}\n\n{chosen_emoji}",
                 color=0x3498DB  # 枠線の色（青系）
             )
-            # 左上に実行者のアイコンと名前を小さく表示
+            # 左上に実行者のアイコンと名前を表示
             embed.set_author(
                 name=f"{interaction.user.display_name} のダイス結果",
                 icon_url=interaction.user.display_avatar.url
             )
-            
-            # 結果フィールドを追加
-            embed.add_field(name="グループ", value=group.name, inline=True)
-            embed.add_field(name="結果", value=f"# {chosen_emoji}", inline=False) # 大きめに表示
 
             await interaction.response.send_message(embed=embed)
         else:
