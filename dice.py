@@ -122,7 +122,6 @@ class DiceCog(commands.Cog):
             )
             
             # 結果フィールドを追加
-            embed.add_field(name="実行者", value=interaction.user.display_name, inline=True)
             embed.add_field(name="グループ", value=group.name, inline=True)
             embed.add_field(name="結果", value=f"# {chosen_emoji}", inline=False) # 大きめに表示
 
