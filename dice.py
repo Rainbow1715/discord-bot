@@ -67,6 +67,17 @@ EMOJI_GROUPS = {
     ]
 }
 
+# スラッシュコマンドの選択肢
+GROUP_CHOICES = [
+    app_commands.Choice(name="Aグループ", value="A"),
+    app_commands.Choice(name="呪福", value="呪福"),
+    app_commands.Choice(name="断罪", value="断罪"),
+    app_commands.Choice(name="他", value="他"),
+    app_commands.Choice(name="卓", value="卓"),
+    app_commands.Choice(name="施設っ子", value="施設っ子"),
+    app_commands.Choice(name="全グループ（A除く）", value="ALL"),
+]
+
 # --------------------------------------------------
 # 3. スラッシュコマンド（/dice）の定義
 # --------------------------------------------------
@@ -74,19 +85,8 @@ class DiceCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="dice", description="指定したグループの中からランダムで絵文字を選びます")
-    @app_commands.choices(
-        group=[
-            app_commands.Choice(name="Aグループ", value="A"),
-            app_commands.Choice(name="呪福", value="呪福"),
-            app_commands.Choice(name="断罪", value="断罪"),
-            app_commands.Choice(name="他", value="他"),
-            app_commands.Choice(name="卓", value="卓"),
-            app_commands.Choice(name="施設っ子", value="施設っ子"),
-            app_commands.Choice(name="全グループ（A除く）", value="ALL"),
-        ]
-    )
-    async def dice(self, interaction: discord.Interaction, group: app_commands.Choice[str]):
+    # スラッシュコマンド用の共通ダイス処理関数
+    async def run_dice(self, interaction: discord.Interaction, group: app_commands.Choice[str]):
         selected_val = group.value
 
         # 1. 権限チェック（Aグループを選んだ場合）
@@ -99,7 +99,6 @@ class DiceCog(commands.Cog):
 
         # 2. 対象となる絵文字リストの組み立て
         target_emojis = []
-
         if selected_val == "ALL":
             for key, emojis in EMOJI_GROUPS.items():
                 if key != "A":
@@ -112,10 +111,9 @@ class DiceCog(commands.Cog):
             chosen_emoji = random.choice(target_emojis)
             
             embed = discord.Embed(
-                description=f"**{group.name}**\n{chosen_emoji}",
-                color=0x3498DB  # 枠線の色（青系）
+                description=f"**グループ**: {group.name}\n\n{chosen_emoji}",
+                color=0x3498DB
             )
-            # 左上に実行者のアイコンと名前を表示
             embed.set_author(
                 name=f"{interaction.user.display_name} のダイス結果",
                 icon_url=interaction.user.display_avatar.url
@@ -127,8 +125,8 @@ class DiceCog(commands.Cog):
                 "絵文字リストが見つからないか、空です。", ephemeral=True
             )
 
-# --------------------------------------------------
-    # コマンド登録
+    # --------------------------------------------------
+    # スラッシュコマンド登録（/dice, /うちの子ダイス, /うちのこダイス）
     # --------------------------------------------------
     @app_commands.command(name="dice", description="指定したグループの中からランダムで絵文字を選びます")
     @app_commands.choices(group=GROUP_CHOICES)
@@ -146,14 +144,13 @@ class DiceCog(commands.Cog):
         await self.run_dice(interaction, group)
 
     # --------------------------------------------------
-    # テキストチャット入力（「うちの子ダイス」「うちのこダイス」と直打ち）でも反応させる処理
+    # チャットに直打ち（「うちの子ダイス」「うちのこダイス」）で即振る処理
     # --------------------------------------------------
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot:
             return
 
-        # メッセージが「うちの子ダイス」または「うちのこダイス」の場合（全グループからダイス）
         if message.content in ["うちの子ダイス", "うちのこダイス"]:
             target_emojis = []
             for key, emojis in EMOJI_GROUPS.items():
