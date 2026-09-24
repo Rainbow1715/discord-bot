@@ -107,12 +107,23 @@ class DiceCog(commands.Cog):
         else:
             target_emojis = EMOJI_GROUPS.get(selected_val, [])
 
-        # 3. ダイス結果の出力
+        # 3. ダイス結果の出力（Embed化）
         if target_emojis:
             chosen_emoji = random.choice(target_emojis)
-            await interaction.response.send_message(
-                f"🎲 **{interaction.user.display_name}** さんのダイス結果（{group.name}）： {chosen_emoji}"
+            
+            embed = discord.Embed(
+                title="🎲 ダイス結果",
+                color=0x3498DB  # 枠線の色（青系）
             )
+            # コマンド実行者のアイコンを右上に表示
+            embed.set_thumbnail(url=interaction.user.display_avatar.url)
+            
+            # 結果フィールドを追加
+            embed.add_field(name="実行者", value=interaction.user.display_name, inline=True)
+            embed.add_field(name="グループ", value=group.name, inline=True)
+            embed.add_field(name="結果", value=f"# {chosen_emoji}", inline=False) # 大きめに表示
+
+            await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message(
                 "絵文字リストが見つからないか、空です。", ephemeral=True
