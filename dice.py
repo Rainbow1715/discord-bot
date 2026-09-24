@@ -111,7 +111,7 @@ class DiceCog(commands.Cog):
             chosen_emoji = random.choice(target_emojis)
             
             embed = discord.Embed(
-                description=f"**グループ**: {group.name}\n\n{chosen_emoji}",
+                description=f"{group.name}\n{chosen_emoji}",
                 color=0x3498DB
             )
             embed.set_author(
