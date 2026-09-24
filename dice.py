@@ -69,18 +69,22 @@ EMOJI_GROUPS = {
 # --------------------------------------------------
 # 3. スラッシュコマンド（/dice）の定義
 # --------------------------------------------------
-@tree.command(name="dice", description="指定したグループの中からランダムで絵文字を選びます")
-@app_commands.choices(
-    group=[
-        app_commands.Choice(name="Aグループ", value="A"),
-        app_commands.Choice(name="呪福", value="呪福"),
-        app_commands.Choice(name="断罪", value="断罪"),
-        app_commands.Choice(name="他", value="他"),
-        app_commands.Choice(name="卓", value="卓"),
-        app_commands.Choice(name="施設っ子", value="施設っ子"),
-        app_commands.Choice(name="全グループ（A除く）", value="ALL"),
-    ]
-)
+class DiceCog(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
+    @app_commands.command(name="dice", description="指定したグループの中からランダムで絵文字を選びます")
+    @app_commands.choices(
+        group=[
+            app_commands.Choice(name="Aグループ", value="A"),
+            app_commands.Choice(name="呪福", value="呪福"),
+            app_commands.Choice(name="断罪", value="断罪"),
+            app_commands.Choice(name="他", value="他"),
+            app_commands.Choice(name="卓", value="卓"),
+            app_commands.Choice(name="施設っ子", value="施設っ子"),
+            app_commands.Choice(name="全グループ（A除く）", value="ALL"),
+        ]
+    )
 async def dice(interaction: discord.Interaction, group: app_commands.Choice[str]):
     selected_val = group.value
 
