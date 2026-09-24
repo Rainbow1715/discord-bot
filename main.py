@@ -77,7 +77,8 @@ class MyBot(commands.Bot):
             "battle",
             "cogs.use",
             "cogs.soubi",
-            "cogs.gamble"
+            "cogs.gamble",
+            "dice",
         ]
 
         for cog in cogs:
