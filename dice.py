@@ -127,6 +127,53 @@ class DiceCog(commands.Cog):
                 "絵文字リストが見つからないか、空です。", ephemeral=True
             )
 
+# --------------------------------------------------
+    # コマンド登録
+    # --------------------------------------------------
+    @app_commands.command(name="dice", description="指定したグループの中からランダムで絵文字を選びます")
+    @app_commands.choices(group=GROUP_CHOICES)
+    async def dice(self, interaction: discord.Interaction, group: app_commands.Choice[str]):
+        await self.run_dice(interaction, group)
+
+    @app_commands.command(name="うちの子ダイス", description="指定したグループの中からランダムで絵文字を選びます")
+    @app_commands.choices(group=GROUP_CHOICES)
+    async def uchinoko_dice1(self, interaction: discord.Interaction, group: app_commands.Choice[str]):
+        await self.run_dice(interaction, group)
+
+    @app_commands.command(name="うちのこダイス", description="指定したグループの中からランダムで絵文字を選びます")
+    @app_commands.choices(group=GROUP_CHOICES)
+    async def uchinoko_dice2(self, interaction: discord.Interaction, group: app_commands.Choice[str]):
+        await self.run_dice(interaction, group)
+
+    # --------------------------------------------------
+    # テキストチャット入力（「うちの子ダイス」「うちのこダイス」と直打ち）でも反応させる処理
+    # --------------------------------------------------
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        if message.author.bot:
+            return
+
+        # メッセージが「うちの子ダイス」または「うちのこダイス」の場合（全グループからダイス）
+        if message.content in ["うちの子ダイス", "うちのこダイス"]:
+            target_emojis = []
+            for key, emojis in EMOJI_GROUPS.items():
+                if key != "A":
+                    target_emojis.extend(emojis)
+
+            if target_emojis:
+                chosen_emoji = random.choice(target_emojis)
+                
+                embed = discord.Embed(
+                    description=f"**グループ**: 全グループ（A除く）\n\n{chosen_emoji}",
+                    color=0x3498DB
+                )
+                embed.set_author(
+                    name=f"{message.author.display_name} のダイス結果",
+                    icon_url=message.author.display_avatar.url
+                )
+
+                await message.channel.send(embed=embed)
+
 # Botがこのファイルを読み込むための関数（必須）
 async def setup(bot: commands.Bot):
     await bot.add_cog(DiceCog(bot))
