@@ -633,6 +633,20 @@ async def on_gamble_win(interaction: discord.Interaction, u_data: dict):
         await check_and_unlock_achievement(interaction, "win_gamble_50")
     if gamble_wins >= 100:
         await check_and_unlock_achievement(interaction, "win_gamble_100")
+        
+    # 相手別実績
+    if opponent_name:
+        opponent_mapping = {
+            "しえら": "win_gamble_siera",
+            "サラ": "win_gamble_sara",
+            "折原(にょた)": "win_gamble_nyotahara",
+            "ロイ": "win_gamble_roi",
+            "彼方": "win_gamble_kanata",
+        }
+        for name_key, ach_id in opponent_mapping.items():
+            if name_key in opponent_name:
+                await check_and_unlock_achievement(interaction, ach_id)
+
 
 # --------------------------------------------------
 # 🔓 実績解除・通知共通関数
