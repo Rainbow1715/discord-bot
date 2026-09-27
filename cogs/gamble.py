@@ -435,7 +435,8 @@ class HighAndLowView(discord.ui.View):
             
             # 🏆 ターン毎のGM正解時に実績カウント＆解除チェック
             u_data = user_data.setdefault(self.user_id, {})
-            await on_gamble_win(interaction, u_data)
+            await on_gamble_win(interaction, u_data, opponent_name=self.opponent_name)
+
             
         if char_correct:
             self.char_wins += 1
