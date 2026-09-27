@@ -746,7 +746,9 @@ def _sync_save():
     try:
         rows = [["user_id", "data_json"]]
         for u_id, data in user_data.items():
-            rows.append([str(u_id), json.dumps(data, ensure_ascii=False)])
+            # ⭕ default=default_converter を追加！
+            json_str = json.dumps(data, ensure_ascii=False, default=default_converter)
+            rows.append([str(u_id), json_str])
         
         sheet.clear()
         sheet.update(range_name='A1', values=rows)
