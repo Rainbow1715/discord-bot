@@ -221,6 +221,42 @@ ACHIEVEMENTS = {
         "desc": "ギャンブルで10回勝利する",
         "reward_rainbow": 500,
     },
+    "win_gamble_50": {
+        "title": "🃏 おお",
+        "desc": "ギャンブルで50回勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_gamble_100": {
+        "title": "🃏 おおじゃないが",
+        "desc": "ギャンブルで100回勝利する",
+        "reward_rainbow": 500,
+    },
+    # ----------------
+    "win_gamble_siera": {
+        "title": "🃏 しえらに勝利",
+        "desc": "ギャンブルで しえら に勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_gamble_sara": {
+        "title": "🃏 サラに勝利",
+        "desc": "ギャンブルで サラ に勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_gamble_nyotahara": {
+        "title": "🃏 にょた原さんに勝利",
+        "desc": "ギャンブルで 折原(にょた) に勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_gamble_roi": {
+        "title": "🃏 ロイに勝利",
+        "desc": "ギャンブルで ロイ に勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_gamble_kanata": {
+        "title": "🃏 彼方に勝利",
+        "desc": "ギャンブルで 彼方 に勝利する",
+        "reward_rainbow": 500,
+    },
     # 🍽️ 飯実績
     "eat_siera": {
         "title": "🍽️ しえらの嫌いなもの",
@@ -593,7 +629,10 @@ async def on_gamble_win(interaction: discord.Interaction, u_data: dict):
     # 10勝で解除
     if gamble_wins >= 10:
         await check_and_unlock_achievement(interaction, "win_gamble_10")
-
+    if gamble_wins >= 50:
+        await check_and_unlock_achievement(interaction, "win_gamble_50")
+    if gamble_wins >= 100:
+        await check_and_unlock_achievement(interaction, "win_gamble_100")
 
 # --------------------------------------------------
 # 🔓 実績解除・通知共通関数
