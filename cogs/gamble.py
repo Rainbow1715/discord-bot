@@ -511,6 +511,10 @@ class HighAndLowView(discord.ui.View):
 
             if self.gm_wins > self.char_wins:
                 final_msg = f"🏆 **勝負終了！ GMの勝利です！** (GM: {self.gm_wins}勝 / {self.char_name}: {self.char_wins}勝)"
+                
+                u_data = user_data.setdefault(self.user_id, {})
+                await on_char_match_win(interaction, u_data, opponent_name=self.opponent_name)
+            
             elif self.char_wins > self.gm_wins:
                 final_msg = f"💀 **勝負終了！ {self.char_name} の勝利です！** (GM: {self.gm_wins}勝 / {self.char_name}: {self.char_wins}勝)"
             else:
