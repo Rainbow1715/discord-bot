@@ -616,7 +616,7 @@ async def check_eat_suspicious_meat_achievement(
 # --------------------------------------------------
 # 🎰 ギャンブル勝利時の自動実績チェック
 # --------------------------------------------------
-async def on_gamble_win(interaction: discord.Interaction, u_data: dict, opponent_name: str):
+async def on_gamble_win(interaction: discord.Interaction, u_data: dict, opponent_name: str = None):
     """ギャンブルで勝利した際に呼び出す"""
     # ギャンブル勝利数を加算
     u_data["gamble_win_count"] = u_data.get("gamble_win_count", 0) + 1
