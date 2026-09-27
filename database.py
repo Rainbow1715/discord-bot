@@ -719,6 +719,11 @@ def feed_character(user_info, char_data, food_name):
 # --------------------------------------------------
 # 📊 セーブデータの読み込みと保存（非同期対応）
 # --------------------------------------------------
+def default_converter(o):
+    if isinstance(o, set):
+        return list(o)
+    raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
+
 def load_data():
     global user_data
     if not sheet:
