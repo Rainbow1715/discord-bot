@@ -10,21 +10,21 @@ from database import user_data
 # --------------------------------------------------
 TARGET_FORUM_ID = 1550759772930838558
 
-# キャラクターの選択肢一覧リスト（定義が抜けていたため追加）
+# キャラクターの選択肢一覧リスト
 CHARACTER_CHOICES = ["サラ", "竹村しえら", "折原(にょた)", "アリエスちゃん", "ロイ", "彼方"]
 
-# 🔒 特定ユーザー制限（辞書構文とIDリストの不備を修正）
+# 🔒 特定ユーザー制限（セット型に統一）
 SPECIAL_CHAR_RESTRICTIONS = {
-    "サラ": [],
-    "竹村しえら": [],
-    "折原(にょた)": [],
-    "アリエスちゃん": [1221666245070557237, 837631984280666162],
-    "ロイ": [],
-    "彼方": [],
+    "サラ": set(),
+    "竹村しえら": set(),
+    "折原(にょた)": set(),
+    "アリエスちゃん": {1221666245070557237, 837631984280666162},
+    "ロイ": set(),
+    "彼方": set(),
 }
 
 def check_character_permission(user_id: int, char_name: str) -> bool:
-    allowed_users = SPECIAL_CHAR_RESTRICTIONS.get(char_name, [])
+    allowed_users = SPECIAL_CHAR_RESTRICTIONS.get(char_name, set())
     # 制限リストが空なら全員OK、IDが指定されていればそのユーザーのみOK
     if not allowed_users:
         return True
@@ -38,8 +38,7 @@ async def character_autocomplete(
     user_id = interaction.user.id
     current_lower = current.lower()
 
-    # ユーザーが権限を持つキャラだけをあらかじめ抽出（内包表記で高速化）
-    # 入力文字列（current）が含まれるものだけに絞り込んで Choice を作成
+    # ユーザーが権限を持つキャラだけをあらかじめ抽出
     choices = [
         app_commands.Choice(name=char, value=char)
         for char, allowed_users in SPECIAL_CHAR_RESTRICTIONS.items()
@@ -182,7 +181,7 @@ CHAR_REACTIONS = {
     "アリエスちゃん": {
         1: {
             "item": "アリエスちゃんは何も脱がなかった！",
-            "quote": "「…？　いや…まだ他に賭けれるものあるし……、…なんだ？　その顔……」",
+            "quote": "「…？ いや…まだ他に賭けれるものあるし……、…なんだ？ その顔……」",
         },
         2: {
             "item": "マント",
@@ -190,7 +189,7 @@ CHAR_REACTIONS = {
         },
         3: {
             "item": "ネクタイ",
-            "quote": "「……全部脱がせようとしてるのか？　その手には乗らんぞ……」",
+            "quote": "「……全部脱がせようとしてるのか？ その手には乗らんぞ……」",
         },
         4: {
             "item": "上着",
@@ -260,7 +259,7 @@ CHAR_REACTIONS = {
         },
         10: {
             "item": "パンツ",
-            "quote": "「何？　なんかあると思ってる？　男相手ならなんにもないよ。」",
+            "quote": "「何？ なんかあると思ってる？ 男相手ならなんにもないよ。」",
         },
     },
     "彼方": {
@@ -330,7 +329,7 @@ CHAR_WIN_QUOTES = {
         "「っは、当然だな。しえらさんを舐めるなよ」",
         "「おっ、また勝った。この調子で調子狂わせてやるからな」",
         "「いいぞ、このまま圧倒してやる……！」",
-        "「へへっ、どうだ？ まだまだ甘いんじゃないの？」",
+        "「へへっ、どうだ？ まだまだまだ甘いんじゃないの？」",
     ],
     "折原(にょた)": [
         "「当然の結果ですね。」",
@@ -372,6 +371,7 @@ class HighAndLowView(discord.ui.View):
         super().__init__(timeout=300)
         self.user_id = user_id
         self.char_name = char_name
+        self.opponent_name = char_name  # 🛠️ 修正: achievement処理で使用する属性を追加
         self.total_turns = total_turns
 
         self.current_turn = 1
@@ -437,7 +437,6 @@ class HighAndLowView(discord.ui.View):
             u_data = user_data.setdefault(self.user_id, {})
             await on_gamble_win(interaction, u_data, opponent_name=self.opponent_name)
 
-            
         if char_correct:
             self.char_wins += 1
         else:
@@ -523,7 +522,7 @@ class HighAndLowView(discord.ui.View):
                     f"**【Turn {self.current_turn}/{self.total_turns}】**\n"
                     f"前のカード: **[{curr_str}]** ➔ 開いたカード: **[{next_str}]** （正解: {actual_result}）\n\n"
                     f"👑 **GMの予想**: {gm_choice_str} （{gm_status}）\n"
-                    f"👤 **{self.char_name} の予想**: {char_choice_str} （{char_status}）"
+                    f"👤 **{self.char_name} の予想**: {char_choice_str} （{char_status}）\n"
                     f"{reaction_text}\n\n"
                     f"===================================\n"
                     f"{final_msg}"
@@ -543,7 +542,7 @@ class HighAndLowView(discord.ui.View):
                 f"**【Turn {self.current_turn - 1}/{self.total_turns} の結果】**\n"
                 f"前のカード: **[{curr_str}]** ➔ 開いたカード: **[{next_str}]** （正解: {actual_result}）\n\n"
                 f"👑 **GMの予想**: {gm_choice_str} （{gm_status}）\n"
-                f"👤 **{self.char_name} の予想**: {char_choice_str} （{char_status}）"
+                f"👤 **{self.char_name} の予想**: {char_choice_str} （{char_status}）\n"
                 f"{reaction_text}\n\n"
                 f"===================================\n"
                 f"**【Turn {self.current_turn}/{self.total_turns}】**\n"
@@ -663,7 +662,7 @@ class CollectionCog(commands.Cog):
     async def collection_command(
         self, interaction: discord.Interaction, char_name: str
     ):
-        # 🔒 【修正】特定ユーザー権限のチェックを追加
+        # 🔒 特定ユーザー権限のチェック
         if not check_character_permission(interaction.user.id, char_name):
             await interaction.response.send_message(
                 "❌ このキャラクターの図鑑を閲覧する権限がありません！",
