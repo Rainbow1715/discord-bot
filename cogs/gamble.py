@@ -11,7 +11,7 @@ from database import user_data
 TARGET_FORUM_ID = 1550759772930838558
 
 # キャラクターの選択肢一覧リスト（定義が抜けていたため追加）
-CHARACTER_CHOICES = ["サラ", "竹村しえら", "折原(にょた)", "アリエスちゃん"]
+CHARACTER_CHOICES = ["サラ", "竹村しえら", "折原(にょた)", "アリエスちゃん", "ロイ", "彼方"]
 
 # 🔒 特定ユーザー制限（辞書構文とIDリストの不備を修正）
 SPECIAL_CHAR_RESTRICTIONS = {
@@ -19,6 +19,8 @@ SPECIAL_CHAR_RESTRICTIONS = {
     "竹村しえら": [],
     "折原(にょた)": [],
     "アリエスちゃん": [1221666245070557237, 837631984280666162],
+    "ロイ": [],
+    "彼方": [],
 }
 
 def check_character_permission(user_id: int, char_name: str) -> bool:
