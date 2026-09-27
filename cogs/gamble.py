@@ -25,12 +25,10 @@ SPECIAL_CHAR_RESTRICTIONS = {
 
 def check_character_permission(user_id: int, char_name: str) -> bool:
     allowed_users = SPECIAL_CHAR_RESTRICTIONS.get(char_name, set())
-    # 制限リストが空なら全員OK、IDが指定されていればそのユーザーのみOK
     if not allowed_users:
         return True
     return user_id in allowed_users
 
-# ーーーーーーーーーーーーーーー
 async def character_autocomplete(
     interaction: discord.Interaction,
     current: str
@@ -38,12 +36,11 @@ async def character_autocomplete(
     user_id = interaction.user.id
     current_lower = current.lower()
 
-    # ユーザーが権限を持つキャラだけをあらかじめ抽出
     choices = [
         app_commands.Choice(name=char, value=char)
         for char, allowed_users in SPECIAL_CHAR_RESTRICTIONS.items()
-        if (not allowed_users or user_id in allowed_users)  # 権限チェック
-        and (not current_lower or current_lower in char.lower())  # 文字列一致チェック
+        if (not allowed_users or user_id in allowed_users)
+        and (not current_lower or current_lower in char.lower())
     ]
 
     return choices[:25]
@@ -53,260 +50,79 @@ async def character_autocomplete(
 # --------------------------------------------------    
 CHAR_REACTIONS = {
     "サラ": {
-        1: {
-            "item": "耳の謎アクセ",
-            "quote": "「ふん、まだ一回ですから。これくらいで勝った気になられちゃ困りますよ。」",
-        },
-        2: {
-            "item": "上着",
-            "quote": "「いや、いやまだ、あの、次で取り返せますから、こんなもの……」",
-        },
-        3: {
-            "item": "セーター",
-            "quote": "「つ、次こそ取り返せるから……」",
-        },
-        4: {
-            "item": "シャツのボタンを外す",
-            "quote": "「あ、あの……ボタンで勘弁してくれませんか……？；；」",
-        },
-        5: {
-            "item": "シャツ",
-            "quote": "「はい！ 脱げばいいんでしょ脱げば！！」",
-        },
-        6: {
-            "item": "靴と靴下",
-            "quote": "「な、なんか……世の中には足で興奮する人がいるとかいないとか……。……俺男ですよ…？」",
-        },
-        7: {
-            "item": "ズボン",
-            "quote": "「逆になんかイカサマやってるでしょあなた！！ ほらズボン！ はい！」",
-        },
-        8: {
-            "item": "サラは何も脱がなかった！",
-            "quote": "「こんな、こんな格好で集中できるとでも？！；；」",
-        },
-        9: {
-            "item": "サラは何も脱がなかった！",
-            "quote": "「いや、次は絶対俺が勝つので……。次負けたらもうあのほんと、なんでもするんで……。マジでこれは勘弁……」",
-        },
-        10: {
-            "item": "？？？",
-            "quote": "「……な、なんでもするって言った？ きき気のせいじゃないっすかねぇ…」",
-        },
+        1: {"item": "耳の謎アクセ", "quote": "「ふん、まだ一回ですから。これくらいで勝った気になられちゃ困りますよ。」"},
+        2: {"item": "上着", "quote": "「いや、いやまだ、あの、次で取り返せますから、こんなもの……」"},
+        3: {"item": "セーター", "quote": "「つ、次こそ取り返せるから……」"},
+        4: {"item": "シャツのボタンを外す", "quote": "「あ、あの……ボタンで勘弁してくれませんか……？；；」"},
+        5: {"item": "シャツ", "quote": "「はい！ 脱げばいいんでしょ脱げば！！」"},
+        6: {"item": "靴と靴下", "quote": "「な、なんか……世の中には足で興奮する人がいるとかいないとか……。……俺男ですよ…？」"},
+        7: {"item": "ズボン", "quote": "「逆になんかイカサマやってるでしょあなた！！ ほらズボン！ はい！」"},
+        8: {"item": "サラは何も脱がなかった！", "quote": "「こんな、こんな格好で集中できるとでも？！；；」"},
+        9: {"item": "サラは何も脱がなかった！", "quote": "「いや、次は絶対俺が勝つので……。次負けたらもうあのほんと、なんでもするんで……。マジでこれは勘弁……」"},
+        10: {"item": "？？？", "quote": "「……な、なんでもするって言った？ きき気のせいじゃないっすかねぇ…」"},
     },
     "竹村しえら": {
-        1: {
-            "item": "しえらは何も脱がなかった！",
-            "quote": "「まだ負けたわけじゃないが？ ほら、次だ次。次やるぞ」",
-        },
-        2: {
-            "item": "パーカー",
-            "quote": "「何これ、賭けるものがなくなったら服賭けれんの……？ じゃあはい…パーカー……」",
-        },
-        3: {
-            "item": "ネクタイ",
-            "quote": "「え、つ、つぎ……？ じゃあ……ネクタイ……」",
-        },
-        4: {
-            "item": "しえらは何も脱がなかった！",
-            "quote": "「ぜぇっっったい嫌。あのね、次こそしえらさんが勝つもんでね。」",
-        },
-        5: {
-            "item": "シャツのボタンを外す",
-            "quote": "「マジで嫌……せめてパーカー返して……」",
-        },
-        6: {
-            "item": "シャツ",
-            "quote": "「はい、これでいい？？ 絶対こっち見んなよ殺すぞ」",
-        },
-        7: {
-            "item": "靴と靴下",
-            "quote": "「俺知ってるぞ、靴下食う変態がいるんだろ。やめろよ。食うなよ」",
-        },
-        8: {
-            "item": "ズボン",
-            "quote": "「えあの今までのことなかったことにしていいすか」",
-        },
-        9: {
-            "item": "キャミソール",
-            "quote": "「マジでこっち見んな。」",
-        },
-        10: {
-            "item": "パンツ",
-            "quote": "「………服、返してもらえないですか……？」",
-        },
+        1: {"item": "しえらは何も脱がなかった！", "quote": "「まだ負けたわけじゃないが？ ほら、次だ次。次やるぞ」"},
+        2: {"item": "パーカー", "quote": "「何これ、賭けるものがなくなったら服賭けれんの……？ じゃあはい…パーカー……」"},
+        3: {"item": "ネクタイ", "quote": "「え、つ、つぎ……？ じゃあ……ネクタイ……」"},
+        4: {"item": "しえらは何も脱がなかった！", "quote": "「ぜぇっっったい嫌。あのね、次こそしえらさんが勝つもんでね。」"},
+        5: {"item": "シャツのボタンを外す", "quote": "「マジで嫌……せめてパーカー返して……」"},
+        6: {"item": "シャツ", "quote": "「はい、これでいい？？ 絶対こっち見んなよ殺すぞ」"},
+        7: {"item": "靴と靴下", "quote": "「俺知ってるぞ、靴下食う変態がいるんだろ。やめろよ。食うなよ」"},
+        8: {"item": "ズボン", "quote": "「えあの今までのことなかったことにしていいすか」"},
+        9: {"item": "キャミソール", "quote": "「マジでこっち見んな。」"},
+        10: {"item": "パンツ", "quote": "「………服、返してもらえないですか……？」"},
     },
     "折原(にょた)": {
-        1: {
-            "item": "折原(にょた)は何も脱がなかった！",
-            "quote": "「はぁ、まだ想定通りですよ」",
-        },
-        2: {
-            "item": "メガネ",
-            "quote": "「最近目が疲れるのでかけていただけですよ。欲しいなら差し上げますが」",
-        },
-        3: {
-            "item": "首のこの…何？",
-            "quote": "「私がそう簡単に脱ぐわけないじゃないですか。あなたにはこの程度がお似合いですよ」",
-        },
-        4: {
-            "item": "白衣",
-            "quote": "「ちょうど真っ白な白衣が欲しかったところなんでね。そちらも欲しいなら差し上げますよ」",
-        },
-        5: {
-            "item": "シャツのボタンを外す",
-            "quote": "「(クソデカため息)……流石に」",
-        },
-        6: {
-            "item": "シャツ",
-            "quote": "「……見たいなら見てもいいですよ。」",
-        },
-        7: {
-            "item": "靴と靴下",
-            "quote": "「…………何が面白いんです？」",
-        },
-        8: {
-            "item": "ズボン",
-            "quote": "「……こんなはずでは………」",
-        },
-        9: {
-            "item": "ブラ",
-            "quote": "「…次で全部取り返しますから。」",
-        },
-        10: {
-            "item": "パンツ",
-            "quote": "「………それで？ このあと私に何かするんですか？」",
-        },
+        1: {"item": "折原(にょた)は何も脱がなかった！", "quote": "「はぁ、まだ想定通りですよ」"},
+        2: {"item": "メガネ", "quote": "「最近目が疲れるのでかけていただけですよ。欲しいなら差し上げますが」"},
+        3: {"item": "首のこの…何？", "quote": "「私がそう簡単に脱ぐわけないじゃないですか。あなたにはこの程度がお似合いですよ」"},
+        4: {"item": "白衣", "quote": "「ちょうど真っ白な白衣が欲しかったところなんでね。そちらも欲しいなら差し上げますよ」"},
+        5: {"item": "シャツのボタンを外す", "quote": "「(クソデカため息)……流石に」"},
+        6: {"item": "シャツ", "quote": "「……見たいなら見てもいいですよ。」"},
+        7: {"item": "靴と靴下", "quote": "「…………何が面白いんです？」"},
+        8: {"item": "ズボン", "quote": "「……こんなはずでは………」"},
+        9: {"item": "ブラ", "quote": "「…次で全部取り返しますから。」"},
+        10: {"item": "パンツ", "quote": "「………それで？ このあと私に何かするんですか？」"},
     },
     "アリエスちゃん": {
-        1: {
-            "item": "アリエスちゃんは何も脱がなかった！",
-            "quote": "「…？ いや…まだ他に賭けれるものあるし……、…なんだ？ その顔……」",
-        },
-        2: {
-            "item": "マント",
-            "quote": "「マントくらいならいいが」",
-        },
-        3: {
-            "item": "ネクタイ",
-            "quote": "「……全部脱がせようとしてるのか？ その手には乗らんぞ……」",
-        },
-        4: {
-            "item": "上着",
-            "quote": "「えぇと……これでいいのか……？」",
-        },
-        5: {
-            "item": "シャツのボタンを外す",
-            "quote": "「流石にそろそろ恥ずかしくなってきたな……」",
-        },
-        6: {
-            "item": "シャツ",
-            "quote": "「……あまり、見ないで欲しいんだが……」",
-        },
-        7: {
-            "item": "靴と靴下",
-            "quote": "「急に優しくなったな、別にそれくらいならいいぞ」",
-        },
-        8: {
-            "item": "ズボン",
-            "quote": "「わ、私の負けでいいから……もうやめないか？」",
-        },
-        9: {
-            "item": "ブラ",
-            "quote": "「……そ、そんなに見ないでくれると助かるんだが」",
-        },
-        10: {
-            "item": "パンツ",
-            "quote": "「か、返して欲しいんだが………(涙目)」",
-        },
+        1: {"item": "アリエスちゃんは何も脱がなかった！", "quote": "「…？ いや…まだ他に賭けれるものあるし……、…なんだ？ その顔……」"},
+        2: {"item": "マント", "quote": "「マントくらいならいいが」"},
+        3: {"item": "ネクタイ", "quote": "「……全部脱がせようとしてるのか？ その手には乗らんぞ……」"},
+        4: {"item": "上着", "quote": "「えぇと……これでいいのか……？」"},
+        5: {"item": "シャツのボタンを外す", "quote": "「流石にそろそろ恥ずかしくなってきたな……」"},
+        6: {"item": "シャツ", "quote": "「……あまり、見ないで欲しいんだが……」"},
+        7: {"item": "靴と靴下", "quote": "「急に優しくなったな、別にそれくらいならいいぞ」"},
+        8: {"item": "ズボン", "quote": "「わ、私の負けでいいから……もうやめないか？」"},
+        9: {"item": "ブラ", "quote": "「……そ、そんなに見ないでくれると助かるんだが」"},
+        10: {"item": "パンツ", "quote": "「か、返して欲しいんだが………(涙目)」"},
     },
     "ロイ": {
-        1: {
-            "item": "髪を下ろす",
-            "quote": "「これくらいで勝った気にならない方がいいよ。」",
-        },
-        2: {
-            "item": "マント",
-            "quote": "「マントかっこいいでしょ。あ、君にはわからないかw」",
-        },
-        3: {
-            "item": "上着",
-            "quote": "「はぁ〜〜〜」",
-        },
-        4: {
-            "item": "ネクタイ",
-            "quote": "「……」",
-        },
-        5: {
-            "item": "シャツのボタンを外す",
-            "quote": "「男に裸見られるとか、そういう趣味ないんだけど。嫌なんだけど。」",
-        },
-        6: {
-            "item": "シャツ",
-            "quote": "「……マッジで嫌。」",
-        },
-        7: {
-            "item": "靴と靴下",
-            "quote": "「うわぁ……君そういう趣味あんの……？」",
-        },
-        8: {
-            "item": "ズボン",
-            "quote": "「何が楽しいの？」",
-        },
-        9: {
-            "item": "上の下着",
-            "quote": "「…君の慌てふためく姿を見たかったんだけどな」",
-        },
-        10: {
-            "item": "パンツ",
-            "quote": "「何？ なんかあると思ってる？ 男相手ならなんにもないよ。」",
-        },
+        1: {"item": "髪を下ろす", "quote": "「これくらいで勝った気にならない方がいいよ。」"},
+        2: {"item": "マント", "quote": "「マントかっこいいでしょ。あ、君にはわからないかw」"},
+        3: {"item": "上着", "quote": "「はぁ〜〜〜」"},
+        4: {"item": "ネクタイ", "quote": "「……」"},
+        5: {"item": "シャツのボタンを外す", "quote": "「男に裸見られるとか、そういう趣味ないんだけど。嫌なんだけど。」"},
+        6: {"item": "シャツ", "quote": "「……マッジで嫌。」"},
+        7: {"item": "靴と靴下", "quote": "「うわぁ……君そういう趣味あんの……？」"},
+        8: {"item": "ズボン", "quote": "「何が楽しいの？」"},
+        9: {"item": "上の下着", "quote": "「…君の慌てふためく姿を見たかったんだけどな」"},
+        10: {"item": "パンツ", "quote": "「何？ なんかあると思ってる？ 男相手ならなんにもないよ。」"},
     },
     "彼方": {
-        1: {
-            "item": "彼方は何も脱がなかった！",
-            "quote": "（彼方は青ざめた顔をしている）",
-        },
-        2: {
-            "item": "髪を下ろす",
-            "quote": "「こ、これでいいですか……？」",
-        },
-        3: {
-            "item": "上着",
-            "quote": "（彼方は俯いて震えている）",
-        },
-        4: {
-            "item": "ネクタイ",
-            "quote": "「それなら、」",
-        },
-        5: {
-            "item": "シャツのボタンを外す",
-            "quote": "「こ、これでゆるしてください……」",
-        },
-        6: {
-            "item": "シャツ",
-            "quote": "（彼方は泣きそうな顔をしている）",
-        },
-        7: {
-            "item": "靴と靴下",
-            "quote": "「この辺でやめませんか？」",
-        },
-        8: {
-            "item": "ズボン",
-            "quote": "（彼方はズボンを脱いだ後、どこからか取り出した毛布で全身を包んだ）",
-        },
-        9: {
-            "item": "上の下着",
-            "quote": "（毛布の隙間から下着が出てきた）",
-        },
-        10: {
-            "item": "パンツ",
-            "quote": "（返してほしそうな顔でこっちを見ている）",
-        },
+        1: {"item": "彼方は何も脱がなかった！", "quote": "（彼方は青ざめた顔をしている）"},
+        2: {"item": "髪を下ろす", "quote": "「こ、これでいいですか……？」"},
+        3: {"item": "上着", "quote": "（彼方は俯いて震えている）"},
+        4: {"item": "ネクタイ", "quote": "「それなら、」"},
+        5: {"item": "シャツのボタンを外す", "quote": "「こ、これでゆるしてください……」"},
+        6: {"item": "シャツ", "quote": "（彼方は泣きそうな顔をしている）"},
+        7: {"item": "靴と靴下", "quote": "「この辺でやめませんか？」"},
+        8: {"item": "ズボン", "quote": "（彼方はズボンを脱いだ後、どこからか取り出した毛布で全身を包んだ）"},
+        9: {"item": "上の下着", "quote": "（毛布の隙間から下着が出てきた）"},
+        10: {"item": "パンツ", "quote": "（返してほしそうな顔でこっちを見ている）"},
     },
 }
 
-# 登録のないキャラ用のデフォルト
 DEFAULT_REACTIONS = {
     i: {
         "item": f"装備品 Part.{i}",
@@ -315,9 +131,6 @@ DEFAULT_REACTIONS = {
     for i in range(1, 11)
 }
 
-# --------------------------------------------------
-# 💬 キャラクターごとの「勝った時（正解した時）」の専用セリフ（ランダム）
-# --------------------------------------------------
 CHAR_WIN_QUOTES = {
     "サラ": [
         "「ほら見たことですか！ 俺の読みのほうが正確なんですよ！」",
@@ -353,7 +166,6 @@ CHAR_WIN_QUOTES = {
     ],
 }
 
-# 登録のないキャラ用のデフォルト勝利セリフ
 DEFAULT_WIN_QUOTES = [
     "「よし！ 私の予想通りですね！」",
     "「ふふん、見事に当たりました！」",
@@ -371,13 +183,13 @@ class HighAndLowView(discord.ui.View):
         super().__init__(timeout=300)
         self.user_id = user_id
         self.char_name = char_name
-        self.opponent_name = char_name  # 🛠️ 修正: achievement処理で使用する属性を追加
+        self.opponent_name = char_name
         self.total_turns = total_turns
 
         self.current_turn = 1
-        self.gm_wins = 0  # GMが当てた回数
-        self.char_wins = 0  # キャラが当てた回数
-        self.char_losses = 0  # キャラが外した回数（リアクション判定用）
+        self.gm_wins = 0
+        self.char_wins = 0
+        self.char_losses = 0
 
         self.current_card = random.randint(1, 13)
 
@@ -401,9 +213,6 @@ class HighAndLowView(discord.ui.View):
     ):
         await interaction.response.defer()
 
-        # --------------------------------------------------
-        # 🎯 1. キャラの予想決定 & 5回以上負け時の「ヘマ（パニック）」処理
-        # --------------------------------------------------
         base_choice = random.choice(["HIGH", "LOW"])
         is_panic_hema = False
 
@@ -413,12 +222,10 @@ class HighAndLowView(discord.ui.View):
         else:
             char_choice = base_choice
 
-        # 2. 次のカードを引く
         next_card = random.randint(1, 13)
         while next_card == self.current_card:
             next_card = random.randint(1, 13)
 
-        # 3. 正解判定
         actual_result = (
             "HIGH" if next_card > self.current_card else "LOW"
         )
@@ -432,21 +239,20 @@ class HighAndLowView(discord.ui.View):
         # GMの得点・キャラの得点/負け数の計算
         if gm_correct:
             self.gm_wins += 1
-            
-            # 🏆 ターン毎のGM正解時に実績カウント＆解除チェック
             u_data = user_data.setdefault(self.user_id, {})
+            # 💡 on_gamble_win 側で interaction.response ではなく interaction.followup を使っているか要確認
             await on_gamble_win(interaction, u_data)
 
         if char_correct:
             self.char_wins += 1
         else:
             self.char_losses += 1
-            # 📖 図鑑データ（解放済みフラグ）の保存
             u_data = user_data.setdefault(self.user_id, {})
-            unlocked = u_data.setdefault("unlocked_reactions", {}).setdefault(self.char_name, set())
-            unlocked.add(self.char_losses)  # 失敗回数を登録
+            reactions_dict = u_data.setdefault("unlocked_reactions", {})
+            if self.char_name not in reactions_dict or not isinstance(reactions_dict[self.char_name], set):
+                reactions_dict[self.char_name] = set(reactions_dict.get(self.char_name, []))
+            reactions_dict[self.char_name].add(self.char_losses)
 
-        # 表示テキストの組み立て
         gm_choice_str = "HIGH ⬆️" if gm_choice == "HIGH" else "LOW ⬇️"
         char_choice_str = "HIGH ⬆️" if char_choice == "HIGH" else "LOW ⬇️"
 
@@ -455,7 +261,6 @@ class HighAndLowView(discord.ui.View):
 
         reaction_text = ""
         if char_correct:
-            # ⭕ キャラの勝利時：専用セリフリストからランダムに1つ選択
             win_quotes = CHAR_WIN_QUOTES.get(self.char_name, DEFAULT_WIN_QUOTES)
             quote = random.choice(win_quotes)
             
@@ -483,13 +288,9 @@ class HighAndLowView(discord.ui.View):
                 f"**{self.char_name}（通算 {self.char_losses} 回目の失敗）**: {quote}"
             )
 
-        # --------------------------------------------------
-        # 🏁 10ターン終了（ゲームセット）処理
-        # --------------------------------------------------
         if self.current_turn >= self.total_turns:
             self.stop_game()
 
-            # 🔥 GMが8勝以上した場合、強制的に10番目の敗北演出を適用
             if self.gm_wins >= 8 and self.char_losses < 10:
                 char_dict = CHAR_REACTIONS.get(self.char_name, DEFAULT_REACTIONS)
                 data_10 = char_dict.get(10, {"item": "???", "quote": "「……っ！！」"})
@@ -497,10 +298,11 @@ class HighAndLowView(discord.ui.View):
                 stripped_item_10 = data_10["item"]
                 quote_10 = data_10["quote"]
                 
-                # 📖 図鑑データ（解放済みフラグ）の保存
                 u_data = user_data.setdefault(self.user_id, {})
-                unlocked = u_data.setdefault("unlocked_reactions", {}).setdefault(self.char_name, set())
-                unlocked.add(10)  # 失敗回数を登録
+                reactions_dict = u_data.setdefault("unlocked_reactions", {})
+                if self.char_name not in reactions_dict or not isinstance(reactions_dict[self.char_name], set):
+                    reactions_dict[self.char_name] = set(reactions_dict.get(self.char_name, []))
+                reactions_dict[self.char_name].add(10)
 
                 reaction_text += (
                     f"\n\n💥 **【大圧勝ボーナス演出】**\n"
@@ -536,7 +338,6 @@ class HighAndLowView(discord.ui.View):
             await interaction.edit_original_response(embed=embed, view=None)
             return
 
-        # 次のターンへ継続
         self.current_turn += 1
         self.current_card = next_card
 
@@ -650,7 +451,7 @@ class GambleCog(commands.Cog):
 
 
 # --------------------------------
-# コレクションっす
+# コレクション
 # --------------------------------
 class CollectionCog(commands.Cog):
 
@@ -666,7 +467,6 @@ class CollectionCog(commands.Cog):
     async def collection_command(
         self, interaction: discord.Interaction, char_name: str
     ):
-        # 🔒 特定ユーザー権限のチェック
         if not check_character_permission(interaction.user.id, char_name):
             await interaction.response.send_message(
                 "❌ このキャラクターの図鑑を閲覧する権限がありません！",
@@ -674,9 +474,6 @@ class CollectionCog(commands.Cog):
             )
             return
 
-        # --------------------------------------------------
-        # ⚙️ チャンネル制限のチェック
-        # --------------------------------------------------
         channel = interaction.channel
         current_forum_id = (
             channel.parent_id
@@ -697,7 +494,6 @@ class CollectionCog(commands.Cog):
             )
             return
 
-        # ---（以下、図鑑表示処理）---
         u_data = user_data.get(interaction.user.id, {})
         unlocked_set = u_data.get("unlocked_reactions", {}).get(char_name, set())
 
