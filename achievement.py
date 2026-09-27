@@ -634,22 +634,23 @@ async def on_gamble_win(interaction: discord.Interaction, u_data: dict, opponent
     if gamble_wins >= 100:
         await check_and_unlock_achievement(interaction, "win_gamble_100")
         
-    # --------------------------------------------------
-    # 🃏 ギャンブルでキャラに最終勝利した時の実績チェック
-    # --------------------------------------------------
-    async def on_gamble_match_win(interaction: discord.Interaction, u_data: dict, opponent_name: str):
-        """10ターン終了時、キャラに勝利していたら呼び出す"""
-        if opponent_name:
-            opponent_mapping = {
-                "しえら": "win_gamble_siera",
-                "サラ": "win_gamble_sara",
-                "折原(にょた)": "win_gamble_nyotahara",
-                "ロイ": "win_gamble_roi",
-                "彼方": "win_gamble_kanata",
-            }
-            for name_key, ach_id in opponent_mapping.items():
-                if name_key in opponent_name:
-                    await check_and_unlock_achievement(interaction, ach_id)
+    
+# --------------------------------------------------
+# 🃏 ギャンブルでキャラに最終勝利した時の実績チェック
+# --------------------------------------------------
+async def on_gamble_match_win(interaction: discord.Interaction, u_data: dict, opponent_name: str):
+    """10ターン終了時、キャラに勝利していたら呼び出す"""
+    if opponent_name:
+        opponent_mapping = {
+            "しえら": "win_gamble_siera",
+            "サラ": "win_gamble_sara",
+            "折原(にょた)": "win_gamble_nyotahara",
+            "ロイ": "win_gamble_roi",
+            "彼方": "win_gamble_kanata",
+        }
+        for name_key, ach_id in opponent_mapping.items():
+            if name_key in opponent_name:
+                await check_and_unlock_achievement(interaction, ach_id)
 
 
 # --------------------------------------------------
