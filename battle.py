@@ -12,7 +12,7 @@ from cogs.soubi import EQUIPMENT_MASTER
 # 👹 【イベント専用ボス・マスター】（ガチャには一切出ない完全オリジナルボス）
 # ※ ここにイベント専用のボスを自由に追加・編集してください。
 EVENT_BOSS_MASTER = {
-    "boss_original_sample": {
+    "boss_aria": {
         "name": "アリア(仮面ライダーパロ)",
         "icon": "👹",
         "element": "紫",
@@ -39,7 +39,7 @@ EVENT_CONFIG = {
     "name": "【10月イベント】vsスマッシュ",
     "single_mode": {
         "title": "【単体】vsスマッシュ",
-        "candidates": ["ロイ", "折原和也", "神明龍矢", "サラ"],
+        "candidates": ["boss_aria"],
         "boss_level": 50,
         "hp_multiplier": 3.0,
         "atk_multiplier": 1.0,
@@ -48,8 +48,8 @@ EVENT_CONFIG = {
         "reward_exp": (1800, 2500),
     },
     "single100_mode": {
-        "title": "【単体】vsカス(強化)",
-        "candidates": ["ロイ", "折原和也", "神明龍矢", "サラ"],
+        "title": "【単体】vsスマッシュ(強化)",
+        "candidates": ["boss_aria],
         "boss_level": 100,
         "hp_multiplier": 3.0,
         "atk_multiplier": 1.0,
@@ -59,7 +59,7 @@ EVENT_CONFIG = {
     },
     "multi_mode": {
         "title": "【狂乱】カス三人衆を連れてきたよ。",
-        "candidates": ["ロイ", "折原和也", "神明龍矢", "サラ"],
+        "candidates": [],
         "max_spawn": 3,
         "boss_level": 50,
         "hp_multiplier": 2.5,
