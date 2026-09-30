@@ -13,18 +13,18 @@ from cogs.soubi import EQUIPMENT_MASTER
 # ※ ここにイベント専用のボスを自由に追加・編集してください。
 EVENT_BOSS_MASTER = {
     "boss_original_sample": {
-        "name": "サンプル専用ボス",
+        "name": "アリア(仮面ライダーパロ)",
         "icon": "👹",
-        "element": "闇",
-        "gender": "不明",
+        "element": "紫",
+        "gender": "女",
         "atk_type": "物理",      # 物理 / 魔法
         "role": "アタッカー",   # アタッカー / ディフェンダー / トリックスター など
-        "hp": 3000,
+        "hp": 200,
         "atk": 100,
-        "spd": 15,
-        "rec": 0,
-        "skill_name": "専用必殺技",
-        "skill_pow": 150,
+        "spd": 11,
+        "rec": 5,
+        "skill_name": "あああああっ！",
+        "skill_pow": 200,
         "skill_type": "physical", # physical / heal_all / attract_all / buff_all_atk など
         "skill_trigger": "chance",# chance / always / hp_below_50 / interval_3 など
         "skill_rate": 40
@@ -36,9 +36,9 @@ EVENT_BOSS_MASTER = {
 }
 
 EVENT_CONFIG = {
-    "name": "【特別イベント】vsカス",
+    "name": "【10月イベント】vsスマッシュ",
     "single_mode": {
-        "title": "【単体】vsカス",
+        "title": "【単体】vsスマッシュ",
         "candidates": ["ロイ", "折原和也", "神明龍矢", "サラ"],
         "boss_level": 50,
         "hp_multiplier": 3.0,
