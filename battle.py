@@ -9,6 +9,32 @@ from achievement import on_battle_win, on_battle_lose, check_boss_kill_achieveme
 # 🗡️ 装備マスタをインポート
 from cogs.soubi import EQUIPMENT_MASTER
 
+# 👹 【イベント専用ボス・マスター】（ガチャには一切出ない完全オリジナルボス）
+# ※ ここにイベント専用のボスを自由に追加・編集してください。
+EVENT_BOSS_MASTER = {
+    "boss_original_sample": {
+        "name": "サンプル専用ボス",
+        "icon": "👹",
+        "element": "闇",
+        "gender": "不明",
+        "atk_type": "物理",      # 物理 / 魔法
+        "role": "アタッカー",   # アタッカー / ディフェンダー / トリックスター など
+        "hp": 3000,
+        "atk": 100,
+        "spd": 15,
+        "rec": 0,
+        "skill_name": "専用必殺技",
+        "skill_pow": 150,
+        "skill_type": "physical", # physical / heal_all / attract_all / buff_all_atk など
+        "skill_trigger": "chance",# chance / always / hp_below_50 / interval_3 など
+        "skill_rate": 40
+    },
+    # テンプレート例（増やしたい時はここに追加）
+    # "boss_xxx": {
+    #     ...
+    # },
+}
+
 EVENT_CONFIG = {
     "name": "【特別イベント】vsカス",
     "single_mode": {
@@ -324,9 +350,20 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
         mode_config = EVENT_CONFIG.get(f"{event_mode}_mode", EVENT_CONFIG.get("single_mode"))
         target_names = mode_config.get("candidates", [])
 
-        boss_candidates = [c for c in GACHA_POOL if c["name"] in target_names]
-        if not boss_candidates:
-            boss_candidates = GACHA_POOL.copy()
+        candidate_masters = []
+        for key in target_keys:
+            if key in EVENT_BOSS_MASTER:
+                # 1. イベント専用ボス定義に存在する場合
+                candidate_masters.append(EVENT_BOSS_MASTER[key])
+            else:
+                # 2. ガチャプール（GACHA_POOL）から名前またはIDで検索
+                gacha_char = next((c for c in GACHA_POOL if c.get("name") == key or c.get("id") == key), None)
+                if gacha_char:
+                    candidate_masters.append(gacha_char)
+
+        # 万が一何も見つからなかった場合の安全策
+        if not candidate_masters:
+            candidate_masters = GACHA_POOL
 
         if event_mode in ["single", "single100"]:
             spawn_count = 1
