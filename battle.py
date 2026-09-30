@@ -167,6 +167,10 @@ class Character:
             if current_turn % 3 == 0:
                 return random.randint(1, 100) <= self.skill_rate
             return False
+        elif trigger == "after_turn_5":
+            if current_turn >= 5:
+                return random.randint(1, 100) <= self.skill_rate
+            return False
         else:
             return random.randint(1, 100) <= self.skill_rate
 
