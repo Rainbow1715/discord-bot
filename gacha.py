@@ -121,7 +121,7 @@ class GachaView(discord.ui.View):
             # 🎯 ピックアップマークの作成
             pickup_marks = ""
             if char_name in NEW_PICKUP_CHARACTERS:
-                pickup_marks += "🆕"
+                pickup_marks += "✨"
             if char_name in PICKUP_CHARACTERS:
                 pickup_marks += "🎂"
             if pickup_marks:
