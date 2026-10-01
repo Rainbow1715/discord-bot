@@ -48,7 +48,7 @@ EVENT_BOSS_MASTER = {
 }
 
 EVENT_CONFIG = {
-    "name": "【10月イベント】vsスマッシュ",
+    "name": "【10月イベント】vsボトル&メダル",
     "single_mode": {
         "title": "【単体】vsスマッシュ",
         "candidates": ["boss_aria"],
