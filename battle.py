@@ -388,7 +388,8 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             max_spawn = mode_config.get("max_spawn", 3)
             spawn_count = min(len(candidate_masters), max_spawn)
 
-        selected_candidates = random.sample(boss_candidates, k=spawn_count)
+        # 修正： boss_candidates ではなく candidate_masters を指定
+        selected_candidates = random.sample(candidate_masters, k=spawn_count)
         boss_lvl = mode_config.get("boss_level", 100)
 
         for i, candidate in enumerate(selected_candidates):
