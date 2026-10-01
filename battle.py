@@ -25,8 +25,8 @@ EVENT_BOSS_MASTER = {
         "rec": 5,
         "skill_name": "あああああっ！",
         "skill_pow": 200,
-        "skill_type": "physical", # physical / heal_all / attract_all / buff_all_atk など
-        "skill_trigger": "chance",# chance / always / hp_below_50 / interval_3 など
+        "skill_type": "self_destruct", # physical / heal_all / attract_all / buff_all_atk など
+        "skill_trigger": "after_turn_5",# chance / always / hp_below_50 / interval_3 など
         "skill_rate": 40
     },
     # テンプレート例（増やしたい時はここに追加）
@@ -268,6 +268,23 @@ class Character:
                 hit_damages = []
                 total_dmg = 0
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 0.5
+
+            # 💣 【新規追加】自爆スキル（self_destruct）
+            elif self.skill_type == "self_destruct":
+                if not target:
+                    return f"❓ {self.icon} **{self.name}** は自爆を試みたが、対象がいなかった！"
+                
+                # skill_pow の値をそのまま固定ダメージ（または攻撃力依存にしたい場合は調整可能）として使用
+                dmg = int(self.skill_pow)
+                dmg = max(1, dmg)
+                
+                target.hp = max(0, target.hp - dmg)
+                self.hp = 0  # 自身を戦闘不能にする
+
+                return (
+                    f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！\n"
+                    f"**{self.name}** は大爆発を起こし、**{target.name}** に **{dmg}** の超絶ダメージを与えて自滅した！"
+                )
                 
                 for _ in range(hits):
                     base_dmg = current_atk * pow_val if pow_val < 1.0 else (current_atk * 0.5) + (pow_val / 3)
