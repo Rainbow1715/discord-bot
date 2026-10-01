@@ -211,12 +211,12 @@ ACHIEVEMENTS = {
         "reward_rainbow": 1000,
     },
     "kill_rider_aria": {
-        "title": "⚔️ ドラゴンフルボトルゲット：アリア",
+        "title": "⚔️ ドラゴンフルボトルゲット",
         "desc": "イベント戦で アリア を撃破する",
         "reward_rainbow": 1000,
     },
     "kill_rider_ptkou": {
-        "title": "⚔️ ドラゴンフルボトルゲット：アリア",
+        "title": "⚔️ 消滅した紫のコアメダル",
         "desc": "イベント戦で 日暮考(プトティラコンボ) を撃破する",
         "reward_rainbow": 1000,
     },
@@ -650,6 +650,8 @@ async def on_gamble_win(interaction: discord.Interaction, u_data: dict, opponent
         await check_and_unlock_achievement(interaction, "win_gamble_50")
     if gamble_wins >= 100:
         await check_and_unlock_achievement(interaction, "win_gamble_100")
+    if gamble_wins >= 500:
+        await check_and_unlock_achievement(interaction, "win_gamble_500")
         
     
 # --------------------------------------------------
