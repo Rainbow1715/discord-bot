@@ -14,7 +14,7 @@ from cogs.soubi import EQUIPMENT_MASTER
 EVENT_BOSS_MASTER = {
     "boss_aria": {
         "name": "アリア(仮面ライダーパロ)",
-        "icon": "👹",
+        "icon": "<:703_aria:1555165051839840346>",
         "element": "紫",
         "gender": "女",
         "atk_type": "物理",      # 物理 / 魔法
@@ -31,7 +31,7 @@ EVENT_BOSS_MASTER = {
     },
     "boss_higurekou": {
         "name": "日暮考(プトティラコンボ)",
-        "icon": ,
+        "icon": "<:705_higurekou:1555165082999070833>",
         "element": "紫",
         "gender": "男",
         "atk_type": "物理",
@@ -43,8 +43,7 @@ EVENT_BOSS_MASTER = {
         "skill_name": "ブラスティングフリーザ",
         "skill_pow": 100,
         "skill_type": "physical",
-        "skill_trigger": 
-        "skill_rate":
+        "skill_trigger": "interval_3",
     },
 }
 
