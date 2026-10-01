@@ -300,6 +300,7 @@ class Character:
                 
                 target.hp = max(0, target.hp - dmg)
                 self.hp = 0  # 自身を戦闘不能にする
+                self.is_self_destructed = True
 
                 return (
                     f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！\n"
@@ -601,8 +602,15 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
         # 👑 イベント戦かつ勝利した場合、撃破したボスの実績チェックを実行
         if is_event:
-            defeated_names = [e.raw_name for e in enemies]
-            await check_boss_kill_achievements(interaction, defeated_names)
+            # 自爆せずに（プレイヤーに倒されて）死亡したボスだけを抽出
+            defeated_names = [
+                e.raw_name for e in enemies 
+                if not getattr(e, "is_self_destructed", False)
+            ]
+            
+            # 自爆以外の撃破ボスが存在する場合のみ実績チェックを実行
+            if defeated_names:
+                await check_boss_kill_achievements(interaction, defeated_names)
 
         MAX_LEVEL = 99
         lvl_up_msgs = []
