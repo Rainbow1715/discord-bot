@@ -210,6 +210,16 @@ ACHIEVEMENTS = {
         "desc": "イベント戦で サラ を撃破する",
         "reward_rainbow": 1000,
     },
+    "kill_rider_aria": {
+        "title": "⚔️ ドラゴンフルボトルゲット：アリア",
+        "desc": "イベント戦で アリア を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_rider_ptkou": {
+        "title": "⚔️ ドラゴンフルボトルゲット：アリア",
+        "desc": "イベント戦で 日暮考(プトティラコンボ) を撃破する",
+        "reward_rainbow": 1000,
+    },
     # 🎰 ギャンブル実績
     "win_gamble_1": {
         "title": "🔰 ギャンカスの一歩",
@@ -229,6 +239,11 @@ ACHIEVEMENTS = {
     "win_gamble_100": {
         "title": "🃏 おおじゃないが",
         "desc": "ギャンブルで100回勝利する",
+        "reward_rainbow": 500,
+    },
+    "win_gamble_500": {
+        "title": "🃏 これはおおだろ",
+        "desc": "ギャンブルで500回勝利する",
         "reward_rainbow": 500,
     },
     # ----------------
@@ -506,6 +521,8 @@ async def check_boss_kill_achievements(
         "折原和也": "kill_orihara",
         "神明龍矢": "kill_tatsuya",
         "サラ": "kill_sara",
+        "アリア(仮面ライダーパロ)": "kill_rider_aria",
+        "日暮考(プトティラコンボ)": "kill_rider_ptkou",
     }
 
     for boss_name, ach_id in boss_mapping.items():
