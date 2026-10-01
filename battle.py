@@ -96,6 +96,7 @@ def create_smooth_bar(ratio: float, length: int = 10) -> str:
 class Character:
     def __init__(self, data_dict: dict, is_boss: bool = False):
         self.data = data_dict
+        self.raw_name = data_dict.get("raw_name") or data_dict.get("name", "謎の敵")
         self.name = data_dict.get("name", "謎の敵")
 
         master_data = next((c for c in GACHA_POOL if c["name"] == self.name), {})
@@ -411,6 +412,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             boss_name_suffix = f"{chr(65+i)}" if selected_candidates.count(candidate) > 1 else ""
 
             boss_data = {
+                "raw_name": candidate['name'],
                 "name": f"【Lv.{boss_lvl}】{candidate['name']}{boss_name_suffix}",
                 "icon": candidate.get("icon", "👹"),
                 "element": candidate.get("element", "無"),
@@ -599,7 +601,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
 
         # 👑 イベント戦かつ勝利した場合、撃破したボスの実績チェックを実行
         if is_event:
-            defeated_names = [e.name for e in enemies]
+            defeated_names = [e.raw_name for e in enemies]
             await check_boss_kill_achievements(interaction, defeated_names)
 
         MAX_LEVEL = 99
