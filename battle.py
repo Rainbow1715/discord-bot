@@ -29,10 +29,23 @@ EVENT_BOSS_MASTER = {
         "skill_trigger": "after_turn_5",# chance / always / hp_below_50 / interval_3 など
         "skill_rate": 40
     },
-    # テンプレート例（増やしたい時はここに追加）
-    # "boss_xxx": {
-    #     ...
-    # },
+    "boss_higurekou": {
+        "name": "日暮考(プトティラコンボ),
+        "icon": ,
+        "element": "紫",
+        "gender": "男",
+        "atk_type": "物理",
+        "role": "アタッカー",
+        "hp": 340,
+        "atk": 85,
+        "spd": 24,
+        "rec": 2,
+        "skill_name": "ブラスティングフリーザ",
+        "skill_pow": 100,
+        "skill_type": "physical",
+        "skill_trigger": 
+        "skill_rate":
+    },
 }
 
 EVENT_CONFIG = {
@@ -48,8 +61,8 @@ EVENT_CONFIG = {
         "reward_exp": (1800, 2500),
     },
     "single100_mode": {
-        "title": "【単体】vsスマッシュ(強化)",
-        "candidates": ["boss_aria"],
+        "title": "【単体】vs暴走中(強化)",
+        "candidates": ["boss_higurekou"],
         "boss_level": 100,
         "hp_multiplier": 3.0,
         "atk_multiplier": 1.0,
@@ -58,8 +71,8 @@ EVENT_CONFIG = {
         "reward_exp": (2500, 3200),
     },
     "multi_mode": {
-        "title": "【狂乱】カス三人衆を連れてきたよ。",
-        "candidates": [],
+        "title": "【狂乱】vsボトル＆メダル",
+        "candidates": ["boss_aria", "boss_higurekou"],
         "max_spawn": 3,
         "boss_level": 50,
         "hp_multiplier": 2.5,
