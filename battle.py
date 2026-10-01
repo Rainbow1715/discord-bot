@@ -49,7 +49,7 @@ EVENT_CONFIG = {
     },
     "single100_mode": {
         "title": "【単体】vsスマッシュ(強化)",
-        "candidates": ["boss_aria],
+        "candidates": ["boss_aria"],
         "boss_level": 100,
         "hp_multiplier": 3.0,
         "atk_multiplier": 1.0,
@@ -269,23 +269,6 @@ class Character:
                 total_dmg = 0
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 0.5
 
-            # 💣 【新規追加】自爆スキル（self_destruct）
-            elif self.skill_type == "self_destruct":
-                if not target:
-                    return f"❓ {self.icon} **{self.name}** は自爆を試みたが、対象がいなかった！"
-                
-                # skill_pow の値をそのまま固定ダメージ（または攻撃力依存にしたい場合は調整可能）として使用
-                dmg = int(self.skill_pow)
-                dmg = max(1, dmg)
-                
-                target.hp = max(0, target.hp - dmg)
-                self.hp = 0  # 自身を戦闘不能にする
-
-                return (
-                    f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！\n"
-                    f"**{self.name}** は大爆発を起こし、**{target.name}** に **{dmg}** の超絶ダメージを与えて自滅した！"
-                )
-                
                 for _ in range(hits):
                     base_dmg = current_atk * pow_val if pow_val < 1.0 else (current_atk * 0.5) + (pow_val / 3)
                     dmg = int(base_dmg + random.randint(-1, 2))
@@ -296,6 +279,19 @@ class Character:
                 target.hp = max(0, target.hp - total_dmg)
                 hits_str = ", ".join(hit_damages)
                 return f"⚡ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **3連続攻撃**（{hits_str}）！ **合計 {total_dmg} ダメージ**！"
+
+            # 💣 自爆スキル（self_destruct）
+            elif self.skill_type == "self_destruct":
+                dmg = int(self.skill_pow)
+                dmg = max(1, dmg)
+                
+                target.hp = max(0, target.hp - dmg)
+                self.hp = 0  # 自身を戦闘不能にする
+
+                return (
+                    f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！\n"
+                    f"**{self.name}** は大爆発を起こし、**{target.name}** に **{dmg}** の超絶ダメージを与えて自滅した！"
+                )
 
             # 8. 注目を惹く（敵1体を行動不能にする）
             elif self.skill_type == "attract":
@@ -369,7 +365,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
     # 👹 敵の生成分岐
     if is_event:
         mode_config = EVENT_CONFIG.get(f"{event_mode}_mode", EVENT_CONFIG.get("single_mode"))
-        target_names = mode_config.get("candidates", [])
+        target_keys = mode_config.get("candidates", [])
 
         candidate_masters = []
         for key in target_keys:
@@ -390,7 +386,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             spawn_count = 1
         else:
             max_spawn = mode_config.get("max_spawn", 3)
-            spawn_count = min(len(boss_candidates), max_spawn)
+            spawn_count = min(len(candidate_masters), max_spawn)
 
         selected_candidates = random.sample(boss_candidates, k=spawn_count)
         boss_lvl = mode_config.get("boss_level", 100)
