@@ -36,6 +36,7 @@ EQUIPMENT_MASTER = {
     "片手剣": {"icon": "", "rarity": 3, "atk": 50, "description": "なんか不思議な力で作られている、黄色い剣。"},
     "苦いクッキー": {"icon": "", "rarity": 3, "p_hp": 60, "description": "ともだちとお外を眺めてた"},
     "ビートクローザー": {"icon": "", "rarity": 4, "atk": 60, "description": "なんかかっこいいけん"},
+    "思い出の写真": {"icon": "", "rarity": 4, "p_hp": 82, "description": "黒髪の男性が写っている"},
 }
 
 
