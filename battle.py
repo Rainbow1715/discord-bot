@@ -30,7 +30,7 @@ EVENT_BOSS_MASTER = {
         "skill_rate": 40
     },
     "boss_higurekou": {
-        "name": "日暮考(プトティラコンボ),
+        "name": "日暮考(プトティラコンボ)",
         "icon": ,
         "element": "紫",
         "gender": "男",
