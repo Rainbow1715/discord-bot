@@ -235,7 +235,7 @@ class Character:
                 return f"👀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし誰も注目しなかった…"
 
             # --- ここから下は単体対象スキルなので、ターゲット不在なら中断 ---
-            if not target:
+            elif not target:
                 return f"❓ {self.icon} **{self.name}** は攻撃しようとしたが、対象がいなかった！"
 
             # 4. 物理単体攻撃
