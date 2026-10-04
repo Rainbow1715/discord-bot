@@ -2,3 +2,4 @@ discord.py
 aiohttp
 gspread
 oauth2client
+pytz
