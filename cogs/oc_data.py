@@ -5,6 +5,12 @@ import pytz
 # 🎂 うちの子データ一覧
 OUR_CHILDREN = [
     {
+        "name": "テスト",
+        "icon": "<:4_aituhanannnanda:1487097337556893827>",
+        "birthday": "10-5",
+        "address": "　",
+    },
+    {
         "name": "清藤弦也",
         "icon": "<:6_32_genya:1539928472787623987>",
         "birthday": "01-09",
