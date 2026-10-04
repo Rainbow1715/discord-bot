@@ -619,26 +619,6 @@ async def mailbox(interaction: discord.Interaction):
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
-
-#
-#
-#
-# 誕生日通知処理
-today_children = oc_data.get_today_birthday_children()
-
-for child in today_children:
-    name = child["name"]
-    icon = child["icon"]
-    address = child["address"]
-
-    embed = discord.Embed(
-        title="🎂 HAPPY BIRTHDAY!! 🎂",
-        description=f"{icon} **今日は{name}の誕生日です！🎉**",
-        color=0xFFB6C1  # ライトピンク
-    )
-    embed.add_field(name="🏠 住所", value=address, inline=False)
-    embed.set_footer(text="お誕生日おめでとうございます！")
-
     await channel.send(embed=embed)
 
 TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
