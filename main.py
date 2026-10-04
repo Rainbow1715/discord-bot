@@ -619,8 +619,6 @@ async def mailbox(interaction: discord.Interaction):
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    await channel.send(embed=embed)
-
 TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 if TOKEN:
     bot.run(TOKEN)
