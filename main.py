@@ -79,7 +79,6 @@ class MyBot(commands.Bot):
             "cogs.soubi",
             "cogs.gamble",
             "dice",
-            "cogs.oc_data",
             "cogs.birthday",
         ]
 
