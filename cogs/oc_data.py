@@ -7,7 +7,7 @@ OUR_CHILDREN = [
     {
         "name": "テスト",
         "icon": "<:4_aituhanannnanda:1487097337556893827>",
-        "birthday": "10-5",
+        "birthday": "10-6",
         "address": "　",
     },
     {
