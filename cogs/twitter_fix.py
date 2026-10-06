@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 # 🎯 対象にしたい特定のユーザーの Discord ユーザーID（数値）
-TARGET_USER_IDS = [123456789012345678]  # 👈 対象ユーザーのIDに変更してください
+TARGET_USER_IDS = [1221666245070557237]  # 👈 対象ユーザーのIDに変更してください
 
 class TwitterFix(commands.Cog):
     def __init__(self, bot):
