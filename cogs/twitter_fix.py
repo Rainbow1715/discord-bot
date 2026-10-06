@@ -39,7 +39,7 @@ class TwitterFix(commands.Cog):
         if converted_urls:
             # 1. ユーザーの元メッセージの埋め込み（プレビュー）を非表示にする
             try:
-                await message.edit(suppress_embeds=True)
+                await message.edit(suppress=True)
             except discord.Forbidden:
                 print("⚠️ [TwitterFix] メッセージ編集権限（埋め込みの抑制）が不足しています。")
             except Exception as e:
