@@ -39,7 +39,7 @@ class Birthday(commands.Cog):
                 description=f"{icon} **今日は{name}の誕生日です！🎉**",
                 color=0xFFB6C1  # ライトピンク
             )
-            embed.add_field(name="🏠 住所", value=address, inline=False)
+            embed.add_field(name="🏠", value=address, inline=False)
             embed.set_footer(text="お誕生日おめでとうございます！")
 
             await channel.send(embed=embed)
