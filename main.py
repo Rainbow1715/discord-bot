@@ -80,6 +80,7 @@ class MyBot(commands.Bot):
             "cogs.gamble",
             "dice",
             "cogs.birthday",
+            "cogs.twitter_fix",
         ]
 
         for cog in cogs:
