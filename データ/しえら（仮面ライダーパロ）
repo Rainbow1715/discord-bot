@@ -10,20 +10,20 @@
 # --- ステータス・成長 ---
 "level": 1,
 "exp": 0,
-"hp":               # [数値] 現在のHP
-"max_hp":           # [数値] 最大HP
-"atk":              # [数値] 攻撃力
-"spd":              # [数値] 素早さ（行動順）
-"rec":              # [数値] 回復力（回復スキル等の効果量）
+"hp": 150,              # [数値] 現在のHP
+"max_hp": 150,       # [数値] 最大HP
+"atk": 35,             # [数値] 攻撃力
+"spd": 22,             # [数値] 素早さ（行動順）
+"rec": 10,             # [数値] 回復力（回復スキル等の効果量）
 
 # --- スキル関連 ---
 "skill_name": "ライダーロケットドリルキック",       # [文字列] スキル名
-"skill_type": "",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
-"skill_pow":        # [数値] スキル威力・倍率
+"skill_type": "physical",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
+"skill_pow": 70,       # [数値] スキル威力・倍率
 "skill_trigger": "interval_3",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
 
 # --- 装備関連 ---
-"best_equip": "",       # [文字列] 相性の良いモチーフ装備名
+"best_equip": "ビリーザロッド",       # [文字列] 相性の良いモチーフ装備名
 "equip": None,
 
 # --- 好感度・交流システム ---
