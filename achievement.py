@@ -460,6 +460,87 @@ ACHIEVEMENTS = {
         "desc": "サラ に怪しい肉をあげた",
         "reward_rainbow": 100,
     },
+    # 🗡️ キャラ別の適正装備実績
+    "equip_best_siera": {
+        "title": "✨ これだよこれ！（しえら）",
+        "desc": "竹村しえら に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_retya": {
+        "title": "✨ これだよこれ！（れーちゃん）",
+        "desc": "れーちゃん に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_reo": {
+        "title": "✨ これだよこれ！（レオ）",
+        "desc": "レオ に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_touwata": {
+        "title": "✨ これだよこれ！（唐綿さん）",
+        "desc": "Gerânio に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_skrei": {
+        "title": "✨ これだよこれ！（xX_神_Xx）",
+        "desc": "白黒レイ に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_marin": {
+        "title": "✨ これだよこれ！（茉鈴）",
+        "desc": "茉鈴 に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_syuuto": {
+        "title": "✨ これだよこれ！（柊人）",
+        "desc": "橘柊人 に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_mikan": {
+        "title": "✨ これだよこれ！（蜜柑）",
+        "desc": "河野蜜柑 に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_roi": {
+        "title": "✨ これだよこれ！（ロイ）",
+        "desc": "ロイ に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_orihara": {
+        "title": "✨ これだよこれ！（折原さん）",
+        "desc": "折原和也 に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_tatuya": {
+        "title": "✨ これだよこれ！（神明龍矢）",
+        "desc": "神明龍矢 に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_sara": {
+        "title": "✨ これだよこれ！（サラ）",
+        "desc": "サラ に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_riderreo": {
+        "title": "✨ これだよこれ！（レオ(仮面ライダーパロ)）",
+        "desc": "レオ(仮面ライダーパロ) に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_trickcalmukuro": {
+        "title": "✨ これだよこれ！（ムクロ(トリッカルパロ)）",
+        "desc": "ムクロ(トリッカルパロ) に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_ridersiera": {
+        "title": "✨ これだよこれ！（しえら(仮面ライダーパロ)）",
+        "desc": "しえら(仮面ライダーパロ) に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    "equip_best_rucia": {
+        "title": "✨ これだよこれ！（ルシア(トリッカルパロ)）",
+        "desc": "ルシア(トリッカルパロ) に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
 }
 
 LOG_CHANNEL_ID = 1547122457062940712
