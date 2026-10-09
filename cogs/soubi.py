@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from database import get_user_profile, save_data
 
+
 def get_equip_display(character_data: dict) -> str:
     """キャラの現在装備を取得し、ベスト装備と一致していれば ✨ を付けて返す"""
     current_equip = character_data.get("equip")
@@ -16,6 +17,7 @@ def get_equip_display(character_data: dict) -> str:
         return f"✨{current_equip}"
 
     return current_equip
+
 
 # 🗡️ 装備マスタデータ
 EQUIPMENT_MASTER = {
@@ -141,6 +143,15 @@ class EquipSelectView(discord.ui.View):
         self.stop()
         
         await interaction.response.send_message(msg, ephemeral=True)
+
+        # 🔻 🏆 キャラ別の適正装備装着の実績チェック 🔻
+        if self.selected_equip != "NONE":
+            try:
+                # ※ 実績処理を行うファイル名に合わせて変更してください（例: achievement）
+                from achievement import check_equip_best_achievement
+                await check_equip_best_achievement(interaction, target_char, self.selected_equip)
+            except Exception as e:
+                print(f"実績判定エラー: {e}")
 
 
 async def setup(bot):
