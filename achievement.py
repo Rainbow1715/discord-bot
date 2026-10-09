@@ -333,6 +333,26 @@ ACHIEVEMENTS = {
         "desc": "サラ に嫌いなものを食べさせた",
         "reward_rainbow": 100,
     },
+    "eat_rider_reo": {
+        "title": "🍽️ レオ(仮面ライダーパロ)の嫌いなもの",
+        "desc": "レオ(仮面ライダーパロ) に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_trickcal_mukuro": {
+        "title": "🍽️ ムクロ(トリッカルパロ)の嫌いなもの",
+        "desc": "ムクロ(トリッカルパロ) に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_rider_siera": {
+        "title": "🍽️ しえら(仮面ライダーパロ)の嫌いなもの",
+        "desc": "しえら(仮面ライダーパロ) に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eat_trickcal_rucia": {
+        "title": "🍽️ ルシア(トリッカルパロ)の嫌いなもの",
+        "desc": "ルシア(トリッカルパロ) に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
     # 🍽️ 好きな飯実績
     "eatlike_siera": {
         "title": "🍽️ しえらの好きなもの",
@@ -392,6 +412,26 @@ ACHIEVEMENTS = {
     "eatlike_sara": {
         "title": "🍽️ サラの好きなもの",
         "desc": "サラ に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_rider_reo": {
+        "title": "🍽️ レオ(仮面ライダーパロ)の好きなもの",
+        "desc": "レオ(仮面ライダーパロ) に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_trickcal_mukuro": {
+        "title": "🍽️ ムクロ(トリッカルパロ)の好きなもの",
+        "desc": "ムクロ(トリッカルパロ) に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_rider_siera": {
+        "title": "🍽️ しえら(仮面ライダーパロ)の好きなもの",
+        "desc": "しえら(仮面ライダーパロ) に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_trickcal_rucia": {
+        "title": "🍽️ ルシア(トリッカルパロ)の好きなもの",
+        "desc": "ルシア(トリッカルパロ) に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
     # 怪しい肉
