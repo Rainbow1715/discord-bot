@@ -159,7 +159,7 @@ ACHIEVEMENTS = {
         "reward_rainbow": 200,
     },
     "get_rider_higurekou": {
-        "title": "🦅 タ・ト・バ！　タトバ タ・ト・バ！",
+        "title": "🦅 タ・ト・バ！ タトバ タ・ト・バ！",
         "desc": "日暮考(仮面ライダーパロ) を獲得する",
         "reward_rainbow": 200,
     },
@@ -547,6 +547,113 @@ LOG_CHANNEL_ID = 1547122457062940712
 
 
 # --------------------------------------------------
+# 🔓 実績解除・通知共通関数
+# --------------------------------------------------
+async def check_and_unlock_achievement(
+    interaction: discord.Interaction, achievement_id: str
+):
+    u_id = interaction.user.id
+    u_data = user_data.get(u_id)
+    if not u_data:
+        return
+
+    if "unlocked_achievements" not in u_data:
+        u_data["unlocked_achievements"] = []
+
+    if achievement_id in u_data["unlocked_achievements"]:
+        return
+
+    ach = ACHIEVEMENTS.get(achievement_id)
+    if not ach:
+        return
+
+    u_data["unlocked_achievements"].append(achievement_id)
+    reward_rainbow = ach.get("reward_rainbow", 0)
+
+    if "items" not in u_data:
+        u_data["items"] = {}
+    u_data["items"]["虹の欠片"] = (
+        u_data["items"].get("虹の欠片", 0) + reward_rainbow
+    )
+
+    save_data()
+
+    # 🔔 通知①：本人へのメッセージ
+    reward_str = (
+        f"💎 虹の欠片 {reward_rainbow}個" if reward_rainbow > 0 else "なし"
+    )
+    embed_user = discord.Embed(
+        title="🎉 実績を解除しました！",
+        description=f"**{ach['title']}**\n└ {ach['desc']}\n\n🎁 **獲得報酬**: {reward_str}",
+        color=0xF1C40F,
+    )
+
+    try:
+        if interaction.response.is_done():
+            await interaction.followup.send(embed=embed_user, ephemeral=True)
+        else:
+            await interaction.response.send_message(
+                embed=embed_user, ephemeral=True
+            )
+    except Exception as e:
+        print(f"本人への実績通知エラー: {e}")
+
+    # 📢 通知②：ログチャンネルへの投稿
+    try:
+        target_channel = interaction.client.get_channel(LOG_CHANNEL_ID)
+        if target_channel:
+            await target_channel.send(
+                f"{interaction.user.mention} が 実績【{ach['title']}】を解除しました！"
+            )
+        else:
+            print(
+                f"⚠️ 指定されたチャンネルID ({LOG_CHANNEL_ID}) が見つかりませんでした。"
+            )
+    except Exception as e:
+        print(f"ログチャンネルへの実績通知エラー: {e}")
+
+
+# --------------------------------------------------
+# 🗡️ キャラ名と適正装備実績IDのマッピング辞書
+# --------------------------------------------------
+BEST_EQUIP_CHAR_MAP = {
+    "竹村しえら": "equip_best_siera",
+    "れーちゃん": "equip_best_retya",
+    "レオ": "equip_best_reo",
+    "Gerânio": "equip_best_touwata",
+    "白黒レイ": "equip_best_skrei",
+    "茉鈴": "equip_best_marin",
+    "橘柊人": "equip_best_syuuto",
+    "河野蜜柑": "equip_best_mikan",
+    "ロイ": "equip_best_roi",
+    "折原和也": "equip_best_orihara",
+    "神明龍矢": "equip_best_tatuya",
+    "サラ": "equip_best_sara",
+    "レオ(仮面ライダーパロ)": "equip_best_riderreo",
+    "ムクロ(トリッカルパロ)": "equip_best_trickcalmukuro",
+    "しえら(仮面ライダーパロ)": "equip_best_ridersiera",
+    "ルシア(トリッカルパロ)": "equip_best_rucia",
+}
+
+
+async def check_equip_best_achievement(
+    interaction: discord.Interaction, char_data: dict, equip_name: str
+):
+    """キャラごとに適正装備判定をして実績解除"""
+    char_name = char_data.get("name")
+    best_equip = char_data.get("best_equip")
+    best_name = (
+        best_equip.get("name") if isinstance(best_equip, dict) else best_equip
+    )
+
+    # 現在の装備とベスト装備が一致しているか判定
+    if best_name and equip_name == best_name:
+        ach_id = BEST_EQUIP_CHAR_MAP.get(char_name)
+        if ach_id:
+            await check_and_unlock_achievement(interaction, ach_id)
+
+
+# --------------------------------------------------
 # ⚔️ バトル勝利時の自動実績チェック
 # --------------------------------------------------
 WIN_THRESHOLD_ACHIEVEMENTS = [
@@ -567,7 +674,6 @@ async def on_battle_win(interaction: discord.Interaction, u_data: dict):
     u_data["win_count"] = u_data.get("win_count", 0) + 1
     win_count = u_data["win_count"]
 
-    # 閾値系実績をまとめてチェック
     for threshold, ach_id in WIN_THRESHOLD_ACHIEVEMENTS:
         if win_count >= threshold:
             await check_and_unlock_achievement(interaction, ach_id)
@@ -657,7 +763,6 @@ async def check_boss_kill_achievements(
 async def on_gacha_draw(
     interaction: discord.Interaction, u_data: dict, draw_count: int = 0
 ):
-    # ガチャ側で加算済みでなければ加算（draw_count > 0 の時）
     if draw_count > 0:
         u_data["gacha_count"] = u_data.get("gacha_count", 0) + draw_count
 
@@ -689,7 +794,7 @@ async def check_character_achievements(
         "レオ(仮面ライダーパロ)": "get_rider_reo",
         "ルシア(トリッカルパロ)": "get_trickal_rucia",
         "ムクロ(トリッカルパロ)": "get_trickal_mukuro",
-        "彼方(ハロウィン)": "get_halloween_kanata",  # マッピングを追加
+        "彼方(ハロウィン)": "get_halloween_kanata",
         "日暮考(仮面ライダーパロ)": "get_rider_higurekou",
         "竜胆廉(ハロウィン)": "get_halloween_rindouren",
     }
@@ -700,7 +805,7 @@ async def check_character_achievements(
 
 
 # --------------------------------------------------
-# 🍽️ 食事実行時の自動実績チェック（追加拡張分）
+# 🍽️ 食事実行時の自動実績チェック
 # --------------------------------------------------
 async def check_eat_dislike_achievement(
     interaction: discord.Interaction,
@@ -708,7 +813,6 @@ async def check_eat_dislike_achievement(
     food_name: str,
     char_data: dict,
 ):
-    """嫌いなものをあげた時"""
     dislikes = char_data.get("dislikes", [])
     is_disliked = any(dislike_item in food_name for dislike_item in dislikes)
 
@@ -723,7 +827,6 @@ async def check_eat_like_achievement(
     food_name: str,
     char_data: dict,
 ):
-    """好きなものをあげた時"""
     likes = char_data.get("likes", [])
     is_liked = any(like_item in food_name for like_item in likes)
 
@@ -737,9 +840,7 @@ async def check_eat_suspicious_meat_achievement(
     char_id: str,
     food_name: str,
 ):
-    """怪しい肉をあげた時"""
     if "怪しい肉" in food_name:
-        # キャラIDに応じた実績IDのマッピング
         meat_mapping = {
             "Branch Coral": "meat_akakun",
             "Root Coral": "meat_sangokun",
@@ -751,20 +852,18 @@ async def check_eat_suspicious_meat_achievement(
         if ach_id:
             await check_and_unlock_achievement(interaction, ach_id)
 
+
 # --------------------------------------------------
 # 🎰 ギャンブル勝利時の自動実績チェック
 # --------------------------------------------------
-async def on_gamble_win(interaction: discord.Interaction, u_data: dict, opponent_name: str = None):
-    """ギャンブルで勝利した際に呼び出す"""
-    # ギャンブル勝利数を加算
+async def on_gamble_win(
+    interaction: discord.Interaction, u_data: dict, opponent_name: str = None
+):
     u_data["gamble_win_count"] = u_data.get("gamble_win_count", 0) + 1
     gamble_wins = u_data["gamble_win_count"]
 
-    # 1勝で解除
     if gamble_wins >= 1:
         await check_and_unlock_achievement(interaction, "win_gamble_1")
-
-    # 10勝で解除
     if gamble_wins >= 10:
         await check_and_unlock_achievement(interaction, "win_gamble_10")
     if gamble_wins >= 50:
@@ -773,13 +872,11 @@ async def on_gamble_win(interaction: discord.Interaction, u_data: dict, opponent
         await check_and_unlock_achievement(interaction, "win_gamble_100")
     if gamble_wins >= 500:
         await check_and_unlock_achievement(interaction, "win_gamble_500")
-        
-    
-# --------------------------------------------------
-# 🃏 ギャンブルでキャラに最終勝利した時の実績チェック
-# --------------------------------------------------
-async def on_gamble_match_win(interaction: discord.Interaction, u_data: dict, opponent_name: str):
-    """10ターン終了時、キャラに勝利していたら呼び出す"""
+
+
+async def on_gamble_match_win(
+    interaction: discord.Interaction, u_data: dict, opponent_name: str
+):
     if opponent_name:
         opponent_mapping = {
             "しえら": "win_gamble_siera",
@@ -791,73 +888,6 @@ async def on_gamble_match_win(interaction: discord.Interaction, u_data: dict, op
         for name_key, ach_id in opponent_mapping.items():
             if name_key in opponent_name:
                 await check_and_unlock_achievement(interaction, ach_id)
-
-
-# --------------------------------------------------
-# 🔓 実績解除・通知共通関数
-# --------------------------------------------------
-async def check_and_unlock_achievement(
-    interaction: discord.Interaction, achievement_id: str
-):
-    u_id = interaction.user.id
-    u_data = user_data.get(u_id)
-    if not u_data:
-        return
-
-    if "unlocked_achievements" not in u_data:
-        u_data["unlocked_achievements"] = []
-
-    if achievement_id in u_data["unlocked_achievements"]:
-        return
-
-    ach = ACHIEVEMENTS.get(achievement_id)
-    if not ach:
-        return
-
-    u_data["unlocked_achievements"].append(achievement_id)
-    reward_rainbow = ach.get("reward_rainbow", 0)
-
-    if "items" not in u_data:
-        u_data["items"] = {}
-    u_data["items"]["虹の欠片"] = (
-        u_data["items"].get("虹の欠片", 0) + reward_rainbow
-    )
-
-    save_data()
-
-    # 🔔 通知①：本人へのメッセージ
-    reward_str = (
-        f"💎 虹の欠片 {reward_rainbow}個" if reward_rainbow > 0 else "なし"
-    )
-    embed_user = discord.Embed(
-        title="🎉 実績を解除しました！",
-        description=f"**{ach['title']}**\n└ {ach['desc']}\n\n🎁 **獲得報酬**: {reward_str}",
-        color=0xF1C40F,
-    )
-
-    try:
-        if interaction.response.is_done():
-            await interaction.followup.send(embed=embed_user, ephemeral=True)
-        else:
-            await interaction.response.send_message(
-                embed=embed_user, ephemeral=True
-            )
-    except Exception as e:
-        print(f"本人への実績通知エラー: {e}")
-
-    # 📢 通知②：ログチャンネルへの投稿
-    try:
-        target_channel = interaction.client.get_channel(LOG_CHANNEL_ID)
-        if target_channel:
-            await target_channel.send(
-                f"{interaction.user.mention} が 実績【{ach['title']}】を解除しました！"
-            )
-        else:
-            print(
-                f"⚠️ 指定されたチャンネルID ({LOG_CHANNEL_ID}) が見つかりませんでした。"
-            )
-    except Exception as e:
-        print(f"ログチャンネルへの実績通知エラー: {e}")
 
 
 # --------------------------------------------------
