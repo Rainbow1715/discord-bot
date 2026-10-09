@@ -190,9 +190,20 @@ class PartySelectView(discord.ui.View):
 
 @bot.tree.command(name="profile", description="自分のプロフィールを確認します")
 async def profile(interaction: discord.Interaction):
+    # 実績データを取り出すためインポート（ファイル名に合わせて変更してください）
+    from achievement import ACHIEVEMENTS
+
     u_data = get_user_profile(interaction.user.id)
     characters = u_data.get("characters", [])
     char_count = len(characters)
+
+    # 📊 勝利数・ギャンブル数・実績の解除数を取得
+    win_count = u_data.get("win_count", 0)
+    gamble_win_count = u_data.get("gamble_win_count", 0)
+    
+    unlocked_list = u_data.get("unlocked_achievements", [])
+    unlocked_count = len(unlocked_list)
+    total_achievements = len(ACHIEVEMENTS)
 
     def get_total_power(data):
         chars = data.get("characters", [])
@@ -227,6 +238,17 @@ async def profile(interaction: discord.Interaction):
         name="👥 所持キャラ種類", value=f"{char_count} 種", inline=True
     )
     embed.add_field(name="\u200b", value="\u200b", inline=False)
+    
+    # 🔻 🏆 追加項目（バトル・ギャンブル勝利数＆実績解除率） 🔻
+    embed.add_field(name="⚔️ バトル勝利数", value=f"{win_count} 勝", inline=True)
+    embed.add_field(name="🎰 ギャンブル勝利数", value=f"{gamble_win_count} 勝", inline=True)
+    embed.add_field(
+        name="🏆 実績解除数", 
+        value=f"{unlocked_count} / {total_achievements}", 
+        inline=True
+    )
+    embed.add_field(name="\u200b", value="\u200b", inline=False)
+
     embed.add_field(
         name="🏆 強さ順位",
         value=f"{power_rank} 位 / {len(all_users)} 人中",
