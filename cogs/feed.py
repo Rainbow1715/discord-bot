@@ -17,6 +17,10 @@ EAT_ACHIEVEMENT_MAP = {
     "折原和也": "eat_orihara",
     "神明龍矢": "eat_tatuya",
     "サラ": "eat_sara",
+    "レオ(仮面ライダーパロ)": "eat_rider_reo",
+    "ムクロ(トリッカルパロ)": "eat_trickcal_mukuro",
+    "しえら(仮面ライダーパロ)": "eat_rider_siera",
+    "ルシア(トリッカルパロ)": "eat_trickcal_rucia",
 }
 
 # --------------------------------------------------
