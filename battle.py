@@ -249,13 +249,13 @@ class Character:
                 target.hp = max(0, target.hp - dmg)
                 return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
 
-            # 🌀 装備によるスタン判定
-            stun_msg = ""
-            if self.stun > 0 and target_state is not None and random.randint(1, 100) <= self.stun:
-                target_state["stun"] = 2
-                stun_msg = f" ＆ 🌀 **{target.name}** は装備の衝撃で **2ターン行動不能** になった！"
+                # 🌀 装備によるスタン判定
+                stun_msg = ""
+                if self.stun > 0 and target_state is not None and random.randint(1, 100) <= self.stun:
+                    target_state["stun"] = 2
+                    stun_msg = f" ＆ 🌀 **{target.name}** は装備の衝撃で **2ターン行動不能** になった！"
                 
-            return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！{stun_msg}"
+                return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！{stun_msg}"
             
             # 4-2. 物理・子供特効攻撃（Physical派生） 👈★ここを追加！
             elif self.skill_type in ["child_slayer", "physical_child_slayer"]:
