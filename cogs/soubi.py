@@ -40,7 +40,7 @@ EQUIPMENT_MASTER = {
     "ビートクローザー": {"icon": "", "rarity": 4, "atk": 60, "description": "なんかかっこいいけん"},
     "思い出の写真": {"icon": "", "rarity": 4, "p_hp": 82, "description": "黒髪の男性が写っている"},
     "ビリーザロッド": {"icon": "", "rarity": 4, "stun": 95, "description": "これでビリビリにします"},
-    "
+    "大きなハサミ": {"icon": "", "rarity": 4, "atk": 60, "description": "このハサミで切られても血は出ない"},
 }
 
 
