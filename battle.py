@@ -257,7 +257,7 @@ class Character:
 
             # 🌀 装備によるスタン判定
             stun_msg = ""
-            if self.stun_rate > 0 and target_state is not None and random.randint(1, 100) <= self.stun_rate:
+            if self.stun > 0 and target_state is not None and random.randint(1, 100) <= self.stun:
                 target_state["stun"] = 2
                 stun_msg = f" ＆ 🌀 **{target.name}** は装備の衝撃で **2ターン行動不能** になった！"
                 
@@ -349,7 +349,7 @@ class Character:
 
         # 🌀 装備によるスタン判定
             stun_msg = ""
-            if self.stun_rate > 0 and target_state is not None and random.randint(1, 100) <= self.stun_rate:
+            if self.stun > 0 and target_state is not None and random.randint(1, 100) <= self.stun:
                 target_state["stun"] = 2
                 stun_msg = f" ＆ 🌀 **{target.name}** は装備の衝撃で **2ターン行動不能** になった！"
                 
