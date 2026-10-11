@@ -536,6 +536,11 @@ ACHIEVEMENTS = {
         "desc": "サラ に適正装備を装着させる",
         "reward_rainbow": 500,
     },
+    "equip_best_d2981": {
+        "title": "✨ なんでこいつ適正装備あんの？",
+        "desc": "D2981 に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
     "equip_best_riderreo": {
         "title": "✨ これだよこれ！（レオ(仮面ライダーパロ)）",
         "desc": "レオ(仮面ライダーパロ) に適正装備を装着させる",
