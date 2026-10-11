@@ -1,3 +1,4 @@
+CHARACTER_DATA = {
 # --- 基本情報・設定 ---
 "name": "しえら(仮面ライダーパロ)",
 "icon": "",
@@ -33,3 +34,4 @@
 "affection_exp": 0,
 "known_likes": [],
 "known_dislikes": [],
+}
