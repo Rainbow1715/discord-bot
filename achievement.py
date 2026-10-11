@@ -649,6 +649,7 @@ BEST_EQUIP_CHAR_MAP = {
     "折原和也": "equip_best_orihara",
     "神明龍矢": "equip_best_tatuya",
     "サラ": "equip_best_sara",
+    "D2981": "equip_best_d2981",
     "レオ(仮面ライダーパロ)": "equip_best_riderreo",
     "ムクロ(トリッカルパロ)": "equip_best_trickcalmukuro",
     "しえら(仮面ライダーパロ)": "equip_best_ridersiera",
