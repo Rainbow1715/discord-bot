@@ -130,6 +130,15 @@ class Character:
         if equip_name and equip_name in EQUIPMENT_MASTER:
             self.p_hp = EQUIPMENT_MASTER[equip_name].get("p_hp", 0)
 
+        # 🗡️ 装備品から p_hp (毎ターン回復量) とスタン効果を読み込み
+        self.p_hp = 0
+        self.stun = 0  # 👈 スタン確率を初期化
+        equip_name = data_dict.get("equip")
+        if equip_name and equip_name in EQUIPMENT_MASTER:
+            eq_data = EQUIPMENT_MASTER[equip_name]
+            self.p_hp = eq_data.get("p_hp", 0)
+            self.stun = eq_data.get("stun", 0)  # 👈 装備からスタン確率を取得
+
     # 🛡️ ヘイト（狙われやすさ）を考慮したターゲット選択
     def select_target(self, candidates: list):
         """生存している対象から、ディフェンダーを優先して1体選ぶ"""
@@ -246,6 +255,14 @@ class Character:
                 target.hp = max(0, target.hp - dmg)
                 return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
 
+            # 🌀 装備によるスタン判定
+            stun_msg = ""
+            if self.stun_rate > 0 and target_state is not None and random.randint(1, 100) <= self.stun_rate:
+                target_state["stun"] = 2
+                stun_msg = f" ＆ 🌀 **{target.name}** は装備の衝撃で **2ターン行動不能** になった！"
+                
+            return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！{stun_msg}"
+            
             # 4-2. 物理・子供特効攻撃（Physical派生） 👈★ここを追加！
             elif self.skill_type in ["child_slayer", "physical_child_slayer"]:
                 base_dmg = int(self.skill_pow + (current_atk * 0.5))
@@ -330,6 +347,13 @@ class Character:
             target.hp = max(0, target.hp - dmg)
             return f"{type_icon} {self.icon} **{self.name}** の{self.atk_type}攻撃！ **{target.name}** に **{dmg}** ダメージ！"
 
+        # 🌀 装備によるスタン判定
+            stun_msg = ""
+            if self.stun_rate > 0 and target_state is not None and random.randint(1, 100) <= self.stun_rate:
+                target_state["stun"] = 2
+                stun_msg = f" ＆ 🌀 **{target.name}** は装備の衝撃で **2ターン行動不能** になった！"
+                
+            return f"{type_icon} {self.icon} **{self.name}** の{self.atk_type}攻撃！ **{target.name}** に **{dmg}** ダメージ！{stun_msg}"
 
 class EventModeSelectView(discord.ui.View):
     def __init__(self, user_id: int):
