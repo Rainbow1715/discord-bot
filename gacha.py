@@ -191,18 +191,34 @@ class GachaView(discord.ui.View):
 
 
 # ==================================================
+# --------------------------------------------------
 # 🗡️ 装備ガチャ用処理（※単発なし・10連のみ）
-# ==================================================
+# --------------------------------------------------
 
-def draw_10_equipment_gacha():
-    """EQUIPMENT_MASTER から直接10連分抽選し、ユーザー保存用のデータ形式で返す"""
+# ⚙️ 装備ピックアップ率の設定（database.py側に定義があればそちらを優先、なければデフォルト値）
+try:
+    from database import NEW_PICKUP_EQUIPMENTS, BIRTHDAY_PICKUP_EQUIPMENTS
+except ImportError:
+    NEW_PICKUP_EQUIPMENTS = []
+    BIRTHDAY_PICKUP_EQUIPMENTS = []
+
+try:
+    from database import EQUIP_PICKUP_BOOST_RATE, EQUIP_BIRTHDAY_PICKUP_BOOST_RATE
+except ImportError:
+    EQUIP_PICKUP_BOOST_RATE = 0.30
+    EQUIP_BIRTHDAY_PICKUP_BOOST_RATE = 0.30
+
+
+def select_equipment_by_rarity_and_pickup():
+    """レア度とピックアップを考慮して装備を1つ抽選する"""
     if not EQUIPMENT_MASTER:
-        return []
+        return None
 
     equip_names = list(EQUIPMENT_MASTER.keys())
+    
+    # 1. レア度ごとの重み付け基本確率（★5:5%, ★4:25%, ★3:70% など）
+    # ※もし EQUIPMENT_MASTER 側にレア度がどう保持されているかに合わせて調整してください
     weights = []
-
-    # レアリティに応じた確率の重み付け（★5:5%, ★4:25%, ★3:70%）
     for name in equip_names:
         data = EQUIPMENT_MASTER[name]
         rarity = data.get("rarity", 3)
@@ -213,12 +229,33 @@ def draw_10_equipment_gacha():
         else:
             weights.append(70)
 
-    # 重み付きランダムで装備名を10個選択
-    chosen_names = random.choices(equip_names, weights=weights, k=10)
+    # 2. 🎯 ピックアップ判定の分離
+    rand_val = random.random()
 
-    # 所持データ・表示用に辞書オブジェクト化
+    # 🆕 A) 新実装装備ピックアップ判定
+    if NEW_PICKUP_EQUIPMENTS and rand_val < EQUIP_PICKUP_BOOST_RATE:
+        valid_new = [name for name in NEW_PICKUP_EQUIPMENTS if name in EQUIPMENT_MASTER]
+        if valid_new:
+            return random.choice(valid_new)
+
+    # 🎂 B) バースデー（誕生月）装備ピックアップ判定
+    if BIRTHDAY_PICKUP_EQUIPMENTS and rand_val < (EQUIP_PICKUP_BOOST_RATE + EQUIP_BIRTHDAY_PICKUP_BOOST_RATE):
+        valid_bd = [name for name in BIRTHDAY_PICKUP_EQUIPMENTS if name in EQUIPMENT_MASTER]
+        if valid_bd:
+            return random.choice(valid_bd)
+
+    # 3. 通常の重み付き抽選（すり抜け含む）
+    chosen_name = random.choices(equip_names, weights=weights, k=1)[0]
+    return chosen_name
+
+
+def draw_10_equipment_gacha():
+    """EQUIPMENT_MASTER からピックアップを考慮して10連分抽選し、ユーザー保存用のデータ形式で返す"""
     drawn_items = []
-    for name in chosen_names:
+    for _ in range(10):
+        name = select_equipment_by_rarity_and_pickup()
+        if not name:
+            continue
         master_info = EQUIPMENT_MASTER[name].copy()
         master_info["name"] = name
         drawn_items.append(master_info)
@@ -271,6 +308,15 @@ class SoubiGachaView(discord.ui.View):
             name = equip.get("name", "謎の装備")
             rarity = equip.get("rarity", 3)
             icon = equip.get("icon", "⚔️")
+
+            # 🎯 ピックアップマークの作成
+            pickup_marks = ""
+            if name in NEW_PICKUP_EQUIPMENTS:
+                pickup_marks += "✨"
+            if name in BIRTHDAY_PICKUP_EQUIPMENTS:
+                pickup_marks += "🎂"
+            if pickup_marks:
+                pickup_marks += " "
 
             # レア度別のテキスト表示調整
             if rarity == 5 or rarity == "★5":
