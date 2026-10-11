@@ -18,6 +18,11 @@ def get_equip_display(character_data: dict) -> str:
 
     return current_equip
 
+# ⚔️ 装備のピックアップ設定
+NEW_PICKUP_EQUIPMENTS = ["ビリーザロッド", "大きなハサミ", "ビートクローザー", "思い出の写真"]    # 新しく実装された装備
+BIRTHDAY_PICKUP_EQUIPMENTS = [] # 誕生月などのピックアップ装備
+EQUIP_PICKUP_BOOST_RATE = 0.40              # ピックアップ全体の補正率
+EQUIP_BIRTHDAY_PICKUP_BOOST_RATE = 0.40     # 誕生月ピックアップ全体の補正率
 
 # 🗡️ 装備マスタデータ
 EQUIPMENT_MASTER = {
