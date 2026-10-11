@@ -81,6 +81,21 @@ ACHIEVEMENTS = {
         "desc": "ガチャを累計200回引く",
         "reward_rainbow": 5000,
     },
+    "gacha_300": {
+        "title": "🎰 すり抜けてる？",
+        "desc": "ガチャを累計300回引く",
+        "reward_rainbow": 5000,
+    },
+    "gacha_400": {
+        "title": "🎰 そんなに回すことある？",
+        "desc": "ガチャを累計400回引く",
+        "reward_rainbow": 5000,
+    },
+    "gacha_500": {
+        "title": "🎰 逆に何が欲しいか言ってごらん",
+        "desc": "ガチャを累計500回引く",
+        "reward_rainbow": 5000,
+    },
     # 🆕 特定キャラ編成で勝利の実績
     "win_siera_retya": {
         "title": "😰 ど、同一人物……",
@@ -778,6 +793,12 @@ async def on_gacha_draw(
         await check_and_unlock_achievement(interaction, "gacha_100")
     if count >= 200:
         await check_and_unlock_achievement(interaction, "gacha_200")
+    if count >= 300:
+        await check_and_unlock_achievement(interaction, "gacha_300")
+    if count >= 400:
+        await check_and_unlock_achievement(interaction, "gacha_400")
+    if count >= 500:
+        await check_and_unlock_achievement(interaction, "gacha_500")
 
 
 # --------------------------------------------------
