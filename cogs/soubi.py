@@ -39,6 +39,7 @@ EQUIPMENT_MASTER = {
     "苦いクッキー": {"icon": "", "rarity": 3, "p_hp": 60, "description": "ともだちとお外を眺めてた"},
     "ビートクローザー": {"icon": "", "rarity": 4, "atk": 60, "description": "なんかかっこいいけん"},
     "思い出の写真": {"icon": "", "rarity": 4, "p_hp": 82, "description": "黒髪の男性が写っている"},
+    "ビリーザロッド": {"icon": "", "rarity": 4 "
 }
 
 
