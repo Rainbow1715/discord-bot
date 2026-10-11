@@ -582,9 +582,28 @@ GACHA_POOL = [
         "known_likes": [],
         "known_dislikes": [],
     },
-        
-        
 ]
+# 🔻 ここで「data」フォルダにある新しいキャラの .py ファイルを自動で読み込んで追加する！
+data_folder = "データ"
+if os.path.exists(data_folder):
+    for filename in os.listdir(data_folder):
+        if filename.endswith(".py"):
+            file_path = os.path.join(data_folder, filename)
+            module_name = filename[:-3]
+            try:
+                spec = importlib.util.spec_from_file_location(module_name, file_path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                
+                if hasattr(module, "CHARACTER_DATA"):
+                    data = getattr(module, "CHARACTER_DATA")
+                    if isinstance(data, list):
+                        GACHA_POOL.extend(data)
+                    elif isinstance(data, dict):
+                        GACHA_POOL.append(data)
+                print(f"✨ 追加キャラデータの読み込み成功: {filename}")
+            except Exception as e:
+                print(f"⚠️ 追加キャラ読み込みエラー ({filename}): {e}")
 
 # --------------------------------------------------
 # 🔰 初期キャラクターデータ取得関数
