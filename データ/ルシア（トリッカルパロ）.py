@@ -1,3 +1,4 @@
+CHARACTER_DATA = {
 # --- 基本情報・設定 ---
 "name": "ルシア(トリッカルパロ)",
 "icon": "",
@@ -34,3 +35,4 @@
 "affection_exp": 0,
 "known_likes": [],
 "known_dislikes": [],
+}
