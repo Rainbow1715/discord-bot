@@ -124,20 +124,14 @@ class Character:
         self.is_boss = is_boss
         self.buffs = []
 
-        # 🗡️ 装備品から p_hp (毎ターン回復量) を読み込み
+        # 🗡️ 装備品から p_hp (毎ターン回復量) と stun (スタン確率) をまとめて読み込み
         self.p_hp = 0
-        equip_name = data_dict.get("equip")
-        if equip_name and equip_name in EQUIPMENT_MASTER:
-            self.p_hp = EQUIPMENT_MASTER[equip_name].get("p_hp", 0)
-
-        # 🗡️ 装備品から p_hp (毎ターン回復量) とスタン効果を読み込み
-        self.p_hp = 0
-        self.stun = 0  # 👈 スタン確率を初期化
+        self.stun = 0  
         equip_name = data_dict.get("equip")
         if equip_name and equip_name in EQUIPMENT_MASTER:
             eq_data = EQUIPMENT_MASTER[equip_name]
             self.p_hp = eq_data.get("p_hp", 0)
-            self.stun = eq_data.get("stun", 0)  # 👈 装備からスタン確率を取得
+            self.stun = eq_data.get("stun", 0)  # 装備マスター側の設定キー
 
     # 🛡️ ヘイト（狙われやすさ）を考慮したターゲット選択
     def select_target(self, candidates: list):
