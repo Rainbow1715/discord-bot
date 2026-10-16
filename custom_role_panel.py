@@ -178,9 +178,9 @@ async def edit_panel(
     channel: discord.TextChannel,
     new_title: str = None,
     new_description: str = None,
-    role_1: discord.Role = None, label_1: str = None, style_1: str = "primary",
-    role_2: discord.Role = None, label_2: str = None, style_2: str = "primary",
-    role_3: discord.Role = None, label_3: str = None, style_3: str = "primary",
+    role_1: discord.Role = None, label_1: str = None, button_emoji_1: str = None, style_1: str = "primary",
+    role_2: discord.Role = None, label_2: str = None, button_emoji_2: str = None, style_2: str = "primary",
+    role_3: discord.Role = None, label_3: str = None, button_emoji_3: str = None, style_3: str = "primary",
 ):
     try:
         target_message = await channel.fetch_message(int(message_id))
@@ -228,15 +228,15 @@ async def edit_panel(
                         except ValueError:
                             pass
 
-    # 3. 追加するロールをまとめて処理（リスト化してループで処理）
+    # 3. 追加するロールをまとめて処理（絵文字もちゃんと渡すように修正！）
     add_targets = [
-        (role_1, label_1, style_1),
-        (role_2, label_2, style_2),
-        (role_3, label_3, style_3),
+        (role_1, label_1, button_emoji_1, style_1),
+        (role_2, label_2, button_emoji_2, style_2),
+        (role_3, label_3, button_emoji_3, style_3),
     ]
 
     bot_member = interaction.guild.me
-    for r, lbl, stl in add_targets:
+    for r, lbl, emo, stl in add_targets:
         if r:
             if not lbl:
                 await interaction.response.send_message(f"❌ 追加するロール「{r.name}」に対して、対応するボタンのテキスト（label）が入力されていません。", ephemeral=True)
@@ -248,13 +248,13 @@ async def edit_panel(
             new_view.add_role_button(
                 role_id=r.id,
                 label=lbl,
+                emoji=emo,        # 👈 ここでしっかり絵文字を渡す！
                 style_name=stl
             )
 
     # 4. パネルメッセージを編集・更新
     await target_message.edit(embed=new_embed, view=new_view)
     await interaction.response.send_message("✅ 役職パネルを更新し、指定したロールボタンを追加しました！", ephemeral=True)
-
 # --------------------------------------------------
 # 🔌 setup 関数（admin.py と同じ登録方式）
 # --------------------------------------------------
