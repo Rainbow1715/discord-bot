@@ -27,7 +27,7 @@ class CustomRoleButton(discord.ui.Button):
         self.role_id = role_id
 
     async def callback(self, interaction: discord.Interaction):
-        # ⚡ 1. まず即座に「処理中（非公開）」の応答を返して3秒制限のタイムアウトを防ぐ！
+        # ⚡ ボタンを押された瞬間にまず「処理中」の返事をしてタイムアウトを完全に防ぐ！
         await interaction.response.defer(ephemeral=True)
 
         guild = interaction.guild
@@ -36,7 +36,8 @@ class CustomRoleButton(discord.ui.Button):
 
         role = guild.get_role(self.role_id)
         if not role:
-            await interaction.response.send_message(
+            # 💡 deferしたあとなので send_message ではなく followup.send を使う
+            await interaction.followup.send(
                 "❌ このロールはすでに削除されているか、見つかりませんでした。",
                 ephemeral=True
             )
@@ -45,13 +46,13 @@ class CustomRoleButton(discord.ui.Button):
         # 🔒 本人にしか見えない（ephemeral=True）トグル処理
         if role in interaction.user.roles:
             await interaction.user.remove_roles(role)
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"🔒 ロール **{role.name}** を外しました。",
                 ephemeral=True
             )
         else:
             await interaction.user.add_roles(role)
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"✨ ロール **{role.name}** を付与しました！",
                 ephemeral=True
             )
