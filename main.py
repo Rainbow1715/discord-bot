@@ -1,7 +1,7 @@
 import copy
 import os
 
-import admin
+import admin, custom_role_panel
 from aiohttp import web
 from database import GACHA_POOL, get_user_profile, save_data, user_data
 from gacha import GachaMainView, GachaView
