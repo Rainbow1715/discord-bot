@@ -36,7 +36,7 @@ class CustomRoleButton(discord.ui.Button):
 
         role = guild.get_role(self.role_id)
         if not role:
-            # 💡 deferしたあとなので send_message ではなく followup.send を使う
+            # 💡 deferしたあとなので followup.send を使う
             await interaction.followup.send(
                 "❌ このロールはすでに削除されているか、見つかりませんでした。",
                 ephemeral=True
@@ -44,16 +44,27 @@ class CustomRoleButton(discord.ui.Button):
             return
 
         # 🔒 本人にしか見えない（ephemeral=True）トグル処理
-        if role in interaction.user.roles:
-            await interaction.user.remove_roles(role)
+        try:
+            if role in interaction.user.roles:
+                await interaction.user.remove_roles(role)
+                await interaction.followup.send(
+                    f"🔒 ロール **{role.name}** を外しました。",
+                    ephemeral=True
+                )
+            else:
+                await interaction.user.add_roles(role)
+                await interaction.followup.send(
+                    f"✨ ロール **{role.name}** を付与しました！",
+                    ephemeral=True
+                )
+        except discord.Forbidden:
             await interaction.followup.send(
-                f"🔒 ロール **{role.name}** を外しました。",
+                "❌ エラー: Botの役職が対象ロールより下にあるか、権限が不足しています。",
                 ephemeral=True
             )
-        else:
-            await interaction.user.add_roles(role)
+        except Exception as e:
             await interaction.followup.send(
-                f"✨ ロール **{role.name}** を付与しました！",
+                f"❌ エラーが発生しました: {e}",
                 ephemeral=True
             )
 
