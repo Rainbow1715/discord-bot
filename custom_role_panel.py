@@ -133,28 +133,44 @@ async def create_panel(
 
 
 # --------------------------------------------------
-# 2. 既存パネル編集コマンド (/edit_panel)
+# 2. 既存パネル編集コマンド (/edit_panel) - 複数追加対応版
 # --------------------------------------------------
 @app_commands.command(
     name="edit_panel",
-    description="【管理者】作成済みの役職パネルの内容変更やボタン追加を行います"
+    description="【管理者】作成済みの役職パネルの内容変更や、複数の新しいボタンの同時追加を行います"
 )
 @app_commands.describe(
     message_id="編集したいパネルのメッセージID",
     channel="パネルが置かれているチャンネル",
     new_title="新しいタイトル（変更しない場合は空欄）",
     new_description="新しい説明文（変更しない場合は空欄）",
-    add_role="追加で配置したいロール（任意）",
-    add_button_label="追加するボタンのテキスト（ロール指定時必須）",
-    add_button_emoji="追加するボタンの絵文字（任意）",
-    add_button_style="追加するボタンの色"
+    # 1つ目の追加枠
+    role_1="追加ロール1（任意）", label_1="追加ボタン1のテキスト", style_1="追加ボタン1の色",
+    # 2つ目の追加枠
+    role_2="追加ロール2（任意）", label_2="追加ボタン2のテキスト", style_2="追加ボタン2の色",
+    # 3つ目の追加枠
+    role_3="追加ロール3（任意）", label_3="追加ボタン3のテキスト", style_3="追加ボタン3の色",
 )
-@app_commands.choices(add_button_style=[
-    app_commands.Choice(name="青 (Primary)", value="primary"),
-    app_commands.Choice(name="灰色 (Secondary)", value="secondary"),
-    app_commands.Choice(name="緑 (Success)", value="success"),
-    app_commands.Choice(name="赤 (Danger)", value="danger"),
-])
+@app_commands.choices(
+    style_1=[
+        app_commands.Choice(name="青 (Primary)", value="primary"),
+        app_commands.Choice(name="灰色 (Secondary)", value="secondary"),
+        app_commands.Choice(name="緑 (Success)", value="success"),
+        app_commands.Choice(name="赤 (Danger)", value="danger"),
+    ],
+    style_2=[
+        app_commands.Choice(name="青 (Primary)", value="primary"),
+        app_commands.Choice(name="灰色 (Secondary)", value="secondary"),
+        app_commands.Choice(name="緑 (Success)", value="success"),
+        app_commands.Choice(name="赤 (Danger)", value="danger"),
+    ],
+    style_3=[
+        app_commands.Choice(name="青 (Primary)", value="primary"),
+        app_commands.Choice(name="灰色 (Secondary)", value="secondary"),
+        app_commands.Choice(name="緑 (Success)", value="success"),
+        app_commands.Choice(name="赤 (Danger)", value="danger"),
+    ],
+)
 @is_admin()
 async def edit_panel(
     interaction: discord.Interaction,
@@ -162,10 +178,9 @@ async def edit_panel(
     channel: discord.TextChannel,
     new_title: str = None,
     new_description: str = None,
-    add_role: discord.Role = None,
-    add_button_label: str = None,
-    add_button_emoji: str = None,
-    add_button_style: str = "primary"
+    role_1: discord.Role = None, label_1: str = None, style_1: str = "primary",
+    role_2: discord.Role = None, label_2: str = None, style_2: str = "primary",
+    role_3: discord.Role = None, label_3: str = None, style_3: str = "primary",
 ):
     try:
         target_message = await channel.fetch_message(int(message_id))
@@ -186,42 +201,59 @@ async def edit_panel(
     )
     new_embed.set_footer(text=old_embed.footer.text if old_embed.footer else "下のボタンを押すとロールの取得・解除ができます。")
 
-    # 2. View（ボタン）の更新・追加
-    view = discord.ui.View.from_message(target_message)
-    if view is None:
-        view = CustomRolePanelView()
+    # 2. 既存のボタンをビューに引き継ぐ
+    new_view = CustomRolePanelView()
+    if target_message.components:
+        for action_row in target_message.components:
+            for child in action_row.children:
+                if isinstance(child, discord.Button):
+                    if child.custom_id and child.custom_id.startswith("role_panel_"):
+                        try:
+                            r_id = int(child.custom_id.replace("role_panel_", ""))
+                            style_str_map = {
+                                discord.ButtonStyle.primary: "primary",
+                                discord.ButtonStyle.secondary: "secondary",
+                                discord.ButtonStyle.success: "success",
+                                discord.ButtonStyle.danger: "danger"
+                            }
+                            s_name = style_str_map.get(child.style, "primary")
+                            emoji_str = str(child.emoji) if child.emoji else None
 
-    # ロールボタンの追加指定がある場合
-    if add_role:
-        if not add_button_label:
-            await interaction.response.send_message("❌ 新しいロールボタンを追加するには `add_button_label`（ボタンテキスト）も指定してください。", ephemeral=True)
-            return
+                            new_view.add_role_button(
+                                role_id=r_id,
+                                label=child.label or "ロール",
+                                emoji=emoji_str,
+                                style_name=s_name
+                            )
+                        except ValueError:
+                            pass
 
-        bot_member = interaction.guild.me
-        if add_role >= bot_member.top_role:
-            await interaction.response.send_message(f"❌ Botの役職位置が指定したロール（{add_role.name}）より下にあるため付与できません。", ephemeral=True)
-            return
+    # 3. 追加するロールをまとめて処理（リスト化してループで処理）
+    add_targets = [
+        (role_1, label_1, style_1),
+        (role_2, label_2, style_2),
+        (role_3, label_3, style_3),
+    ]
 
-        style_map = {
-            "primary": discord.ButtonStyle.primary,
-            "secondary": discord.ButtonStyle.secondary,
-            "success": discord.ButtonStyle.success,
-            "danger": discord.ButtonStyle.danger
-        }
-        btn_style = style_map.get(add_button_style, discord.ButtonStyle.primary)
+    bot_member = interaction.guild.me
+    for r, lbl, stl in add_targets:
+        if r:
+            if not lbl:
+                await interaction.response.send_message(f"❌ 追加するロール「{r.name}」に対して、対応するボタンのテキスト（label）が入力されていません。", ephemeral=True)
+                return
+            if r >= bot_member.top_role:
+                await interaction.response.send_message(f"❌ Botの役職位置が指定したロール（{r.name}）より下にあるため付与できません。", ephemeral=True)
+                return
 
-        # 既存のViewに新しいボタンを追加
-        view.add_item(CustomRoleButton(
-            role_id=add_role.id,
-            label=add_button_label,
-            emoji=add_button_emoji,
-            style=btn_style
-        ))
+            new_view.add_role_button(
+                role_id=r.id,
+                label=lbl,
+                style_name=stl
+            )
 
-    # パネルメッセージを編集・更新
-    await target_message.edit(embed=new_embed, view=view)
-    await interaction.response.send_message("✅ 役職パネルを更新しました！", ephemeral=True)
-
+    # 4. パネルメッセージを編集・更新
+    await target_message.edit(embed=new_embed, view=new_view)
+    await interaction.response.send_message("✅ 役職パネルを更新し、指定したロールボタンを追加しました！", ephemeral=True)
 
 # --------------------------------------------------
 # 🔌 setup 関数（admin.py と同じ登録方式）
