@@ -30,7 +30,7 @@ class ChatLevelSystem(commands.Cog):
         current_time = time.time()
 
         # 2. クールダウンチェック（60秒に1回のみ経験値獲得）
-        if user_id in cooldowns and current_time - cooldowns[user_id] < 60:
+        if user_id in cooldowns and current_time - cooldowns[user_id] < 30:
             return
 
         # 3. リンク（URL）を正規表現で削除して、純粋なテキストの文字数を測る
