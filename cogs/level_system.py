@@ -11,7 +11,7 @@ cooldowns = {}
 def get_required_xp(level: int) -> int:
     return level * 100
 
-# 👑 レベルに応じた付与ロールの設定（例: レベル5、レベル10など）
+# 👑 レベルに応じた付与ロールの設定（例: レベル2など）
 LEVEL_ROLES = {
     2: 1560621660585861170,
 }
@@ -29,7 +29,7 @@ class ChatLevelSystem(commands.Cog):
         user_id = message.author.id
         current_time = time.time()
 
-        # 2. クールダウンチェック（60秒に1回のみ経験値獲得）
+        # 2. クールダウンチェック（30秒に1回のみ経験値獲得）
         if user_id in cooldowns and current_time - cooldowns[user_id] < 30:
             return
 
@@ -48,26 +48,26 @@ class ChatLevelSystem(commands.Cog):
         # 4. 経験値の計算（1文字1xp、最大50xpでキャップ）
         earned_xp = min(50, char_count)
 
-        # 5. ユーザーデータの取得・初期化
+        # 5. ユーザーデータの取得・初期化（u_level と u_xp を使用）
         if user_id not in user_data:
             user_data[user_id] = {}
         
         u_info = user_data[user_id]
-        if "level" not in u_info:
-            u_info["level"] = 1
-        if "xp" not in u_info:
-            u_info["xp"] = 0
+        if "u_level" not in u_info:
+            u_info["u_level"] = 1
+        if "u_xp" not in u_info:
+            u_info["u_xp"] = 0
 
-        u_info["xp"] += earned_xp
+        u_info["u_xp"] += earned_xp
 
         # 6. レベルアップ判定
-        current_level = u_info["level"]
+        current_level = u_info["u_level"]
         required_xp = get_required_xp(current_level)
 
-        if u_info["xp"] >= required_xp:
-            u_info["xp"] -= required_xp
-            u_info["level"] += 1
-            new_level = u_info["level"]
+        if u_info["u_xp"] >= required_xp:
+            u_info["u_xp"] -= required_xp
+            u_info["u_level"] += 1
+            new_level = u_info["u_level"]
 
             # お祝いメッセージを送信
             await message.channel.send(
