@@ -31,7 +31,7 @@ EMOJI_GROUPS = {
         "<:602602_orihara:1476550258627444747>", "<:602605_teru:1507520727404773386>",
         "<:602606_tatuya:1517868436951273513>", 
         "<:602607_akane:1526163756311384074>", "<:602607_sennya:1526163946669871134>",
-        "<:602609_sky:1549355063787659304>",
+        "<:602609_sky:1549355063787659304>", "<:602609_turuyasora:1549595028555304990>",
     ],
     "断罪": [
         "<:602512_rindouren:1476548499662442516>", "<:6005_reo:1476541458797559849>",
@@ -41,8 +41,7 @@ EMOJI_GROUPS = {
         "<:602606_momohane:1524369070533902336>", "<:602606_haruka:1524716192802017363>",
         "<:602606_mukuro:1524319005006106624>",
         "<:6_azusa:1539200373473026088>", "<:6_commonrue:1538181356889182338>", 
-        "<:6_marin:1476539399188648016>", "<:6_ryou:1539200604411400302>",
-        "<:6_syuuto:1476538895968768000>", "<:6_tooru:1539200520550359050>",
+        "<:6_ryou:1539200604411400302>", "<:6_tooru:1539200520550359050>",
     ],
     "卓": [
         "<:501_kuuya:1539928885741887519>", "<:502_rikuto:1539928930897756202>",
@@ -121,10 +120,11 @@ class DiceCog(commands.Cog):
     async def run_dice(self, interaction: discord.Interaction, group: app_commands.Choice[str]):
         selected_val = group.value
 
-        # 1. 権限チェック（Aグループを選んだ場合）
-        if selected_val == "A" and interaction.user.id not in ALLOWED_USER_IDS:
+        # 1. 権限チェック（"A"、"にょた組"、"AALL" を選んだ場合は制限する）
+        restricted_groups = ["A", "にょた組", "AALL"]
+        if selected_val in restricted_groups and interaction.user.id not in ALLOWED_USER_IDS:
             await interaction.response.send_message(
-                "⚠️ Aグループのダイスを使用する権限がありません。",
+                f"⚠️ {group.name}のダイスを使用する権限がありません。",
                 ephemeral=True
             )
             return
@@ -132,9 +132,14 @@ class DiceCog(commands.Cog):
         # 2. 対象となる絵文字リストの組み立て
         target_emojis = []
         if selected_val == "ALL":
+            # Aグループ以外の全グループを結合
             for key, emojis in EMOJI_GROUPS.items():
                 if key != "A":
                     target_emojis.extend(emojis)
+        elif selected_val == "AALL":
+            # 全グループ（A含むすべて）を結合
+            for emojis in EMOJI_GROUPS.values():
+                target_emojis.extend(emojis)
         else:
             target_emojis = EMOJI_GROUPS.get(selected_val, [])
 
