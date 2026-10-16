@@ -152,14 +152,20 @@ class DiceCog(commands.Cog):
         # 2. 対象となる絵文字リストの組み立て
         target_emojis = []
         if selected_val == "ALL":
-            # Aグループ以外の全グループを結合
+            # Aグループ以外の全グループの絵文字を重複なくまとめる
+            all_set = set()
             for key, emojis in EMOJI_GROUPS.items():
                 if key != "A":
-                    target_emojis.extend(emojis)
+                    all_set.update(emojis)
+            target_emojis = list(all_set)
+
         elif selected_val == "AALL":
-            # 全グループ（A含むすべて）を結合
+            # Aグループ含むすべての絵文字を重複なくまとめる
+            all_set = set()
             for emojis in EMOJI_GROUPS.values():
-                target_emojis.extend(emojis)
+                all_set.update(emojis)
+            target_emojis = list(all_set)
+
         else:
             target_emojis = EMOJI_GROUPS.get(selected_val, [])
 
@@ -209,10 +215,11 @@ class DiceCog(commands.Cog):
             return
 
         if message.content in ["うちの子ダイス", "うちのこダイス"]:
-            target_emojis = []
+            all_set = set()
             for key, emojis in EMOJI_GROUPS.items():
                 if key != "A":
-                    target_emojis.extend(emojis)
+                    all_set.update(emojis)
+            target_emojis = list(all_set)
 
             if target_emojis:
                 chosen_emoji = random.choice(target_emojis)
