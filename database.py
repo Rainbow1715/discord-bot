@@ -49,11 +49,11 @@ RARITY_RATES = {
 
 # 🎂 今月のバースデー・ピックアップ設定
 PICKUP_CHARACTERS = []
-PICKUP_BOOST_RATE = 0.40  # バースデーキャラ全体の排出補正率
+PICKUP_BOOST_RATE = 0.60  # バースデーキャラ全体の排出補正率
 
 # 🆕 新キャラ実装・ピックアップ設定
 NEW_PICKUP_CHARACTERS = ["レオ(仮面ライダーパロ)", "ムクロ(トリッカルパロ)", "しえら(仮面ライダーパロ)", "ルシア(トリッカルパロ)",]  # 実装時に ["新キャラ名"] を指定
-NEW_PICKUP_BOOST_RATE = 0.40 # 新キャラ全体の排出補正率
+NEW_PICKUP_BOOST_RATE = 0.50 # 新キャラ全体の排出補正率
 
 # 🎰 ガチャ排出キャラクタープール（兼マスターデータ）
 GACHA_POOL = [
