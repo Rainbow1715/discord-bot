@@ -3,11 +3,23 @@ from discord import app_commands
 from discord.ext import commands
 
 # --------------------------------------------------
+# 🔑 コマンドを使用できる管理者（あなた）のユーザーIDリスト
+# --------------------------------------------------
+ALLOWED_USER_IDS = [
+    837631984280666162, 
+]
+
+def is_allowed_user():
+    """許可されたユーザーIDのみ実行を許可するチェックデコレータ"""
+    def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.user.id in ALLOWED_USER_IDS
+    return app_commands.check(predicate)
+
+# --------------------------------------------------
 # 🎛️ 動的・永続ボタン用の View クラス
 # --------------------------------------------------
 class CustomRoleButton(discord.ui.Button):
     def __init__(self, role_id: int, label: str, emoji: str = None, style: discord.ButtonStyle = discord.ButtonStyle.primary):
-        # custom_id に role_id を埋め込むことで、再起動後もどのロールを付与すればいいか判定できるようにする
         super().__init__(
             label=label,
             emoji=emoji,
@@ -29,17 +41,15 @@ class CustomRoleButton(discord.ui.Button):
             )
             return
 
-        # トグル形式（持っていれば外し、持っていなければ付与）
+        # 🔒 本人にしか見えない（ephemeral=True）トグル処理
         if role in interaction.user.roles:
             await interaction.user.remove_roles(role)
-            # 👇 ephemeral=True が付いているため、押した本人にしか見えません！
             await interaction.response.send_message(
                 f"🔒 ロール **{role.name}** を外しました。",
                 ephemeral=True
             )
         else:
             await interaction.user.add_roles(role)
-            # 👇 こちらも本人限定の通知です！
             await interaction.response.send_message(
                 f"✨ ロール **{role.name}** を付与しました！",
                 ephemeral=True
@@ -47,10 +57,10 @@ class CustomRoleButton(discord.ui.Button):
 
 
 class CustomRolePanelView(discord.ui.View):
-    def __init__(self, role_id: int, label: str, emoji: str = None, style_name: str = "primary"):
+    def __init__(self):
         super().__init__(timeout=None) # 永続化
 
-        # スタイルの文字列を Discord の ButtonStyle に変換
+    def add_role_button(self, role_id: int, label: str, emoji: str = None, style_name: str = "primary"):
         style_map = {
             "primary": discord.ButtonStyle.primary,
             "secondary": discord.ButtonStyle.secondary,
@@ -58,8 +68,6 @@ class CustomRolePanelView(discord.ui.View):
             "danger": discord.ButtonStyle.danger
         }
         btn_style = style_map.get(style_name, discord.ButtonStyle.primary)
-
-        # ボタンを追加
         self.add_item(CustomRoleButton(role_id=role_id, label=label, emoji=emoji, style=btn_style))
 
 
@@ -69,13 +77,13 @@ class CustomRolePanelView(discord.ui.View):
 class CustomRolePanelCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        # ※ データベースやJSONに保存していない場合、過去に作ったパネルのボタンを完全復元するには
-        # 起動時にすべてのロールIDを保持させる必要がありますが、
-        # まずはシンプルにコマンドで作成・動作する基本形にしています。
 
+    # --------------------------------------------------
+    # 1. 役職パネル新規作成コマンド (/create_panel)
+    # --------------------------------------------------
     @app_commands.command(
         name="create_panel",
-        description="【管理者用】指定したロールを付与できるボタンパネルを作成します"
+        description="【特定ユーザー限定】指定したロールを付与できるボタンパネルを作成します"
     )
     @app_commands.describe(
         channel="パネルを送信するチャンネル",
@@ -83,7 +91,7 @@ class CustomRolePanelCog(commands.Cog):
         description="パネルの説明文",
         role="付与・解除させたいロール",
         button_label="ボタンに表示するテキスト",
-        button_emoji="ボタンにつける絵文字（オプション）",
+        button_emoji="ボタンにつける絵文字（任意）",
         button_style="ボタンの色（primary, secondary, success, danger）"
     )
     @app_commands.choices(button_style=[
@@ -92,7 +100,7 @@ class CustomRolePanelCog(commands.Cog):
         app_commands.Choice(name="緑 (Success)", value="success"),
         app_commands.Choice(name="赤 (Danger)", value="danger"),
     ])
-    @app_commands.checks.has_permissions(administrator=True)
+    @is_allowed_user() # 👈 あなただけが使える制限！
     async def create_panel(
         self,
         interaction: discord.Interaction,
@@ -104,16 +112,14 @@ class CustomRolePanelCog(commands.Cog):
         button_emoji: str = None,
         button_style: str = "primary"
     ):
-        # 1. 権限チェック（Bot自身がそのロールを付与できる権限を持っているか）
         bot_member = interaction.guild.me
         if role >= bot_member.top_role:
             await interaction.response.send_message(
-                f"❌ Botの役職位置が指定したロール（{role.name}）より下にあるため、このロールを付与できません。サーバー設定の「役職」でBotの位置を上に動かしてください。",
+                f"❌ Botの役職位置が指定したロール（{role.name}）より下にあるため付与できません。サーバー設定でBotの役職を上に移動してください。",
                 ephemeral=True
             )
             return
 
-        # 2. Embed（見た目）の作成
         embed = discord.Embed(
             title=title,
             description=description,
@@ -121,28 +127,117 @@ class CustomRolePanelCog(commands.Cog):
         )
         embed.set_footer(text="下のボタンを押すとロールの取得・解除ができます。")
 
-        # 3. ボタン付きビューの作成
-        view = CustomRolePanelView(
+        view = CustomRolePanelView()
+        view.add_role_button(
             role_id=role.id,
             label=button_label,
             emoji=button_emoji,
             style_name=button_style
         )
 
-        # 4. 指定チャンネルに送信
         await channel.send(embed=embed, view=view)
-
-        # 5. 実行者に完了通知
         await interaction.response.send_message(
-            f"✅ {channel.mention} にロールパネルを設置しました！",
+            f"✅ {channel.mention} にロールパネルを作成しました！",
             ephemeral=True
         )
 
-    # 権限エラーなどの処理
+    # --------------------------------------------------
+    # 2. 既存パネル編集コマンド (/edit_panel)
+    # --------------------------------------------------
+    @app_commands.command(
+        name="edit_panel",
+        description="【特定ユーザー限定】作成済みの役職パネルの内容変更やボタン追加を行います"
+    )
+    @app_commands.describe(
+        message_id="編集したいパネルのメッセージID",
+        channel="パネルが置かれているチャンネル",
+        new_title="新しいタイトル（変更しない場合は空欄）",
+        new_description="新しい説明文（変更しない場合は空欄）",
+        add_role="追加で配置したいロール（任意）",
+        add_button_label="追加するボタンのテキスト（ロール指定時必須）",
+        add_button_emoji="追加するボタンの絵文字（任意）",
+        add_button_style="追加するボタンの色"
+    )
+    @app_commands.choices(add_button_style=[
+        app_commands.Choice(name="青 (Primary)", value="primary"),
+        app_commands.Choice(name="灰色 (Secondary)", value="secondary"),
+        app_commands.Choice(name="緑 (Success)", value="success"),
+        app_commands.Choice(name="赤 (Danger)", value="danger"),
+    ])
+    @is_allowed_user() # 👈 あなただけが使える制限！
+    async def edit_panel(
+        self,
+        interaction: discord.Interaction,
+        message_id: str,
+        channel: discord.TextChannel,
+        new_title: str = None,
+        new_description: str = None,
+        add_role: discord.Role = None,
+        add_button_label: str = None,
+        add_button_emoji: str = None,
+        add_button_style: str = "primary"
+    ):
+        try:
+            target_message = await channel.fetch_message(int(message_id))
+        except Exception:
+            await interaction.response.send_message("❌ 指定されたメッセージが見つかりませんでした。IDとチャンネルを確認してください。", ephemeral=True)
+            return
+
+        if not target_message.embeds:
+            await interaction.response.send_message("❌ 指定されたメッセージはパネル（Embed）ではありません。", ephemeral=True)
+            return
+
+        # 1. Embed（テキスト）の書き換え
+        old_embed = target_message.embeds[0]
+        new_embed = discord.Embed(
+            title=new_title if new_title else old_embed.title,
+            description=new_description if new_description else old_embed.description,
+            color=old_embed.color
+        )
+        new_embed.set_footer(text=old_embed.footer.text if old_embed.footer else "下のボタンを押すとロールの取得・解除ができます。")
+
+        # 2. View（ボタン）の更新・追加
+        view = discord.ui.View.from_message(target_message)
+        if view is None:
+            view = CustomRolePanelView()
+
+        # ロールボタンの追加指定がある場合
+        if add_role:
+            if not add_button_label:
+                await interaction.response.send_message("❌ 新しいロールボタンを追加するには `add_button_label`（ボタンテキスト）も指定してください。", ephemeral=True)
+                return
+
+            bot_member = interaction.guild.me
+            if add_role >= bot_member.top_role:
+                await interaction.response.send_message(f"❌ Botの役職位置が指定したロール（{add_role.name}）より下にあるため付与できません。", ephemeral=True)
+                return
+
+            style_map = {
+                "primary": discord.ButtonStyle.primary,
+                "secondary": discord.ButtonStyle.secondary,
+                "success": discord.ButtonStyle.success,
+                "danger": discord.ButtonStyle.danger
+            }
+            btn_style = style_map.get(add_button_style, discord.ButtonStyle.primary)
+
+            # 既存のViewに新しいボタンを追加
+            view.add_item(CustomRoleButton(
+                role_id=add_role.id,
+                label=add_button_label,
+                emoji=add_button_emoji,
+                style=btn_style
+            ))
+
+        # パネルメッセージを編集・更新
+        await target_message.edit(embed=new_embed, view=view)
+        await interaction.response.send_message("✅ 役職パネルを更新しました！", ephemeral=True)
+
+    # 権限制限エラー（許可されていないIDのユーザーが打った場合）
     @create_panel.error
-    async def create_panel_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.errors.MissingPermissions):
-            await interaction.response.send_message("❌ このコマンドを実行する権限がありません（管理者限定）。", ephemeral=True)
+    @edit_panel.error
+    async def command_permission_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.errors.CheckFailure):
+            await interaction.response.send_message("⚠️ このコマンドを使用する権限がありません。", ephemeral=True)
         else:
             await interaction.response.send_message(f"⚠️ エラーが発生しました: {error}", ephemeral=True)
 
