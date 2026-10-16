@@ -27,7 +27,7 @@ class CustomRoleButton(discord.ui.Button):
         self.role_id = role_id
 
     async def callback(self, interaction: discord.Interaction):
-        # ⚡ ボタンを押された瞬間にまず「処理中」の返事をしてタイムアウトを完全に防ぐ！
+        # ⚡ 1. 何よりも最優先で、秒速で「処理中」の返事（defer）を返す！
         await interaction.response.defer(ephemeral=True)
 
         guild = interaction.guild
