@@ -91,8 +91,27 @@ EMOJI_GROUPS = {
         "<:602606_runa:1502879605973848185>", "<:602607_akane:1526163756311384074>",
         "<:6_azusa:1539200373473026088>", "<:6_marin:1476539399188648016>",
     ],
-
 }
+
+# --------------------------------------------------
+# 🎪 企画組グループの自動作成
+# （「呪福」「断罪」の全員 ＋ 「他」から指定の4人を合成）
+# --------------------------------------------------
+# 「他」グループの中から追加したい4人の絵文字キーワード
+target_ta_names = ["momohane", "haruka", "mukuro", "commonrue"]
+
+# 「他」の絵文字リストから該当する4人だけを抽出
+selected_ta_emojis = [
+    emoji for emoji in EMOJI_GROUPS.get("other", EMOJI_GROUPS.get("他", []))
+    if any(name in emoji for name in target_ta_names)
+]
+
+# 呪福 + 断罪 + 抽出した4人を合体させて「企画組」として追加
+EMOJI_GROUPS["企画組"] = (
+    EMOJI_GROUPS.get("呪福", []) + 
+    EMOJI_GROUPS.get("断罪", []) + 
+    selected_ta_emojis
+)
 
 # スラッシュコマンドの選択肢
 GROUP_CHOICES = [
@@ -100,6 +119,7 @@ GROUP_CHOICES = [
     app_commands.Choice(name="呪福", value="呪福"),
     app_commands.Choice(name="断罪", value="断罪"),
     app_commands.Choice(name="他", value="他"),
+    app_commands.Choice(name="企画組", value="企画組"),
     app_commands.Choice(name="卓", value="卓"),
     app_commands.Choice(name="施設っ子", value="施設っ子"),
     app_commands.Choice(name="にょた組", value="にょた組"),
