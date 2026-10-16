@@ -66,6 +66,8 @@ class MyBot(commands.Bot):
     async def setup_hook(self):
         await start_dummy_server()  # 👈 Bot起動時にダミーWebサーバーも一緒に立ち上げる
         await admin.setup(self)  # 👈 管理者コマンドを登録
+        await custom_role_panel.setup(self)  # 👈 新しい役職パネルのコマンドを登録
+
 
         # 🔻 Cogの読み込み一覧 🔻
         cogs = [
