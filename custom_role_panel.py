@@ -262,6 +262,6 @@ async def setup(bot):
     bot.tree.add_command(create_panel)
     bot.tree.add_command(edit_panel)
 
-# 2. ⚠️ 超重要：Bot再起動後も既存のボタンが動き続けるようにするための永続ビューを登録
+    # 2. ⚠️ 超重要：Bot再起動後も既存のボタンが動き続けるようにするための永続ビューを登録
     # これがないと、古いボタンを押したときにコールバックが見つからずエラーになります
     bot.add_view(CustomRolePanelView())
