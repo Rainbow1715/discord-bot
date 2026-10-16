@@ -83,7 +83,7 @@ class MyBot(commands.Bot):
             "dice",
             "cogs.birthday",
             "cogs.twitter_fix",
-            "level_system",
+            "cogs.level_system",
         ]
 
         for cog in cogs:
