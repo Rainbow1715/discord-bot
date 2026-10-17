@@ -46,8 +46,10 @@ EQUIPMENT_MASTER = {
     "思い出の写真": {"icon": "", "rarity": 4, "p_hp": 82, "description": "黒髪の男性が写っている"},
     "ビリーザロッド": {"icon": "", "rarity": 4, "stun": 95, "description": "これでビリビリにします"},
     "大きなハサミ": {"icon": "", "rarity": 4, "atk": 60, "description": "このハサミで切られても血は出ない"},
-    "狐柄の毛布": {"icon": "", "rarity": 4, "0.20
+    "狐柄の毛布": {"icon": "", "rarity": 4, "def": 0.20, "何回も洗濯したから少しボロボロ"},
     "牛のぬいぐるみ": {"icon": "", "rarity": 4, "atk": 0.20, "description": "ボコボコにする？"},
+    "カボチャのバケツ": {"icon": "", "rarity": 4, "p_hp": 120, "バケツいっぱいにお菓子をもらったらきっと幸せだね"},
+    
 }
 
 
