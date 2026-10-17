@@ -916,6 +916,17 @@ async def on_gacha_draw(
         await check_and_unlock_achievement(interaction, "gacha_400")
     if count >= 500:
         await check_and_unlock_achievement(interaction, "gacha_500")
+    if count >= 600:
+        await check_and_unlock_achievement(interaction, "gacha_600")
+    if count >= 777:  # 👈 gacha_700 の条件（777回）に合わせる
+        await check_and_unlock_achievement(interaction, "gacha_700")
+    if count >= 800:
+        await check_and_unlock_achievement(interaction, "gacha_800")
+    if count >= 900:
+        await check_and_unlock_achievement(interaction, "gacha_900")
+    if count >= 1000:
+        await check_and_unlock_achievement(interaction, "gacha_1000")
+
 
 
 # --------------------------------------------------
