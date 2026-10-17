@@ -329,26 +329,91 @@ ACHIEVEMENTS = {
         "reward_rainbow": 500,
     },
     # ----------------
+    # --- 竹村しえら ---
+    "gamble_竹村しえら_8": {
+        "title": "🃏 しえらの深淵⑧", 
+        "desc": "竹村しえらのギャンブル敗北セリフ8回目を見る", 
+        "reward_rainbow": 500},
+    "gamble_竹村しえら_9": {
+        "title": "🃏 しえらの深淵⑨", 
+        "desc": "竹村しえらのギャンブル敗北セリフ9回目を見る", 
+        "reward_rainbow": 1000},
+    "gamble_竹村しえら_10": {
+        "title": "🃏 しえらの深淵⑩", 
+        "desc": "竹村しえらのギャンブル敗北セリフ10回目を見る", 
+        "reward_rainbow": 2000},
     "win_gamble_siera": {
         "title": "🃏 しえらに勝利",
         "desc": "ギャンブルで しえら に勝利する",
         "reward_rainbow": 500,
     },
+    # --- サラ ---
+    "gamble_サラ_8": {
+        "title": "🃏 サラの深淵⑧", 
+        "desc": "サラのギャンブル敗北セリフ8回目を見る", 
+        "reward_rainbow": 500},
+    "gamble_サラ_9": {
+        "title": "🃏 サラの深淵⑨", 
+        "desc": "サラのギャンブル敗北セリフ9回目を見る", 
+        "reward_rainbow": 1000},
+    "gamble_サラ_10": {
+        "title": "🃏 サラの深淵⑩", 
+        "desc": "サラのギャンブル敗北セリフ10回目を見る", 
+        "reward_rainbow": 2000},
     "win_gamble_sara": {
         "title": "🃏 サラに勝利",
         "desc": "ギャンブルで サラ に勝利する",
         "reward_rainbow": 500,
     },
+    # --- 折原(にょた) ---
+    "gamble_折原(にょた)_8": {
+        "title": "🃏 にょた原の深淵⑧", 
+        "desc": "折原(にょた)のギャンブル敗北セリフ8回目を見る", 
+        "reward_rainbow": 500},
+    "gamble_折原(にょた)_9": {
+        "title": "🃏 にょた原の深淵⑨", 
+        "desc": "折原(にょた)のギャンブル敗北セリフ9回目を見る", 
+        "reward_rainbow": 1000},
+    "gamble_折原(にょた)_10": {
+        "title": "🃏 にょた原の深淵⑩", 
+        "desc": "折原(にょた)のギャンブル敗北セリフ10回目を見る", 
+        "reward_rainbow": 2000},
     "win_gamble_nyotahara": {
         "title": "🃏 にょた原さんに勝利",
         "desc": "ギャンブルで 折原(にょた) に勝利する",
         "reward_rainbow": 500,
     },
+    # --- ロイ ---
+    "gamble_ロイ_8": {
+        "title": "🃏 ロイの深淵⑧", 
+        "desc": "ロイのギャンブル敗北セリフ8回目を見る", 
+        "reward_rainbow": 500},
+    "gamble_ロイ_9": {
+        "title": "🃏 ロイの深淵⑨", 
+        "desc": "ロイのギャンブル敗北セリフ9回目を見る", 
+        "reward_rainbow": 1000},
+    "gamble_ロイ_10": {
+        "title": "🃏 ロイの深淵⑩", 
+        "desc": "ロイのギャンブル敗北セリフ10回目を見る", 
+        "reward_rainbow": 2000},
     "win_gamble_roi": {
         "title": "🃏 ロイに勝利",
         "desc": "ギャンブルで ロイ に勝利する",
         "reward_rainbow": 500,
     },
+    # --- 彼方 ---
+    "gamble_彼方_8": {
+        "title": "🃏 彼方の深淵⑧", 
+        "desc": "彼方のギャンブル敗北セリフ8回目を見る", 
+        "reward_rainbow": 500},
+    "gamble_彼方_9": {
+        "title": "🃏 彼方の深淵⑨", 
+        "desc": "彼方のギャンブル敗北セリフ9回目を見る", 
+        "reward_rainbow": 1000},
+    "gamble_彼方_10": {
+        "title": "🃏 彼方の深淵⑩", 
+        "desc": "彼方のギャンブル敗北セリフ10回目を見る", 
+        "reward_rainbow": 2000},
     "win_gamble_kanata": {
         "title": "🃏 彼方に勝利",
         "desc": "ギャンブルで 彼方 に勝利する",
