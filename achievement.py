@@ -96,6 +96,31 @@ ACHIEVEMENTS = {
         "desc": "ガチャを累計500回引く",
         "reward_rainbow": 5000,
     },
+    "gacha_600": {
+        "title": "🎰 お望みのものが出ていないのですか？",
+        "desc": "ガチャを累計600回引く",
+        "reward_rainbow": 5000,
+    },
+    "gacha_700": {
+        "title": "🎰 "ラッキーセブンおめでと〜,
+        "desc": "ガチャを累計777回引く",
+        "reward_rainbow": 5000,
+    },
+    "gacha_800": {
+        "title": "🎰 (バグじゃねぇのか？　と疑う顔)",
+        "desc": "ガチャを累計800回引く",
+        "reward_rainbow": 5000,
+    },
+    "gacha_900": {
+        "title": "🎰 どんだけ引くんすか",
+        "desc": "ガチャを累計900回引く",
+        "reward_rainbow": 5000,
+    },
+    "gacha_1000": {
+        "title": "🎰 こんだけ引けるってことは、報酬がイカれてるよな。わかってたけども。",
+        "desc": "ガチャを累計1000回引く",
+        "reward_rainbow": 10000,
+    },
     # 🆕 特定キャラ編成で勝利の実績
     "win_siera_retya": {
         "title": "😰 ど、同一人物……",
@@ -211,24 +236,40 @@ ACHIEVEMENTS = {
         "reward_rainbow": 2000,
     },
     "first_lb_2": {
-        "title": "🆙 ここまでは順調",
+        "title": "🔰 ここまでは順調",
         "desc": "初めてキャラクターを 2凸 (+2) させた",
         "reward_rainbow": 5000,
     },
     "first_lb_3": {
-        "title": "🆙　さらなる高みへ",
+        "title": "🔰　さらなる高みへ",
         "desc": "初めてキャラクターを 3凸 (+3) させた",
         "reward_rainbow": 10000,
     },
     "first_lb_4": {
-        "title": "🆙　まだ行けるか？",
+        "title": "🔰　まだ行けるか？",
         "desc": "初めてキャラクターを 4凸 (+4) させた",
         "reward_rainbow": 30000,
     },
     "first_lb_5": {
-        "title": "🆙　極限突破",
-        "desc": "初めてキャラクターを 5凸 (+5完凸) させた",
+        "title": "🔰　極限突破",
+        "desc": "初めてキャラクターを 5凸 (+5、完凸) させた",
         "reward_rainbow": 50000,
+    },
+    # 🔄 「累計◯回凸させた」系（合計実行回数
+    "total_lb_1": {
+        "title": "🔰 初心者クラフター",
+        "description": "累計で 1回 限界突破を行った",
+        "reward_gold": 1000,
+    },
+    "total_lb_5": {
+        "title": "🆙　ベテランクラフター",
+        "description": "累計で 5回 限界突破を行った",
+        "reward_gold": 15000,
+    },
+    "total_lb_10": {
+        "title": "🆙　限界突破マニア",
+        "description": "累計で 10回 限界突破を行った",
+        "reward_gold": 50000,
     },
     # 👹 イベントボス撃破実績
     "kill_roi": {
