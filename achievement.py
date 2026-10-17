@@ -1103,6 +1103,13 @@ async def on_gamble_match_win(
             if name_key in opponent_name:
                 await check_and_unlock_achievement(interaction, ach_id)
 
+async def check_character_gamble_line_achievement(
+    interaction: discord.Interaction, char_name: str, line_num: int
+):
+    """キャラ名と回数（8, 9, 10）を組み合わせて実績IDを自動生成し、解除判定を行う"""
+    if line_num in [8, 9, 10]:
+        ach_id = f"gamble_{char_name}_{line_num}"
+        await check_and_unlock_achievement(interaction, ach_id)
 
 # --------------------------------------------------
 # 🤖 実績確認コマンド (/achievements)
