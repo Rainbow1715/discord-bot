@@ -204,6 +204,32 @@ ACHIEVEMENTS = {
         "desc": "累計100回バトルで敗北する",
         "reward_rainbow": 500,
     },
+    # 🎯 「初めて◯凸させた」系（最大到達凸数）
+    "first_lb_1": {
+        "title": "🔰 限界突破の第一歩",
+        "desc": "初めてキャラクターを 1凸 (+1) させた",
+        "reward_rainbow": 2000,
+    },
+    "first_lb_2": {
+        "title": "🆙 ここまでは順調",
+        "desc": "初めてキャラクターを 2凸 (+2) させた",
+        "reward_rainbow": 5000,
+    },
+    "first_lb_3": {
+        "title": "🆙　さらなる高みへ",
+        "desc": "初めてキャラクターを 3凸 (+3) させた",
+        "reward_rainbow": 10000,
+    },
+    "first_lb_4": {
+        "title": "🆙　まだ行けるか？",
+        "desc": "初めてキャラクターを 4凸 (+4) させた",
+        "reward_rainbow": 30000,
+    },
+    "first_lb_5": {
+        "title": "🆙　極限突破",
+        "desc": "初めてキャラクターを 5凸 (+5完凸) させた",
+        "reward_rainbow": 50000,
+    },
     # 👹 イベントボス撃破実績
     "kill_roi": {
         "title": "⚔️ カス討伐：ロイ",
