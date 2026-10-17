@@ -1,11 +1,9 @@
 import discord
 from discord import app_commands
 
-# 👑 あなたのDiscordユーザーID（数値）
 ADMIN_ID = 837631984280666162
 
 def is_admin():
-    """管理者チェック用のデコレータ（admin.py と同じ形式）"""
     async def predicate(interaction: discord.Interaction) -> bool:
         if interaction.user.id != ADMIN_ID:
             await interaction.response.send_message("❌ このコマンドは管理者専用です。", ephemeral=True)
@@ -26,41 +24,7 @@ class CustomRoleButton(discord.ui.Button):
         )
         self.role_id = role_id
 
-    
-
-        role = guild.get_role(self.role_id)
-        if not role:
-            # 💡 deferしたあとなので followup.send を使う
-            await interaction.followup.send(
-                "❌ このロールはすでに削除されているか、見つかりませんでした。",
-                ephemeral=True
-            )
-            return
-
-        # 🔒 本人にしか見えない（ephemeral=True）トグル処理
-        try:
-            if role in interaction.user.roles:
-                await interaction.user.remove_roles(role)
-                await interaction.followup.send(
-                    f"🔒 ロール **{role.name}** を外しました。",
-                    ephemeral=True
-                )
-            else:
-                await interaction.user.add_roles(role)
-                await interaction.followup.send(
-                    f"✨ ロール **{role.name}** を付与しました！",
-                    ephemeral=True
-                )
-        except discord.Forbidden:
-            await interaction.followup.send(
-                "❌ エラー: Botの役職が対象ロールより下にあるか、権限が不足しています。",
-                ephemeral=True
-            )
-        except Exception as e:
-            await interaction.followup.send(
-                f"❌ エラーが発生しました: {e}",
-                ephemeral=True
-            )
+    # 💡 callback はここから完全に削除しました！
 
 
 class CustomRolePanelView(discord.ui.View):
@@ -142,7 +106,7 @@ async def create_panel(
 
 
 # --------------------------------------------------
-# 2. 既存パネル編集コマンド (/edit_panel) - 複数追加対応版
+# 2. 既存パネル編集コマンド (/edit_panel)
 # --------------------------------------------------
 @app_commands.command(
     name="edit_panel",
@@ -153,11 +117,8 @@ async def create_panel(
     channel="パネルが置かれているチャンネル",
     new_title="新しいタイトル（変更しない場合は空欄）",
     new_description="新しい説明文（変更しない場合は空欄）",
-    # 1つ目の追加枠
     role_1="追加ロール1（任意）", label_1="追加ボタン1のテキスト", button_emoji_1="ボタンにつける絵文字（任意）", style_1="追加ボタン1の色",
-    # 2つ目の追加枠
     role_2="追加ロール2（任意）", label_2="追加ボタン2のテキスト", button_emoji_2="ボタンにつける絵文字（任意）", style_2="追加ボタン2の色",
-    # 3つ目の追加枠
     role_3="追加ロール3（任意）", label_3="追加ボタン3のテキスト", button_emoji_3="ボタンにつける絵文字（任意）", style_3="追加ボタン3の色",
 )
 @app_commands.choices(
@@ -201,7 +162,6 @@ async def edit_panel(
         await interaction.response.send_message("❌ 指定されたメッセージはパネル（Embed）ではありません。", ephemeral=True)
         return
 
-    # 1. Embed（テキスト）の書き換え
     old_embed = target_message.embeds[0]
     new_embed = discord.Embed(
         title=new_title if new_title else old_embed.title,
@@ -210,7 +170,6 @@ async def edit_panel(
     )
     new_embed.set_footer(text=old_embed.footer.text if old_embed.footer else "下のボタンを押すとロールの取得・解除ができます。")
 
-    # 2. 既存のボタンをビューに引き継ぐ
     new_view = CustomRolePanelView()
     if target_message.components:
         for action_row in target_message.components:
@@ -237,7 +196,6 @@ async def edit_panel(
                         except ValueError:
                             pass
 
-    # 3. 追加するロールをまとめて処理（絵文字もちゃんと渡すように修正！）
     add_targets = [
         (role_1, label_1, button_emoji_1, style_1),
         (role_2, label_2, button_emoji_2, style_2),
@@ -257,20 +215,17 @@ async def edit_panel(
             new_view.add_role_button(
                 role_id=r.id,
                 label=lbl,
-                emoji=emo,        # 👈 ここでしっかり絵文字を渡す！
+                emoji=emo,
                 style_name=stl
             )
 
-    # 4. パネルメッセージを編集・更新
     await target_message.edit(embed=new_embed, view=new_view)
     await interaction.response.send_message("✅ 役職パネルを更新し、指定したロールボタンを追加しました！", ephemeral=True)
+
 # --------------------------------------------------
-# 🔌 setup 関数（admin.py と同じ登録方式）
+# 🔌 setup 関数
 # --------------------------------------------------
 async def setup(bot):
     bot.tree.add_command(create_panel)
     bot.tree.add_command(edit_panel)
-
-    # 2. ⚠️ 超重要：Bot再起動後も既存のボタンが動き続けるようにするための永続ビューを登録
-    # これがないと、古いボタンを押したときにコールバックが見つからずエラーになります
     bot.add_view(CustomRolePanelView())
