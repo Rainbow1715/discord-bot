@@ -195,10 +195,14 @@ class PartySelectView(discord.ui.View):
 
 @bot.tree.command(name="profile", description="自分のプロフィールを確認します")
 async def profile(interaction: discord.Interaction):
-    # 実績データを取り出すためインポート（ファイル名に合わせて変更してください）
+    # 実績データを取り出すためインポート
     from achievement import ACHIEVEMENTS
 
-    u_data = get_user_profile(interaction.user.id)
+    user = interaction.user
+    guild = interaction.guild
+    user_id_str = str(user.id)
+
+    u_data = get_user_profile(user.id)
     characters = u_data.get("characters", [])
     char_count = len(characters)
 
@@ -210,6 +214,10 @@ async def profile(interaction: discord.Interaction):
     unlocked_count = len(unlocked_list)
     total_achievements = len(ACHIEVEMENTS)
 
+    # 🌟 レベル・XPの取得（チャットレベルシステム等のデータ）
+    level = u_data.get("u_level", 1)
+    xp = u_data.get("u_xp", 0)
+
     def get_total_power(data):
         chars = data.get("characters", [])
         return sum(
@@ -218,33 +226,54 @@ async def profile(interaction: discord.Interaction):
 
     all_users = list(user_data.items())
 
+    # 🏆 強さ順位の計算
     sorted_by_power = sorted(
         all_users, key=lambda x: get_total_power(x[1]), reverse=True
     )
     power_rank = (
-        [i for i, u in enumerate(sorted_by_power) if u[0] == interaction.user.id][0]
+        [i for i, u in enumerate(sorted_by_power) if str(u[0]) == user_id_str][0]
         + 1
     )
 
+    # 📦 キャラ所持種類順位の計算
     sorted_by_chars = sorted(
         all_users, key=lambda x: len(x[1].get("characters", [])), reverse=True
     )
     char_rank = (
-        [i for i, u in enumerate(sorted_by_chars) if u[0] == interaction.user.id][0]
+        [i for i, u in enumerate(sorted_by_chars) if str(u[0]) == user_id_str][0]
         + 1
     )
 
+    # 👑 レベルランキングの計算（レベルが高い順、同じならXPが高い順）
+    sorted_by_level = sorted(
+        all_users, 
+        key=lambda x: (x[1].get("u_level", 1), x[1].get("u_xp", 0)), 
+        reverse=True
+    )
+    level_rank = "圏外"
+    for index, (uid, _) in enumerate(sorted_by_level):
+        if str(uid) == user_id_str:
+            level_rank = f"{index + 1} 位"
+            break
+
+    # 🖼️ 鯖固有のアイコン（サーバーアバター）を優先して取得
+    avatar_url = user.guild_avatar.url if user.guild_avatar else (user.avatar.url if user.avatar else user.default_avatar.url)
+
+    # 🎨 Embed の構築
     embed = discord.Embed(
-        title=f"👤 {interaction.user.display_name} のプロフィール",
+        title=f"👤 {user.display_name} のプロフィール",
         color=0x3498DB,
     )
+    # 右上のサムネイルにアバターを設定
+    embed.set_thumbnail(url=avatar_url)
+
     embed.add_field(name="💰 所持金", value=f"{u_data.get('gold', 0)} G", inline=True)
-    embed.add_field(
-        name="👥 所持キャラ種類", value=f"{char_count} 種", inline=True
-    )
+    embed.add_field(name="👥 所持キャラ種類", value=f"{char_count} 種", inline=True)
+    embed.add_field(name="🌟 レベル / XP", value=f"**Lv.{level}** (XP: {xp})", inline=True)
+    
     embed.add_field(name="\u200b", value="\u200b", inline=False)
     
-    # 🔻 🏆 追加項目（バトル・ギャンブル勝利数＆実績解除率） 🔻
+    # ⚔️ バトル・ギャンブル勝利数＆実績解除率
     embed.add_field(name="⚔️ バトル勝利数", value=f"{win_count} 勝", inline=True)
     embed.add_field(name="🎰 ギャンブル勝利数", value=f"{gamble_win_count} 勝", inline=True)
     embed.add_field(
@@ -252,18 +281,27 @@ async def profile(interaction: discord.Interaction):
         value=f"{unlocked_count} / {total_achievements}", 
         inline=True
     )
+
     embed.add_field(name="\u200b", value="\u200b", inline=False)
 
+    # 🏆 各種ランキング
     embed.add_field(
         name="🏆 強さ順位",
         value=f"{power_rank} 位 / {len(all_users)} 人中",
         inline=True,
     )
     embed.add_field(
-        name="📦 キャラ所持種類順位",
+        name="📦 キャラ所持順位",
         value=f"{char_rank} 位 / {len(all_users)} 人中",
         inline=True,
     )
+    embed.add_field(
+        name="✨ レベル順位",
+        value=f"{level_rank} / {len(all_users)} 人中",
+        inline=True,
+    )
+
+    embed.set_footer(text=guild.name, icon_url=guild.icon.url if guild.icon else None)
 
     await interaction.response.send_message(embed=embed)
 
