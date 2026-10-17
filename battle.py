@@ -276,30 +276,24 @@ class Character:
 
             # 4. 物理単体攻撃
             elif self.skill_type == "physical":
-                dmg = int(self.skill_pow + (current_atk * 0.5))
-                dmg = max(1, dmg)
+                base_dmg = int(self.skill_pow + (current_atk * 0.5))
+                defense_val = getattr(target, "defense", 0)
+                dmg = max(1, base_dmg - defense_val)
                 target.hp = max(0, target.hp - dmg)
                 return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
-
-                # 🌀 装備によるスタン判定
-                stun_msg = ""
-                if self.stun > 0 and target_state is not None and random.randint(1, 100) <= self.stun:
-                    target_state["stun"] = 2
-                    stun_msg = f" ＆ 🌀 **{target.name}** は装備の衝撃で **2ターン行動不能** になった！"
-                
-                return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！{stun_msg}"
             
-            # 4-2. 物理・子供特効攻撃（Physical派生） 👈★ここを追加！
+            # 4-2. 物理・子供特効攻撃（Physical派生）
             elif self.skill_type in ["child_slayer", "physical_child_slayer"]:
                 base_dmg = int(self.skill_pow + (current_atk * 0.5))
+                defense_val = getattr(target, "defense", 0)
                 
                 # 相手が子供（大人ではない）の場合ダメージ2倍
                 if is_child(target.name):
-                    dmg = max(1, int(base_dmg * 2.0))
+                    dmg = max(1, int(base_dmg * 2.0) - defense_val)
                     target.hp = max(0, target.hp - dmg)
                     return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **子供特効**が発動！ **{target.name}** に **{dmg}** の大ダメージ！（2倍）"
                 else:
-                    dmg = max(1, base_dmg)
+                    dmg = max(1, base_dmg - defense_val)
                     target.hp = max(0, target.hp - dmg)
                     return f"💥 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
             
@@ -324,10 +318,13 @@ class Character:
                 hit_damages = []
                 total_dmg = 0
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 0.5
+                defense_val = getattr(target, "defense", 0)
 
                 for _ in range(hits):
                     base_dmg = current_atk * pow_val if pow_val < 1.0 else (current_atk * 0.5) + (pow_val / 3)
-                    dmg = int(base_dmg + random.randint(-1, 2))
+                    # 連続攻撃の各ヒットごとに防御力を少しずつ分散して引くか、最後にまとめて引くなど調整可能ですが、シンプルに各ヒットから防御力の1/3を引く形にすることもできます
+                    hit_def = max(0, defense_val // hits)
+                    dmg = int(base_dmg + random.randint(-1, 2)) - hit_def
                     dmg = max(1, dmg)
                     hit_damages.append(str(dmg))
                     total_dmg += dmg
@@ -357,11 +354,12 @@ class Character:
                     target_state["stun"] = turns
                 return f"👀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は目を奪われて **{turns}ターン行動不能** になった！"
 
-            # 9. その他のデフォルトスキル（※一番最後に else を配置）
+            # 9. その他のデフォルトスキル
             else:
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15.0
-                dmg = int(pow_val + current_atk + random.randint(-3, 3))
-                dmg = max(1, dmg)
+                base_dmg = int(pow_val + current_atk + random.randint(-3, 3))
+                defense_val = getattr(target, "defense", 0)
+                dmg = max(1, base_dmg - defense_val)
                 target.hp = max(0, target.hp - dmg)
                 return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** に **{dmg}** ダメージ！"
 
@@ -369,18 +367,20 @@ class Character:
         else:
             if not target:
                 return f"❓ {self.icon} **{self.name}** は攻撃しようとしたが、対象がいなかった！"
-            dmg = max(1, current_atk + random.randint(-2, 2))
+            
+            raw_dmg = current_atk + random.randint(-2, 2)
+            defense_val = getattr(target, "defense", 0)
+            dmg = max(1, raw_dmg - defense_val)
             target.hp = max(0, target.hp - dmg)
-            return f"{type_icon} {self.icon} **{self.name}** の{self.atk_type}攻撃！ **{target.name}** に **{dmg}** ダメージ！"
 
-        # 🌀 装備によるスタン判定
+            # 🌀 装備によるスタン判定
             stun_msg = ""
             if self.stun > 0 and target_state is not None and random.randint(1, 100) <= self.stun:
                 target_state["stun"] = 2
                 stun_msg = f" ＆ 🌀 **{target.name}** は装備の衝撃で **2ターン行動不能** になった！"
                 
             return f"{type_icon} {self.icon} **{self.name}** の{self.atk_type}攻撃！ **{target.name}** に **{dmg}** ダメージ！{stun_msg}"
-
+            
 class EventModeSelectView(discord.ui.View):
     def __init__(self, user_id: int):
         super().__init__(timeout=60)
