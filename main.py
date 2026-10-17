@@ -261,11 +261,15 @@ async def profile(interaction: discord.Interaction):
 
     # 🎨 Embed の構築
     embed = discord.Embed(
-        title=f"👤 {user.display_name} のプロフィール",
+        title="プロフィール",
         color=0x3498DB,
     )
-    # 右上のサムネイルにアバターを設定
-    embed.set_thumbnail(url=avatar_url)
+    
+    # 👤 タイトル部分の代わりに「Author（著者情報）」を使ってアイコン＋表示名にする！
+    embed.set_author(name=f"{user.display_name} のプロフィール", icon_url=avatar_url)
+
+    # （※もし右上の大きなサムネイル画像が不要であれば set_thumbnail は消してOKです）
+    # embed.set_thumbnail(url=avatar_url)
 
     embed.add_field(name="💰 所持金", value=f"{u_data.get('gold', 0)} G", inline=True)
     embed.add_field(name="👥 所持キャラ種類", value=f"{char_count} 種", inline=True)
