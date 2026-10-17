@@ -253,6 +253,10 @@ class HighAndLowView(discord.ui.View):
                 reactions_dict[self.char_name] = set(reactions_dict.get(self.char_name, []))
             reactions_dict[self.char_name].add(self.char_losses)
 
+            # 🌟 追加：キャラごとの8, 9, 10回目チェック
+            if self.char_losses in [8, 9, 10]:
+                await check_character_gamble_line_achievement(interaction, self.char_name, self.char_losses)
+
         gm_choice_str = "HIGH ⬆️" if gm_choice == "HIGH" else "LOW ⬇️"
         char_choice_str = "HIGH ⬆️" if char_choice == "HIGH" else "LOW ⬇️"
 
@@ -303,6 +307,9 @@ class HighAndLowView(discord.ui.View):
                 if self.char_name not in reactions_dict or not isinstance(reactions_dict[self.char_name], set):
                     reactions_dict[self.char_name] = set(reactions_dict.get(self.char_name, []))
                 reactions_dict[self.char_name].add(10)
+
+                # 🌟 追加：大圧勝ボーナスによる10回目達成チェック
+                await check_character_gamble_line_achievement(interaction, self.char_name, 10)
 
                 reaction_text += (
                     f"\n\n💥 **【大圧勝ボーナス演出】**\n"
