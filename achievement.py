@@ -419,101 +419,50 @@ ACHIEVEMENTS = {
         "desc": "ギャンブルで 彼方 に勝利する",
         "reward_rainbow": 500,
     },
-    # 🍽️ 飯実績
+    # -----------------------
+    # キャラごと実績
+    # --------------------------
     "eat_siera": {
         "title": "🍽️ しえらの嫌いなもの",
         "desc": "竹村しえら に嫌いなものを食べさせた",
         "reward_rainbow": 100,
     },
-    "eat_retyan": {
-        "title": "🍽️ れーちゃんの嫌いなもの",
-        "desc": "れーちゃん に嫌いなものを食べさせた",
-        "reward_rainbow": 150,
-    },
-    "eat_reo": {
-        "title": "🍽️ レオの嫌いなもの",
-        "desc": "レオ に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_touwata": {
-        "title": "🍽️ 唐綿さんの嫌いなもの",
-        "desc": "Gerânio に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_skrei": {
-        "title": "🍽️ xX神Xxの嫌いなもの",
-        "desc": "白黒レイ に嫌いなものを食べさせた",
-        "reward_rainbow": 500,
-    },
-    "eat_marin": {
-        "title": "🍽️ 茉鈴の嫌いなもの",
-        "desc": "茉鈴 に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_syuuto": {
-        "title": "🍽️ 柊人の嫌いなもの",
-        "desc": "橘柊人 に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_mikan": {
-        "title": "🍽️ 河野蜜柑の嫌いなもの",
-        "desc": "河野蜜柑 に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_roi": {
-        "title": "🍽️ ロイの嫌いなもの",
-        "desc": "ロイ に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_orihara": {
-        "title": "🍽️ 折原さんの嫌いなもの",
-        "desc": "折原和也 に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_tatuya": {
-        "title": "🍽️ 神明龍矢の嫌いなもの",
-        "desc": "神明龍矢 に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_sara": {
-        "title": "🍽️ サラの嫌いなもの",
-        "desc": "サラ に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_rider_reo": {
-        "title": "🍽️ レオ(仮面ライダーパロ)の嫌いなもの",
-        "desc": "レオ(仮面ライダーパロ) に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_trickcal_mukuro": {
-        "title": "🍽️ ムクロ(トリッカルパロ)の嫌いなもの",
-        "desc": "ムクロ(トリッカルパロ) に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_rider_siera": {
-        "title": "🍽️ しえら(仮面ライダーパロ)の嫌いなもの",
-        "desc": "しえら(仮面ライダーパロ) に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    "eat_trickcal_rucia": {
-        "title": "🍽️ ルシア(トリッカルパロ)の嫌いなもの",
-        "desc": "ルシア(トリッカルパロ) に嫌いなものを食べさせた",
-        "reward_rainbow": 100,
-    },
-    # 🍽️ 好きな飯実績
     "eatlike_siera": {
         "title": "🍽️ しえらの好きなもの",
         "desc": "竹村しえら に好きなものを食べさせた",
         "reward_rainbow": 100,
+    },
+    "equip_best_siera": {
+        "title": "✨ これだよこれ！（しえら）",
+        "desc": "竹村しえら に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+    
+    "eat_retyan": {
+        "title": "🍽️ れーちゃんの嫌いなもの",
+        "desc": "れーちゃん に嫌いなものを食べさせた",
+        "reward_rainbow": 150,
     },
     "eatlike_retyan": {
         "title": "🍽️ れーちゃんの好きなもの",
         "desc": "れーちゃん に好きなものを食べさせた",
         "reward_rainbow": 150,
     },
+    
+    "eat_reo": {
+        "title": "🍽️ レオの嫌いなもの",
+        "desc": "レオ に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
     "eatlike_reo": {
         "title": "🍽️ レオの好きなもの",
         "desc": "レオ に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    
+    "eat_touwata": {
+        "title": "🍽️ 唐綿さんの嫌いなもの",
+        "desc": "Gerânio に嫌いなものを食べさせた",
         "reward_rainbow": 100,
     },
     "eatlike_touwata": {
@@ -521,14 +470,32 @@ ACHIEVEMENTS = {
         "desc": "Gerânio に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    
+    "eat_skrei": {
+        "title": "🍽️ xX神Xxの嫌いなもの",
+        "desc": "白黒レイ に嫌いなものを食べさせた",
+        "reward_rainbow": 500,
+    },
     "eatlike_skrei": {
         "title": "🍽️ xX神Xxの好きなもの",
         "desc": "白黒レイ に好きなものを食べさせた",
         "reward_rainbow": 500,
     },
+    
+    "eat_marin": {
+        "title": "🍽️ 茉鈴の嫌いなもの",
+        "desc": "茉鈴 に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
     "eatlike_marin": {
         "title": "🍽️ 茉鈴の好きなもの",
         "desc": "茉鈴 に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    
+    "eat_syuuto": {
+        "title": "🍽️ 柊人の嫌いなもの",
+        "desc": "橘柊人 に嫌いなものを食べさせた",
         "reward_rainbow": 100,
     },
     "eatlike_syuuto": {
@@ -536,9 +503,21 @@ ACHIEVEMENTS = {
         "desc": "橘柊人 に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    
+    "eat_mikan": {
+        "title": "🍽️ 河野蜜柑の嫌いなもの",
+        "desc": "河野蜜柑 に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
     "eatlike_mikan": {
         "title": "🍽️ 河野蜜柑の好きなもの",
         "desc": "河野蜜柑 に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    
+    "eat_roi": {
+        "title": "🍽️ ロイの嫌いなもの",
+        "desc": "ロイ に嫌いなものを食べさせた",
         "reward_rainbow": 100,
     },
     "eatlike_roi": {
@@ -546,9 +525,21 @@ ACHIEVEMENTS = {
         "desc": "ロイ に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    
+    "eat_orihara": {
+        "title": "🍽️ 折原さんの嫌いなもの",
+        "desc": "折原和也 に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
     "eatlike_orihara": {
         "title": "🍽️ 折原さんの好きなもの",
         "desc": "折原和也 に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    
+    "eat_tatuya": {
+        "title": "🍽️ 神明龍矢の嫌いなもの",
+        "desc": "神明龍矢 に嫌いなものを食べさせた",
         "reward_rainbow": 100,
     },
     "eatlike_tatuya": {
@@ -556,9 +547,21 @@ ACHIEVEMENTS = {
         "desc": "神明龍矢 に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    
+    "eat_sara": {
+        "title": "🍽️ サラの嫌いなもの",
+        "desc": "サラ に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
     "eatlike_sara": {
         "title": "🍽️ サラの好きなもの",
         "desc": "サラ に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    
+    "eat_rider_reo": {
+        "title": "🍽️ レオ(仮面ライダーパロ)の嫌いなもの",
+        "desc": "レオ(仮面ライダーパロ) に嫌いなものを食べさせた",
         "reward_rainbow": 100,
     },
     "eatlike_rider_reo": {
@@ -566,9 +569,21 @@ ACHIEVEMENTS = {
         "desc": "レオ(仮面ライダーパロ) に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    
+    "eat_trickcal_mukuro": {
+        "title": "🍽️ ムクロ(トリッカルパロ)の嫌いなもの",
+        "desc": "ムクロ(トリッカルパロ) に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
     "eatlike_trickcal_mukuro": {
         "title": "🍽️ ムクロ(トリッカルパロ)の好きなもの",
         "desc": "ムクロ(トリッカルパロ) に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    
+    "eat_rider_siera": {
+        "title": "🍽️ しえら(仮面ライダーパロ)の嫌いなもの",
+        "desc": "しえら(仮面ライダーパロ) に嫌いなものを食べさせた",
         "reward_rainbow": 100,
     },
     "eatlike_rider_siera": {
@@ -576,11 +591,19 @@ ACHIEVEMENTS = {
         "desc": "しえら(仮面ライダーパロ) に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    
+    "eat_trickcal_rucia": {
+        "title": "🍽️ ルシア(トリッカルパロ)の嫌いなもの",
+        "desc": "ルシア(トリッカルパロ) に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
     "eatlike_trickcal_rucia": {
         "title": "🍽️ ルシア(トリッカルパロ)の好きなもの",
         "desc": "ルシア(トリッカルパロ) に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+
+    
     # 怪しい肉
     "meat_akakun": {
         "title": "🍖 赤くんになんか食べさせた",
@@ -608,11 +631,7 @@ ACHIEVEMENTS = {
         "reward_rainbow": 100,
     },
     # 🗡️ キャラ別の適正装備実績
-    "equip_best_siera": {
-        "title": "✨ これだよこれ！（しえら）",
-        "desc": "竹村しえら に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
+    
     "equip_best_retya": {
         "title": "✨ これだよこれ！（れーちゃん）",
         "desc": "れーちゃん に適正装備を装着させる",
