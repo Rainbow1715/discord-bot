@@ -3,6 +3,12 @@ from discord import app_commands
 from discord.ext import commands
 from database import user_data, get_user_profile, save_data, GACHA_POOL
 
+# 💡 アチーブメント判定関数だけをシンプルにインポート
+try:
+    from achievement import check_limit_break_achievements
+except ImportError:
+    def check_limit_break_achievements(u_data, new_lb): return []
+
 # --------------------------------------------------
 # 🌟 凸段階ごとの必要条件・コスト定義
 # --------------------------------------------------
@@ -22,7 +28,6 @@ RANKUP_GOLD = {
     "+5": 500000,
 }
 
-# 次の凸段階へのマッピング
 NEXT_LB = {
     "+0": "+1",
     "+1": "+2",
@@ -45,27 +50,20 @@ class RankUpSelectView(discord.ui.View):
         options = []
         for idx, c in enumerate(characters[:25]):
             rarity = c.get("rarity", "★3")
-            # 凸数（数値または文字列）を "+0" 〜 "+5" の形式に正規化
             lb_val = c.get("limit_break", 0)
-            if isinstance(lb_val, int):
-                lb_key = f"+{lb_val}"
-            else:
-                lb_key = lb_val if lb_val.startswith("+") else f"+{lb_val}"
+            lb_key = f"+{lb_val}" if isinstance(lb_val, int) else (lb_val if lb_val.startswith("+") else f"+{lb_val}")
 
-            # 次の凸段階のキーを取得
             next_key = NEXT_LB.get(lb_key)
 
             if next_key and next_key in RANKUP_REQUIREMENTS:
                 req_count = RANKUP_REQUIREMENTS[next_key]
                 req_gold = RANKUP_GOLD[next_key]
                 req_str = f"{req_count}体/{req_gold:,}G"
-                count = c.get("count", 1)
-                can_up = (count >= req_count and user_gold >= req_gold)
+                can_up = (c.get("count", 1) >= req_count and user_gold >= req_gold)
             else:
                 req_str = "MAX (5凸完凸)"
                 can_up = False
 
-            # 表示ラベル（例: [★3 +1] キャラ名）
             display_lb = lb_key if lb_key != "+0" else ""
             options.append(
                 discord.SelectOption(
@@ -94,89 +92,63 @@ class RankUpSelectView(discord.ui.View):
         u_data = get_user_profile(self.user_id)
         
         char = next((c for c in u_data.get("characters", []) if c["name"] == selected_name), None)
-
         if not char:
             await interaction.response.send_message("❌ 対象のキャラクターが見つかりませんでした。", ephemeral=True)
             return
 
-        rarity = char.get("rarity", "★3")
         lb_val = char.get("limit_break", 0)
-        if isinstance(lb_val, int):
-            lb_key = f"+{lb_val}"
-        else:
-            lb_key = lb_val if lb_val.startswith("+") else f"+{lb_val}"
-
+        lb_key = f"+{lb_val}" if isinstance(lb_val, int) else (lb_val if lb_val.startswith("+") else f"+{lb_val}")
         next_key = NEXT_LB.get(lb_key)
-        count = char.get("count", 1)
-        curr_gold = u_data.get("gold", 0)
 
-        # 5凸（カンスト）のチェック
         if not next_key or next_key not in RANKUP_REQUIREMENTS:
-            await interaction.response.send_message(
-                f"❌ **{char['name']}** は既に最大限界突破 (5凸) に達しています！",
-                ephemeral=True
-            )
+            await interaction.response.send_message(f"❌ **{char['name']}** は既に最大限界突破 (5凸) に達しています！", ephemeral=True)
             return
 
         req_count = RANKUP_REQUIREMENTS[next_key]
         req_gold = RANKUP_GOLD[next_key]
+        count = char.get("count", 1)
+        curr_gold = u_data.get("gold", 0)
 
-        # 1. 必要キャラ数チェック
         if count < req_count:
-            await interaction.response.send_message(
-                f"❌ 素材（キャラ数）が不足しています！\n"
-                f"・**{char['name']}** の現在の所持数: **{count}** 体\n"
-                f"・{lb_key} ➔ {next_key} に必要な数: **{req_count}** 体（あと {req_count - count} 体必要）",
-                ephemeral=True
-            )
+            await interaction.response.send_message(f"❌ 素材（キャラ数）が不足しています！（必要: {req_count}体）", ephemeral=True)
             return
 
-        # 2. 所持ゴールドチェック
         if curr_gold < req_gold:
-            await interaction.response.send_message(
-                f"❌ ゴールドが不足しています！\n"
-                f"・現在の所持金: **{curr_gold:,}** G\n"
-                f"・必要ゴールド: **{req_gold:,}** G（あと {req_gold - curr_gold:,} G 必要）",
-                ephemeral=True
-            )
+            await interaction.response.send_message(f"❌ ゴールドが不足しています！（必要: {req_gold:,} G）", ephemeral=True)
             return
 
         # --------------------------------------------------
         # ✨ 限界突破実行処理
         # --------------------------------------------------
-        u_data["gold"] -= req_gold  # ゴールド消費
+        u_data["gold"] -= req_gold
         consume_count = req_count - 1
-        char["count"] -= consume_count  # 同キャラ消費（1体残す）
+        char["count"] -= consume_count
 
-        # 凸数の更新（数値として保存：例 +1 なら 1）
         new_int_lb = int(next_key.replace("+", ""))
         char["limit_break"] = new_int_lb
 
-        # 📈 ステータス＆スキル倍率の強化
+        # 📈 ステータス＆スキル強化
         template = next((c for c in GACHA_POOL if c["name"] == char["name"]), None)
-
-        if template:
-            base_hp = template.get("hp", 100)
-            base_atk = template.get("atk", 10)
-            hp_up = max(1, int(base_hp * 0.10))
-            atk_up = max(1, int(base_atk * 0.20))
-        else:
-            hp_up = 10
-            atk_up = 2
+        hp_up = max(1, int(template.get("hp", 100) * 0.10)) if template else 10
+        atk_up = max(1, int(template.get("atk", 10) * 0.20)) if template else 2
 
         char["hp"] += hp_up
         if "max_hp" in char:
             char["max_hp"] += hp_up
-            
         char["atk"] += atk_up
 
-        # スキル威力の強化 (倍率 +0.3 増加)
         old_pow = char.get("skill_pow", 1.0)
         new_pow = round(old_pow + 0.3, 2)
         char["skill_pow"] = new_pow
 
+        # 🏆 限界突破数をアチーブメント判定関数へ丸投げして送信！
+        newly_unlocked = check_limit_break_achievements(u_data, new_int_lb)
+
         save_data()
 
+        # --------------------------------------------------
+        # 🎨 完了メッセージの作成
+        # --------------------------------------------------
         embed = discord.Embed(
             title="🌟 限界突破完了！",
             description=f"**{char['name']}** が **{lb_key} ➔ {next_key}** に限界突破しました！",
@@ -191,6 +163,14 @@ class RankUpSelectView(discord.ui.View):
         embed.add_field(name="❤️ HP", value=f"+{hp_up} ➔ **{char['hp']}**", inline=True)
         embed.add_field(name="🗡️ 攻撃力", value=f"+{atk_up} ➔ **{char['atk']}**", inline=True)
         embed.add_field(name="✨ スキル威力", value=f"{old_pow}x ➔ **{new_pow}x**", inline=False)
+
+        # 解除された実績があればカードに追加表示
+        if newly_unlocked:
+            embed.add_field(
+                name="🎉 実績達成！",
+                value="\n".join([f"🏆 **{title}**" for title in newly_unlocked]),
+                inline=False
+            )
 
         await interaction.response.edit_message(embed=embed, view=None)
 
