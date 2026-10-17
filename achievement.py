@@ -102,7 +102,7 @@ ACHIEVEMENTS = {
         "reward_rainbow": 5000,
     },
     "gacha_700": {
-        "title": "🎰 "ラッキーセブンおめでと〜,
+        "title": "🎰 "ラッキーセブンおめでと〜",
         "desc": "ガチャを累計777回引く",
         "reward_rainbow": 5000,
     },
