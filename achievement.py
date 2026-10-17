@@ -102,12 +102,12 @@ ACHIEVEMENTS = {
         "reward_rainbow": 5000,
     },
     "gacha_700": {
-        "title": "🎰 "ラッキーセブンおめでと〜",
+        "title": "🎰 ラッキーセブンおめでと〜",
         "desc": "ガチャを累計777回引く",
         "reward_rainbow": 5000,
     },
     "gacha_800": {
-        "title": "🎰 (バグじゃねぇのか？　と疑う顔)",
+        "title": "🎰 (バグじゃねぇのか？ と疑う顔)",
         "desc": "ガチャを累計800回引く",
         "reward_rainbow": 5000,
     },
@@ -241,34 +241,34 @@ ACHIEVEMENTS = {
         "reward_rainbow": 5000,
     },
     "first_lb_3": {
-        "title": "🔰　さらなる高みへ",
+        "title": "🔰 さらなる高みへ",
         "desc": "初めてキャラクターを 3凸 (+3) させた",
         "reward_rainbow": 10000,
     },
     "first_lb_4": {
-        "title": "🔰　まだ行けるか？",
+        "title": "🔰 まだ行けるか？",
         "desc": "初めてキャラクターを 4凸 (+4) させた",
         "reward_rainbow": 30000,
     },
     "first_lb_5": {
-        "title": "🔰　極限突破",
+        "title": "🔰 極限突破",
         "desc": "初めてキャラクターを 5凸 (+5、完凸) させた",
         "reward_rainbow": 50000,
     },
-    # 🔄 「累計◯回凸させた」系（合計実行回数
+    # 🔄 「累計◯回凸させた」系（合計実行回数）
     "total_lb_1": {
         "title": "🔰 初心者クラフター",
-        "description": "累計で 1回 限界突破を行った",
+        "desc": "累計で 1回 限界突破を行った",  # 👈 "description" から "desc" に修正！
         "reward_rainbow": 1000,
     },
     "total_lb_5": {
-        "title": "🆙　ベテランクラフター",
-        "description": "累計で 5回 限界突破を行った",
+        "title": "🆙 ベテランクラフター",
+        "desc": "累計で 5回 限界突破を行った",  # 👈 "description" から "desc" に修正！
         "reward_rainbow": 15000,
     },
     "total_lb_10": {
-        "title": "🆙　限界突破マニア",
-        "description": "累計で 10回 限界突破を行った",
+        "title": "🆙 限界突破マニア",
+        "desc": "累計で 10回 限界突破を行った", # 👈 "description" から "desc" に修正！
         "reward_rainbow": 50000,
     },
     # 👹 イベントボス撃破実績
@@ -734,7 +734,6 @@ async def check_equip_best_achievement(
         best_equip.get("name") if isinstance(best_equip, dict) else best_equip
     )
 
-    # 現在の装備とベスト装備が一致しているか判定
     if best_name and equip_name == best_name:
         ach_id = BEST_EQUIP_CHAR_MAP.get(char_name)
         if ach_id:
@@ -824,6 +823,7 @@ async def on_battle_lose(interaction: discord.Interaction, u_data: dict):
     if lose_count >= 100:
         await check_and_unlock_achievement(interaction, "lose_100")
 
+
 # --------------------------------------------------
 # 🌟 限界突破時の自動実績チェック
 # --------------------------------------------------
@@ -867,7 +867,8 @@ async def check_limit_break_achievements(
     for target_count, ach_id in total_targets:
         if total_lb_count >= target_count:
             await check_and_unlock_achievement(interaction, ach_id)
-            
+
+
 # --------------------------------------------------
 # 👹 イベントボス撃破時の自動実績チェック
 # --------------------------------------------------
