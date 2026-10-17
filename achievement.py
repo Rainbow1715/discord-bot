@@ -824,7 +824,54 @@ async def on_battle_lose(interaction: discord.Interaction, u_data: dict):
     if lose_count >= 100:
         await check_and_unlock_achievement(interaction, "lose_100")
 
+# -----------------------------------
+# 
+# ----------------------------------------------------
+def check_limit_break_achievements(u_data: dict, new_lb: int) -> list:
+    """
+    限界突破時に呼び出される関数。
+    new_lb: 今回達した凸数（例: 1〜5）
+    """
+    unlocked = u_data.setdefault("unlocked_achievements", [])
+    newly_unlocked = []
 
+    # 1. 累計回数のインクリメント
+    total_lb_count = u_data.get("total_lb_count", 0) + 1
+    u_data["total_lb_count"] = total_lb_count
+
+    # 2. 最高到達凸数の記録
+    max_lb = max(u_data.get("max_lb_reached", 0), new_lb)
+    u_data["max_lb_reached"] = max_lb
+
+    # --------------------------------------------------
+    # 判定1: 「初めて◯凸」系
+    # --------------------------------------------------
+    first_targets = [
+        (1, "first_lb_1"),
+        (3, "first_lb_3"),
+        (5, "first_lb_5"),
+    ]
+    for target_lb, ach_id in first_targets:
+        if max_lb >= target_lb and ach_id in ACHIEVEMENTS and ach_id not in unlocked:
+            unlocked.append(ach_id)
+            newly_unlocked.append(ACHIEVEMENTS[ach_id]["title"])
+            u_data["gold"] = u_data.get("gold", 0) + ACHIEVEMENTS[ach_id].get("reward_gold", 0)
+
+    # --------------------------------------------------
+    # 判定2: 「累計◯回」系
+    # --------------------------------------------------
+    total_targets = [
+        (1, "total_lb_1"),
+        (5, "total_lb_5"),
+        (10, "total_lb_10"),
+    ]
+    for target_count, ach_id in total_targets:
+        if total_lb_count >= target_count and ach_id in ACHIEVEMENTS and ach_id not in unlocked:
+            unlocked.append(ach_id)
+            newly_unlocked.append(ACHIEVEMENTS[ach_id]["title"])
+            u_data["gold"] = u_data.get("gold", 0) + ACHIEVEMENTS[ach_id].get("reward_gold", 0)
+
+    return newly_unlocked
 # --------------------------------------------------
 # 👹 イベントボス撃破時の自動実績チェック
 # --------------------------------------------------
