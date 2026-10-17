@@ -162,9 +162,29 @@ class Character:
 
     def get_effective_atk(self) -> int:
         atk_multiplier = 1.0
+
+        # 🗡️ ベスト装備チェック（装備しているものがベスト装備に含まれているか判定）
+        equip_name = self.data.get("equip")
+        best_equip = self.data.get("best_equip")
+
+        is_best = False
+        if equip_name:
+            if isinstance(best_equip, list):
+                is_best = equip_name in best_equip
+            elif isinstance(best_equip, dict):
+                is_best = (equip_name == best_equip.get("name"))
+            else:
+                is_best = (equip_name == best_equip)
+
+        # ベスト装備なら攻撃力+20%
+        if is_best:
+            atk_multiplier += 0.20
+
+        # 戦闘中のバフ計算
         for buff in self.buffs:
             if buff.get("type") == "atk_up":
                 atk_multiplier += buff.get("value", 0.0)
+
         return int(self.atk * atk_multiplier)
 
     def should_use_skill(self, current_turn: int) -> bool:
