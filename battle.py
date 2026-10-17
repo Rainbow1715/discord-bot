@@ -126,12 +126,14 @@ class Character:
 
         # 🗡️ 装備品から p_hp (毎ターン回復量) と stun (スタン確率) をまとめて読み込み
         self.p_hp = 0
-        self.stun = 0  
+        self.stun = 0
+        self.defense = 0 # 👈 防御力の初期値
         equip_name = data_dict.get("equip")
         if equip_name and equip_name in EQUIPMENT_MASTER:
             eq_data = EQUIPMENT_MASTER[equip_name]
             self.p_hp = eq_data.get("p_hp", 0)
             self.stun = eq_data.get("stun", 0)  # 装備マスター側の設定キー
+            self.defense = data_dict.get("def", 0) + eq_data.get("def", 0)
 
     # 🛡️ ヘイト（狙われやすさ）を考慮したターゲット選択
     def select_target(self, candidates: list):
