@@ -4,7 +4,7 @@ from discord.ext import commands
 from database import user_data, get_user_profile, save_data, GACHA_POOL
 
 # --------------------------------------------------
-# 🌟 レアリティ(★)ごとの必要条件・コスト定義
+# 🌟 凸段階ごとの必要条件・コスト定義
 # --------------------------------------------------
 RANKUP_REQUIREMENTS = {
     "+1": 15,
@@ -22,11 +22,18 @@ RANKUP_GOLD = {
     "+5": 500000,
 }
 
-
+# 次の凸段階へのマッピング
+NEXT_LB = {
+    "+0": "+1",
+    "+1": "+2",
+    "+2": "+3",
+    "+3": "+4",
+    "+4": "+5",
+}
 
 
 # --------------------------------------------------
-# 🎛️ ★上げ選択用 UI View
+# 🎛️ ★上げ・凸上げ選択用 UI View
 # --------------------------------------------------
 class RankUpSelectView(discord.ui.View):
     def __init__(self, user_id: int, characters: list, user_gold: int):
@@ -36,31 +43,41 @@ class RankUpSelectView(discord.ui.View):
         self.user_gold = user_gold
 
         options = []
-        # 同名キャラ重複対策として idx も組み合わせるか、ユニークなIDがあればそれを使用
         for idx, c in enumerate(characters[:25]):
             rarity = c.get("rarity", "★3")
-            count = c.get("count", 1)
-            req_count = RANKUP_REQUIREMENTS.get(rarity)
-            req_gold = RANKUP_GOLD.get(rarity, 0)
-            
-            if req_count:
+            # 凸数（数値または文字列）を "+0" 〜 "+5" の形式に正規化
+            lb_val = c.get("limit_break", 0)
+            if isinstance(lb_val, int):
+                lb_key = f"+{lb_val}"
+            else:
+                lb_key = lb_val if lb_val.startswith("+") else f"+{lb_val}"
+
+            # 次の凸段階のキーを取得
+            next_key = NEXT_LB.get(lb_key)
+
+            if next_key and next_key in RANKUP_REQUIREMENTS:
+                req_count = RANKUP_REQUIREMENTS[next_key]
+                req_gold = RANKUP_GOLD[next_key]
                 req_str = f"{req_count}体/{req_gold:,}G"
+                count = c.get("count", 1)
                 can_up = (count >= req_count and user_gold >= req_gold)
             else:
-                req_str = "MAX"
+                req_str = "MAX (5凸完凸)"
                 can_up = False
 
+            # 表示ラベル（例: [★3 +1] キャラ名）
+            display_lb = lb_key if lb_key != "+0" else ""
             options.append(
                 discord.SelectOption(
-                    label=f"[{rarity}] {c['name']} (所持: {count}体)",
-                    value=c["name"],  # ← インデックスではなく名前（またはキャラ固有ID）をセット
-                    description=f"次ランク条件: {req_str}",
+                    label=f"[{rarity}{display_lb}] {c['name']} (所持: {c.get('count', 1)}体)",
+                    value=c["name"],
+                    description=f"次凸条件 ({next_key if next_key else 'MAX'}): {req_str}",
                     emoji="🌟" if can_up else "👤"
                 )
             )
 
         select = discord.ui.Select(
-            placeholder="★を上げたいキャラクターを選んでください",
+            placeholder="限界突破（凸）させたいキャラクターを選んでください",
             min_values=1,
             max_values=1,
             options=options,
@@ -76,34 +93,40 @@ class RankUpSelectView(discord.ui.View):
         selected_name = self.children[0].values[0]
         u_data = get_user_profile(self.user_id)
         
-        # 名前で該当キャラを特定（リストから検索）
         char = next((c for c in u_data.get("characters", []) if c["name"] == selected_name), None)
 
         if not char:
             await interaction.response.send_message("❌ 対象のキャラクターが見つかりませんでした。", ephemeral=True)
             return
 
-        curr_rarity = char.get("rarity", "★3")
+        rarity = char.get("rarity", "★3")
+        lb_val = char.get("limit_break", 0)
+        if isinstance(lb_val, int):
+            lb_key = f"+{lb_val}"
+        else:
+            lb_key = lb_val if lb_val.startswith("+") else f"+{lb_val}"
+
+        next_key = NEXT_LB.get(lb_key)
         count = char.get("count", 1)
         curr_gold = u_data.get("gold", 0)
 
-        # ★5（カンスト）のチェック
-        if curr_rarity not in RANKUP_REQUIREMENTS:
+        # 5凸（カンスト）のチェック
+        if not next_key or next_key not in RANKUP_REQUIREMENTS:
             await interaction.response.send_message(
-                f"❌ **{char['name']}** は既に最高レアリティ ({curr_rarity}) です！",
+                f"❌ **{char['name']}** は既に最大限界突破 (5凸) に達しています！",
                 ephemeral=True
             )
             return
 
-        req_count = RANKUP_REQUIREMENTS[curr_rarity]
-        req_gold = RANKUP_GOLD[curr_rarity]
+        req_count = RANKUP_REQUIREMENTS[next_key]
+        req_gold = RANKUP_GOLD[next_key]
 
         # 1. 必要キャラ数チェック
         if count < req_count:
             await interaction.response.send_message(
                 f"❌ 素材（キャラ数）が不足しています！\n"
                 f"・**{char['name']}** の現在の所持数: **{count}** 体\n"
-                f"・{curr_rarity} ➔ {NEXT_RARITY[curr_rarity]} に必要な数: **{req_count}** 体（あと {req_count - count} 体必要）",
+                f"・{lb_key} ➔ {next_key} に必要な数: **{req_count}** 体（あと {req_count - count} 体必要）",
                 ephemeral=True
             )
             return
@@ -119,25 +142,22 @@ class RankUpSelectView(discord.ui.View):
             return
 
         # --------------------------------------------------
-        # ✨ ★上げ実行処理
+        # ✨ 限界突破実行処理
         # --------------------------------------------------
-        # 💰 1. コストの消費
         u_data["gold"] -= req_gold  # ゴールド消費
         consume_count = req_count - 1
         char["count"] -= consume_count  # 同キャラ消費（1体残す）
 
-        # 🌟 2. ★の引き上げ & 凸数の加算
-        next_r = NEXT_RARITY[curr_rarity]
-        char["rarity"] = next_r
-        char["limit_break"] = char.get("limit_break", 0) + 1  # 明示的に凸数を+1
+        # 凸数の更新（数値として保存：例 +1 なら 1）
+        new_int_lb = int(next_key.replace("+", ""))
+        char["limit_break"] = new_int_lb
 
-        # 📈 3. ステータス＆スキル倍率の強化
+        # 📈 ステータス＆スキル倍率の強化
         template = next((c for c in GACHA_POOL if c["name"] == char["name"]), None)
 
         if template:
             base_hp = template.get("hp", 100)
             base_atk = template.get("atk", 10)
-            
             hp_up = max(1, int(base_hp * 0.10))
             atk_up = max(1, int(base_atk * 0.20))
         else:
@@ -158,8 +178,8 @@ class RankUpSelectView(discord.ui.View):
         save_data()
 
         embed = discord.Embed(
-            title="🌟 レアリティアップ完了！",
-            description=f"**{char['name']}** が **{curr_rarity} ➔ {next_r}** に強化されました！",
+            title="🌟 限界突破完了！",
+            description=f"**{char['name']}** が **{lb_key} ➔ {next_key}** に限界突破しました！",
             color=0xF1C40F
         )
         embed.add_field(
@@ -182,7 +202,7 @@ class RankUpCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="rankup", description="重複した同キャラとゴールドを消費してキャラクターの★を上げます")
+    @app_commands.command(name="rankup", description="重複した同キャラとゴールドを消費してキャラクターの限界突破（最大5凸）を行います")
     async def rankup(self, interaction: discord.Interaction):
         u_data = get_user_profile(interaction.user.id)
         characters = u_data.get("characters", [])
@@ -193,15 +213,16 @@ class RankUpCog(commands.Cog):
             return
 
         embed = discord.Embed(
-            title="🌟 キャラクターの★上げ（限界突破）",
+            title="🌟 キャラクターの限界突破（凸上げ）",
             description=(
-                "同キャラとゴールドを消費して★を上昇させることができます。\n"
-                "★が上がると**ステータスUP**や**スキル威力UP**が得られます！\n\n"
+                "同キャラとゴールドを消費して最大5回まで限界突破できます。\n"
+                "突破すると**ステータスUP**や**スキル威力UP**が得られます！\n\n"
                 "📜 **必要コスト一覧:**\n"
-                "・★1 ➔ ★2: 15体 / 5,000 G\n"
-                "・★2 ➔ ★3: 20体 / 15,000 G\n"
-                "・★3 ➔ ★4: 25体 / 30,000 G\n"
-                "・★4 ➔ ★5: 50体 / 100,000 G"
+                "・+0 ➔ +1: 15体 / 5,000 G\n"
+                "・+1 ➔ +2: 20体 / 15,000 G\n"
+                "・+2 ➔ +3: 25体 / 30,000 G\n"
+                "・+3 ➔ +4: 50体 / 100,000 G\n"
+                "・+4 ➔ +5: 50体 / 500,000 G"
             ),
             color=0xF1C40F
         )
