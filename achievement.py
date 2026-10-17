@@ -792,14 +792,23 @@ BEST_EQUIP_CHAR_MAP = {
 async def check_equip_best_achievement(
     interaction: discord.Interaction, char_data: dict, equip_name: str
 ):
-    """キャラごとに適正装備判定をして実績解除"""
+    """キャラごとに適正装備判定をして実績解除（複数対応版）"""
     char_name = char_data.get("name")
-    best_equip = char_data.get("best_equip")
-    best_name = (
-        best_equip.get("name") if isinstance(best_equip, dict) else best_equip
-    )
+    best_equip = char_data.get("best_equip")  # 👈 ここがリストになる想定
 
-    if best_name and equip_name == best_name:
+    is_match = False
+    if isinstance(best_equip, list):
+        # リストの場合は、装備しようとしている名前がリストのどれかに含まれるか
+        is_match = equip_name in best_equip
+    elif isinstance(best_equip, dict):
+        # 従来の辞書型や互換性のための保険
+        best_name = best_equip.get("name")
+        is_match = (equip_name == best_name)
+    else:
+        # 従来の文字列の保険
+        is_match = (equip_name == best_equip)
+
+    if is_match:
         ach_id = BEST_EQUIP_CHAR_MAP.get(char_name)
         if ach_id:
             await check_and_unlock_achievement(interaction, ach_id)
