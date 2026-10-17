@@ -19,8 +19,8 @@ CHARACTER_DATA = {
 
 # --- スキル関連 ---
 "skill_name": "お、お菓子くれなきゃいたずらします…！",       # [文字列] スキル名
-"skill_type": "",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
-"skill_pow":        # [数値] スキル威力・倍率
+"skill_type": "attract",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
+"skill_pow": 3,       # [数値] スキル威力・倍率
 "skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
 "skill_rate": 80,       # [数値] 発動成功率(%)（例: 95 = 95%）※一部キャラのみ
 
