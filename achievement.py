@@ -259,17 +259,17 @@ ACHIEVEMENTS = {
     "total_lb_1": {
         "title": "🔰 初心者クラフター",
         "description": "累計で 1回 限界突破を行った",
-        "reward_gold": 1000,
+        "reward_rainbow": 1000,
     },
     "total_lb_5": {
         "title": "🆙　ベテランクラフター",
         "description": "累計で 5回 限界突破を行った",
-        "reward_gold": 15000,
+        "reward_rainbow": 15000,
     },
     "total_lb_10": {
         "title": "🆙　限界突破マニア",
         "description": "累計で 10回 限界突破を行った",
-        "reward_gold": 50000,
+        "reward_rainbow": 50000,
     },
     # 👹 イベントボス撃破実績
     "kill_roi": {
@@ -824,17 +824,16 @@ async def on_battle_lose(interaction: discord.Interaction, u_data: dict):
     if lose_count >= 100:
         await check_and_unlock_achievement(interaction, "lose_100")
 
-# -----------------------------------
-# 
-# ----------------------------------------------------
-def check_limit_break_achievements(u_data: dict, new_lb: int) -> list:
+# --------------------------------------------------
+# 🌟 限界突破時の自動実績チェック
+# --------------------------------------------------
+async def check_limit_break_achievements(
+    interaction: discord.Interaction, u_data: dict, new_lb: int
+):
     """
     限界突破時に呼び出される関数。
     new_lb: 今回達した凸数（例: 1〜5）
     """
-    unlocked = u_data.setdefault("unlocked_achievements", [])
-    newly_unlocked = []
-
     # 1. 累計回数のインクリメント
     total_lb_count = u_data.get("total_lb_count", 0) + 1
     u_data["total_lb_count"] = total_lb_count
@@ -844,18 +843,18 @@ def check_limit_break_achievements(u_data: dict, new_lb: int) -> list:
     u_data["max_lb_reached"] = max_lb
 
     # --------------------------------------------------
-    # 判定1: 「初めて◯凸」系
+    # 判定1: 「初めて◯凸」系 (1, 2, 3, 4, 5)
     # --------------------------------------------------
     first_targets = [
         (1, "first_lb_1"),
+        (2, "first_lb_2"),
         (3, "first_lb_3"),
+        (4, "first_lb_4"),
         (5, "first_lb_5"),
     ]
     for target_lb, ach_id in first_targets:
-        if max_lb >= target_lb and ach_id in ACHIEVEMENTS and ach_id not in unlocked:
-            unlocked.append(ach_id)
-            newly_unlocked.append(ACHIEVEMENTS[ach_id]["title"])
-            u_data["gold"] = u_data.get("gold", 0) + ACHIEVEMENTS[ach_id].get("reward_gold", 0)
+        if max_lb >= target_lb:
+            await check_and_unlock_achievement(interaction, ach_id)
 
     # --------------------------------------------------
     # 判定2: 「累計◯回」系
@@ -866,12 +865,9 @@ def check_limit_break_achievements(u_data: dict, new_lb: int) -> list:
         (10, "total_lb_10"),
     ]
     for target_count, ach_id in total_targets:
-        if total_lb_count >= target_count and ach_id in ACHIEVEMENTS and ach_id not in unlocked:
-            unlocked.append(ach_id)
-            newly_unlocked.append(ACHIEVEMENTS[ach_id]["title"])
-            u_data["gold"] = u_data.get("gold", 0) + ACHIEVEMENTS[ach_id].get("reward_gold", 0)
-
-    return newly_unlocked
+        if total_lb_count >= target_count:
+            await check_and_unlock_achievement(interaction, ach_id)
+            
 # --------------------------------------------------
 # 👹 イベントボス撃破時の自動実績チェック
 # --------------------------------------------------
