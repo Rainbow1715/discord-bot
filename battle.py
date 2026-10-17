@@ -161,12 +161,18 @@ class Character:
         return ""
 
     def get_effective_atk(self) -> int:
-        atk_multiplier = 1.0
-
-        # 🗡️ ベスト装備チェック（装備しているものがベスト装備に含まれているか判定）
+        # 1. キャラ自身の基本攻撃力
+        base_atk = self.atk 
+        
+        # 2. 装備品の固定値ATKを加算する処理
+        equip_atk = 0
         equip_name = self.data.get("equip")
-        best_equip = self.data.get("best_equip")
+        if equip_name and equip_name in EQUIPMENT_MASTER:
+            eq_data = EQUIPMENT_MASTER[equip_name]
+            equip_atk = eq_data.get("atk", 0) # 装備のatk（例: 60など）を取得
 
+        # 3. ベスト装備による20%アップの判定
+        best_equip = self.data.get("best_equip")
         is_best = False
         if equip_name:
             if isinstance(best_equip, list):
@@ -176,16 +182,20 @@ class Character:
             else:
                 is_best = (equip_name == best_equip)
 
-        # ベスト装備なら攻撃力+20%
+        # 4. 「(基本攻撃力 + 装備攻撃力)」をベースにして計算
+        combined_atk = base_atk + equip_atk
+        
+        atk_multiplier = 1.0
         if is_best:
-            atk_multiplier += 0.20
+            atk_multiplier += 0.20 # ベスト装備ならさらに +20%
 
-        # 戦闘中のバフ計算
+        # 戦闘中のバフ（攻撃力アップスキルなど）の計算
         for buff in self.buffs:
             if buff.get("type") == "atk_up":
                 atk_multiplier += buff.get("value", 0.0)
 
-        return int(self.atk * atk_multiplier)
+        # 最終的な実効攻撃力を整数で返す
+        return int(combined_atk * atk_multiplier)
 
     def should_use_skill(self, current_turn: int) -> bool:
         trigger = self.skill_trigger
