@@ -2,7 +2,7 @@ import random
 import discord
 from discord import app_commands
 from discord.ext import commands
-from achievement import on_gamble_win, on_gamble_match_win
+from achievement import on_gamble_win, on_gamble_match_win, check_character_gamble_line_achievement
 from database import user_data
 
 # --------------------------------------------------
