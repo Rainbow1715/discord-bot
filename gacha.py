@@ -289,13 +289,13 @@ class SoubiGachaView(discord.ui.View):
             items["虹の欠片"] -= 1000
             
         elif cost_type == "ticket":
-            if items.get("装備ガチャチケット", 0) < 10:
+            if items.get("装備ガチャチケ", 0) < 10:
                 await interaction.followup.send(
-                    f"❌ 装備ガチャチケットが足りません！（所持: {items.get('装備ガチャチケット', 0)}枚 / 必要: 10枚）", 
+                    f"❌ 装備ガチャチケが足りません！（所持: {items.get('装備ガチャチケ', 0)}枚 / 必要: 10枚）", 
                     ephemeral=True
                 )
                 return
-            items["装備ガチャチケット"] -= 10
+            items["装備ガチャチケ"] -= 10
 
         # 4. 装備10連の実行
         drawn_equipments = draw_10_equipment_gacha()
@@ -355,7 +355,7 @@ class SoubiGachaView(discord.ui.View):
             color=0xFFD700 if has_ur else 0x3498DB
         )
         embed.set_footer(
-            text=f"残高 ｜ 虹の欠片: {items.get('虹の欠片', 0)}個 / 装備ガチャチケット: {items.get('装備ガチャチケット', 0)}枚"
+            text=f"残高 ｜ 虹の欠片: {items.get('虹の欠片', 0)}個 / 装備ガチャチ: {items.get('装備ガチャチケ', 0)}枚"
         )
 
         await interaction.edit_original_response(embed=embed, view=None)
@@ -417,7 +417,7 @@ class GachaMainView(discord.ui.View):
             description=(
                 "10連ガチャを回して強力な装備を獲得できます！\n\n"
                 f"💎 **所持 虹の欠片**: {items.get('虹の欠片', 0)} 個 (必要: 1000個)\n"
-                f"🎟️ **所持 装備ガチャチケ**: {items.get('装備ガチャチケット', 0)} 枚 (必要: 10枚)\n\n"
+                f"🎟️ **所持 装備ガチャチケ**: {items.get('装備ガチャチケ', 0)} 枚 (必要: 10枚)\n\n"
                 "👇 下のボタンを押してガチャを回してください。"
             ),
             color=0x3498DB
