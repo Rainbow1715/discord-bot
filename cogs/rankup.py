@@ -144,6 +144,8 @@ class RankUpSelectView(discord.ui.View):
         # 🏆 限界突破数をアチーブメント判定関数へ丸投げして送信！
         newly_unlocked = check_limit_break_achievements(u_data, new_int_lb)
 
+        await check_limit_break_achievements(interaction, u_data, new_int_lb)
+        
         save_data()
 
         # --------------------------------------------------
