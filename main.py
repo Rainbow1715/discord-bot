@@ -647,6 +647,47 @@ async def mailbox(interaction: discord.Interaction):
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
+@bot.event
+async def on_interaction(interaction: discord.Interaction):
+    # 1. 押されたのがボタンで、かつロールパネルのIDを持っているか確認
+    if interaction.type != discord.InteractionType.component:
+        return
+    
+    custom_id = interaction.data.get("custom_id", "")
+    if not custom_id.startswith("role_panel_"):
+        return
+
+    # 2. 【最重要】何よりも先に最速で defer を叩き込んでタイムアウトを絶対防ぐ
+    try:
+        await interaction.response.defer(ephemeral=True)
+    except Exception:
+        return
+
+    # 3. ロールIDの抽出と付与・剥奪処理
+    try:
+        role_id = int(custom_id.replace("role_panel_", ""))
+    except ValueError:
+        return
+
+    guild = interaction.guild
+    if not guild:
+        return
+
+    role = guild.get_role(role_id)
+    if not role:
+        await interaction.followup.send("❌ ロールが見つかりませんでした。", ephemeral=True)
+        return
+
+    try:
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            await interaction.followup.send(f"🔒 ロール **{role.name}** を外しました。", ephemeral=True)
+        else:
+            await interaction.user.add_roles(role)
+            await interaction.followup.send(f"✨ ロール **{role.name}** を付与しました！", ephemeral=True)
+    except Exception as e:
+        await interaction.followup.send(f"❌ エラーが発生しました: {e}", ephemeral=True)
+        
 TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 if TOKEN:
     bot.run(TOKEN)
