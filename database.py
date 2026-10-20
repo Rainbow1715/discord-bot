@@ -813,7 +813,6 @@ def load_data():
         print("⚠️ 【警告】sheetが初期化されていないため、読み込みをスキップしました。")
         return
     try:
-        # スプレッドシート全体のデータを取得
         rows = sheet.get_all_values()
         user_data.clear()
         
@@ -822,7 +821,6 @@ def load_data():
             return
 
         header = rows[0]
-        # 旧形式（1セルにJSONが入っているタイプ）かどうかをヘッダー名で判定
         is_old_format = "data_json" in header
 
         for row in rows[1:]:
@@ -835,7 +833,7 @@ def load_data():
                 continue
 
             if is_old_format:
-                # 🔄 旧形式（A列: user_id, B列: data_json）の場合：そのままJSONを復元して引き継ぐ！
+                # 🔄 旧形式（A列: user_id, B列: data_json）の場合：すべての項目を漏れなく引き継ぐ！
                 try:
                     data_json_str = row[1] if len(row) > 1 and row[1] else "{}"
                     u_info = json.loads(data_json_str)
@@ -843,6 +841,9 @@ def load_data():
                         "gold": u_info.get("gold", 1000),
                         "u_level": u_info.get("u_level", 1),
                         "u_xp": u_info.get("u_xp", 0),
+                        "win_count": u_info.get("win_count", 0),
+                        "gamble_win_count": u_info.get("gamble_win_count", 0),
+                        "unlocked_achievements": u_info.get("unlocked_achievements", []),
                         "characters": u_info.get("characters", []),
                         "items": u_info.get("items", {}),
                         "equipments": u_info.get("equipments", []),
@@ -858,16 +859,19 @@ def load_data():
                         "gold": int(row[1]) if len(row) > 1 and row[1].isdigit() else 1000,
                         "u_level": int(row[2]) if len(row) > 2 and row[2].isdigit() else 1,
                         "u_xp": int(row[3]) if len(row) > 3 and row[3].isdigit() else 0,
-                        "characters": json.loads(row[4]) if len(row) > 4 and row[4] else [],
-                        "items": json.loads(row[5]) if len(row) > 5 and row[5] else {},
-                        "equipments": json.loads(row[6]) if len(row) > 6 and row[6] else [],
-                        "party_indices": json.loads(row[7]) if len(row) > 7 and row[7] else [0, 1, 2],
-                        "mails": json.loads(row[8]) if len(row) > 8 and row[8] else []
+                        "win_count": int(row[4]) if len(row) > 4 and row[4].isdigit() else 0,
+                        "gamble_win_count": int(row[5]) if len(row) > 5 and row[5].isdigit() else 0,
+                        "unlocked_achievements": json.loads(row[6]) if len(row) > 6 and row[6] else [],
+                        "characters": json.loads(row[7]) if len(row) > 7 and row[7] else [],
+                        "items": json.loads(row[8]) if len(row) > 8 and row[8] else {},
+                        "equipments": json.loads(row[9]) if len(row) > 9 and row[9] else [],
+                        "party_indices": json.loads(row[10]) if len(row) > 10 and row[10] else [0, 1, 2],
+                        "mails": json.loads(row[11]) if len(row) > 11 and row[11] else []
                     }
                 except Exception as ex:
                     print(f"⚠️ ユーザーID {u_id} の新データ読み込みエラー: {ex}")
 
-        print(f"📊 スプレッドシートから {len(user_data)} 人分のデータを正常に読み込みました（旧形式自動コンバート対応）。")
+        print(f"📊 スプレッドシートから {len(user_data)} 人分のデータを完全に読み込みました！")
     except Exception as e:
         print(f"❌ データの読み込みエラー: {e}")
 
