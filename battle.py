@@ -354,6 +354,44 @@ class Character:
                     target_state["stun"] = turns
                 return f"👀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target.name}** は目を奪われて **{turns}ターン行動不能** になった！"
 
+            # 🎯 条件分岐サポート・回復スキル (conditional_support)
+            elif self.skill_type == "conditional_support":
+                # 設定から「特定の人物の名前」や「回復量」「確率」などを取得する想定
+                target_char_name = self.data.get("support_target", "特定のキャラ名") 
+                heal_amount = int(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 50
+                support_rate = int(self.skill_rate) if self.skill_rate else 100
+
+                # パーティ内に特定の人物が存在するか探す
+                target_member = next((p for p in party if p.raw_name == target_char_name or p.name == target_char_name), None)
+
+                if target_member:
+                    # 1. 特定の人物が倒れている場合（復活処理）
+                    if target_member.hp <= 0:
+                        revive_hp = int(target_member.max_hp * 0.40) # HP40%で復活
+                        target_member.hp = max(1, revive_hp)
+                        return f"🌟 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ 倒れていた **{target_member.name}** を見つけ、HP **{target_member.hp}** で蘇生させた！"
+                    
+                    # 2. 特定の人物が生きている場合（確率で特定数量回復）
+                    else:
+                        if random.randint(1, 100) <= support_rate:
+                            old_hp = target_member.hp
+                            target_member.hp = min(target_member.max_hp, target_member.hp + heal_amount)
+                            healed = target_member.hp - old_hp
+                            return f"💚 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{target_member.name}** のHPを **{healed}** 回復した！"
+                        else:
+                            return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし今回はタイミングが合わなかった……"
+                
+                # 3. 特定の人物が編成されていない場合（ランダムな味方HP25回復）
+                else:
+                    alive_party = [p for p in party if p.hp > 0]
+                    if alive_party:
+                        rand_target = random.choice(alive_party)
+                        old_hp = rand_target.hp
+                        rand_target.hp = min(rand_target.max_hp, rand_target.hp + 25)
+                        healed = rand_target.hp - old_hp
+                        return f"💫 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ （対象が不在のため） **{rand_target.name}** のHPを **{healed}** 回復した！"
+                    return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし効果がなかった！"
+            
             # 9. その他のデフォルトスキル
             else:
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15.0
