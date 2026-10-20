@@ -813,23 +813,61 @@ def load_data():
         print("⚠️ 【警告】sheetが初期化されていないため、読み込みをスキップしました。")
         return
     try:
-        records = sheet.get_all_records()
+        # スプレッドシート全体のデータを取得
+        rows = sheet.get_all_values()
         user_data.clear()
-        for row in records:
-            # 各列からデータを安全に取り出す
-            u_id = int(row["user_id"])
+        
+        if len(rows) <= 1:
+            print("📊 スプレッドシートにデータがありません（または空です）。")
+            return
+
+        header = rows[0]
+        # 旧形式（1セルにJSONが入っているタイプ）かどうかをヘッダー名で判定
+        is_old_format = "data_json" in header
+
+        for row in rows[1:]:
+            if not row or not row[0]:
+                continue
             
-            user_data[u_id] = {
-                "gold": int(row.get("gold", 1000)),
-                "u_level": int(row.get("u_level", 1)),
-                "u_xp": int(row.get("u_xp", 0)),
-                "characters": json.loads(row.get("characters", "[]")),
-                "items": json.loads(row.get("items", "{}")),
-                "equipments": json.loads(row.get("equipments", "[]")),
-                "party_indices": json.loads(row.get("party_indices", "[0, 1, 2]")),
-                "mails": json.loads(row.get("mails", "[]"))
-            }
-        print("📊 スプレッドシートから列分割データを正常に読み込みました。")
+            try:
+                u_id = int(row[0])
+            except ValueError:
+                continue
+
+            if is_old_format:
+                # 🔄 旧形式（A列: user_id, B列: data_json）の場合：そのままJSONを復元して引き継ぐ！
+                try:
+                    data_json_str = row[1] if len(row) > 1 and row[1] else "{}"
+                    u_info = json.loads(data_json_str)
+                    user_data[u_id] = {
+                        "gold": u_info.get("gold", 1000),
+                        "u_level": u_info.get("u_level", 1),
+                        "u_xp": u_info.get("u_xp", 0),
+                        "characters": u_info.get("characters", []),
+                        "items": u_info.get("items", {}),
+                        "equipments": u_info.get("equipments", []),
+                        "party_indices": u_info.get("party_indices", [0, 1, 2]),
+                        "mails": u_info.get("mails", [])
+                    }
+                except Exception as ex:
+                    print(f"⚠️ ユーザーID {u_id} の旧データデコードエラー: {ex}")
+            else:
+                # ✨ 新形式（列分けタイプ）の場合
+                try:
+                    user_data[u_id] = {
+                        "gold": int(row[1]) if len(row) > 1 and row[1].isdigit() else 1000,
+                        "u_level": int(row[2]) if len(row) > 2 and row[2].isdigit() else 1,
+                        "u_xp": int(row[3]) if len(row) > 3 and row[3].isdigit() else 0,
+                        "characters": json.loads(row[4]) if len(row) > 4 and row[4] else [],
+                        "items": json.loads(row[5]) if len(row) > 5 and row[5] else {},
+                        "equipments": json.loads(row[6]) if len(row) > 6 and row[6] else [],
+                        "party_indices": json.loads(row[7]) if len(row) > 7 and row[7] else [0, 1, 2],
+                        "mails": json.loads(row[8]) if len(row) > 8 and row[8] else []
+                    }
+                except Exception as ex:
+                    print(f"⚠️ ユーザーID {u_id} の新データ読み込みエラー: {ex}")
+
+        print(f"📊 スプレッドシートから {len(user_data)} 人分のデータを正常に読み込みました（旧形式自動コンバート対応）。")
     except Exception as e:
         print(f"❌ データの読み込みエラー: {e}")
 
