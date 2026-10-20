@@ -826,10 +826,15 @@ def _sync_save():
     if not sheet:
         print("⚠️ 【警告】sheetが初期化されていないため、保存をスキップしました。")
         return
+    
+    # 🛡️【重要】メモリ上のデータが空の場合は、スプレッドシートの上書き（消去）を防止する！
+    if not user_data:
+        print("⚠️ 【安全ガード】user_data が空のため、スプレッドシートの消去・上書きをスキップしました。")
+        return
+
     try:
         rows = [["user_id", "data_json"]]
         for u_id, data in user_data.items():
-            # ⭕ default=default_converter を追加！
             json_str = json.dumps(data, ensure_ascii=False, default=default_converter)
             rows.append([str(u_id), json_str])
         
