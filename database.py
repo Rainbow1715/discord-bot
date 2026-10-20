@@ -816,9 +816,20 @@ def load_data():
         records = sheet.get_all_records()
         user_data.clear()
         for row in records:
+            # 各列からデータを安全に取り出す
             u_id = int(row["user_id"])
-            user_data[u_id] = json.loads(row["data_json"])
-        print("📊 スプレッドシートからデータを正常に読み込みました。")
+            
+            user_data[u_id] = {
+                "gold": int(row.get("gold", 1000)),
+                "u_level": int(row.get("u_level", 1)),
+                "u_xp": int(row.get("u_xp", 0)),
+                "characters": json.loads(row.get("characters", "[]")),
+                "items": json.loads(row.get("items", "{}")),
+                "equipments": json.loads(row.get("equipments", "[]")),
+                "party_indices": json.loads(row.get("party_indices", "[0, 1, 2]")),
+                "mails": json.loads(row.get("mails", "[]"))
+            }
+        print("📊 スプレッドシートから列分割データを正常に読み込みました。")
     except Exception as e:
         print(f"❌ データの読み込みエラー: {e}")
 
@@ -827,20 +838,31 @@ def _sync_save():
         print("⚠️ 【警告】sheetが初期化されていないため、保存をスキップしました。")
         return
     
-    # 🛡️【重要】メモリ上のデータが空の場合は、スプレッドシートの上書き（消去）を防止する！
+    # 🛡️ メモリー上のデータが空の時は上書き（消去）しない安全ガード
     if not user_data:
-        print("⚠️ 【安全ガード】user_data が空のため、スプレッドシートの消去・上書きをスキップしました。")
+        print("⚠️ 【安全ガード】user_data が空のため、スプレッドシートの保存をスキップしました。")
         return
 
     try:
-        rows = [["user_id", "data_json"]]
+        # ヘッダー（1行目）
+        rows = [["user_id", "gold", "u_level", "u_xp", "characters", "items", "equipments", "party_indices", "mails"]]
+        
         for u_id, data in user_data.items():
-            json_str = json.dumps(data, ensure_ascii=False, default=default_converter)
-            rows.append([str(u_id), json_str])
+            rows.append([
+                str(u_id),
+                data.get("gold", 1000),
+                data.get("u_level", 1),
+                data.get("u_xp", 0),
+                json.dumps(data.get("characters", []), ensure_ascii=False, default=default_converter),
+                json.dumps(data.get("items", {}), ensure_ascii=False, default=default_converter),
+                json.dumps(data.get("equipments", []), ensure_ascii=False, default=default_converter),
+                json.dumps(data.get("party_indices", [0, 1, 2]), ensure_ascii=False, default=default_converter),
+                json.dumps(data.get("mails", []), ensure_ascii=False, default=default_converter)
+            ])
         
         sheet.clear()
         sheet.update(range_name='A1', values=rows)
-        print("💾 スプレッドシートへデータを保存しました。")
+        print("💾 スプレッドシートへ列分割データを保存しました。")
     except Exception as e:
         print(f"❌ データの保存エラー: {e}")
 
