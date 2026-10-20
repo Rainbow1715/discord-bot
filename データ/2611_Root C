@@ -19,11 +19,11 @@ CHARACTER_DATA = {
 
 # --- スキル関連 ---
 "skill_name": "僕が手伝ってあげるからね！",       # [文字列] スキル名
-"skill_type": "",       # （"physical", "heal_all", "stun", "charm", "buff_all_atk", など）
-"skill_pow":        # [数値] スキル威力・倍率
-"skill_trigger": "",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
-"skill_rate":        # [数値] 発動成功率(%)（例: 95 = 95%）※一部キャラのみ
-"charm_target": "",     # [文字列] 魅了スキルの対象性別 ※一部キャラのみ
+"skill_type": "conditional_support",       # （"physical", "heal_all", "stun", "charm", "buff_all_atk", など）
+"skill_pow": 200,       # [数値] スキル威力・倍率
+"skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
+"skill_rate": 30,       # [数値] 発動成功率(%)（例: 95 = 95%）※一部キャラのみ
+"support_target": "Branch Coral",     
 
 # --- 装備関連 ---
 "best_equip": "Branchくんの上着",       # [文字列] 相性の良いモチーフ装備名
