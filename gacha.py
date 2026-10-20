@@ -355,7 +355,7 @@ class SoubiGachaView(discord.ui.View):
             color=0xFFD700 if has_ur else 0x3498DB
         )
         embed.set_footer(
-            text=f"残高 ｜ 虹の欠片: {items.get('虹の欠片', 0)}個 / 装備ガチャチ: {items.get('装備ガチャチケ', 0)}枚"
+            text=f"残高 ｜ 虹の欠片: {items.get('虹の欠片', 0)}個 / 装備ガチャチケ: {items.get('装備ガチャチケ', 0)}枚"
         )
 
         await interaction.edit_original_response(embed=embed, view=None)
