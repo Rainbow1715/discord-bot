@@ -552,7 +552,7 @@ async def gacha(interaction: discord.Interaction):
 
     rainbow_count = items.get("虹の欠片", 0)
     chara_ticket = items.get("ガチャチケ", 0)
-    soubi_ticket = items.get("装備ガチャチケット", 0)
+    soubi_ticket = items.get("装備ガチャチケ", 0)
 
     embed = discord.Embed(
         title="🎰 ガチャメニュー",
