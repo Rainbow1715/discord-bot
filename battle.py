@@ -270,6 +270,24 @@ class Character:
                     return f"👀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(stunned_names)}** は全員目を奪われて **{turns}ターン行動不能** になった！"
                 return f"👀 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし誰も注目しなかった…"
 
+            # 💖 10. 敵全体を魅了（charm_all）
+            elif self.skill_type == "charm_all":
+                charmed_names = []
+                alive_enemies = [e for e in party_or_enemies if e not in party and e.hp > 0] if all_states else []
+                
+                # 敵チームの生存者全員に対して魅了判定
+                if all_states:
+                    for unit, state in all_states.items():
+                        if unit not in party and unit.hp > 0:
+                            # 性別チェック（ALL、またはターゲットの性別が一致する場合）
+                            if self.charm_target == "ALL" or unit.gender == self.charm_target:
+                                state["charm"] = 3
+                                charmed_names.append(unit.name)
+
+                if charmed_names:
+                    return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(charmed_names)}** は魅了されて **3ターン行動不能** になった！"
+                return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし誰も魅了されなかった……"
+            
             # --- ここから下は単体対象スキルなので、ターゲット不在なら中断 ---
             elif not target:
                 return f"❓ {self.icon} **{self.name}** は攻撃しようとしたが、対象がいなかった！"
