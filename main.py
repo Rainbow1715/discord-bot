@@ -305,8 +305,6 @@ async def profile(interaction: discord.Interaction):
         inline=True,
     )
 
-    embed.set_footer(text=guild.name, icon_url=guild.icon.url if guild.icon else None)
-
     await interaction.response.send_message(embed=embed)
 
 
