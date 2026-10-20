@@ -167,6 +167,11 @@ ACHIEVEMENTS = {
         "desc": "神明龍矢 彼方(ハロウィン) を編成してバトルに勝利する",
         "reward_rainbow": 500,
     },
+    "win_Coral": {
+        "title": "🖕 仲良し双子！",
+        "desc": "Branch Coral  Root Coral を編成してバトルに勝利する",
+        "reward_rainbow": 500,
+    },
     # 👤 特定キャラ入手実績
     "get_kami": {
         "title": "❔ なんで？",
@@ -448,6 +453,11 @@ ACHIEVEMENTS = {
         "desc": "れーちゃん に好きなものを食べさせた",
         "reward_rainbow": 150,
     },
+    "equip_best_retya": {
+        "title": "✨ これだよこれ！（れーちゃん）",
+        "desc": "れーちゃん に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
     
     "eat_reo": {
         "title": "🍽️ レオの嫌いなもの",
@@ -458,6 +468,11 @@ ACHIEVEMENTS = {
         "title": "🍽️ レオの好きなもの",
         "desc": "レオ に好きなものを食べさせた",
         "reward_rainbow": 100,
+    },
+    "equip_best_reo": {
+        "title": "✨ これだよこれ！（レオ）",
+        "desc": "レオ に適正装備を装着させる",
+        "reward_rainbow": 500,
     },
     
     "eat_touwata": {
@@ -470,6 +485,11 @@ ACHIEVEMENTS = {
         "desc": "Gerânio に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    "equip_best_touwata": {
+        "title": "✨ これだよこれ！（唐綿さん）",
+        "desc": "Gerânio に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
     
     "eat_skrei": {
         "title": "🍽️ xX神Xxの嫌いなもの",
@@ -479,6 +499,11 @@ ACHIEVEMENTS = {
     "eatlike_skrei": {
         "title": "🍽️ xX神Xxの好きなもの",
         "desc": "白黒レイ に好きなものを食べさせた",
+        "reward_rainbow": 500,
+    },
+    "equip_best_skrei": {
+        "title": "✨ これだよこれ！（xX_神_Xx）",
+        "desc": "白黒レイ に適正装備を装着させる",
         "reward_rainbow": 500,
     },
     
@@ -492,6 +517,11 @@ ACHIEVEMENTS = {
         "desc": "茉鈴 に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    "equip_best_marin": {
+        "title": "✨ これだよこれ！（茉鈴）",
+        "desc": "茉鈴 に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
     
     "eat_syuuto": {
         "title": "🍽️ 柊人の嫌いなもの",
@@ -502,6 +532,11 @@ ACHIEVEMENTS = {
         "title": "🍽️ 柊人の好きなもの",
         "desc": "橘柊人 に好きなものを食べさせた",
         "reward_rainbow": 100,
+    },
+    "equip_best_syuuto": {
+        "title": "✨ これだよこれ！（柊人）",
+        "desc": "橘柊人 に適正装備を装着させる",
+        "reward_rainbow": 500,
     },
     
     "eat_mikan": {
@@ -514,6 +549,11 @@ ACHIEVEMENTS = {
         "desc": "河野蜜柑 に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    "equip_best_mikan": {
+        "title": "✨ これだよこれ！（蜜柑）",
+        "desc": "河野蜜柑 に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
     
     "eat_roi": {
         "title": "🍽️ ロイの嫌いなもの",
@@ -524,6 +564,11 @@ ACHIEVEMENTS = {
         "title": "🍽️ ロイの好きなもの",
         "desc": "ロイ に好きなものを食べさせた",
         "reward_rainbow": 100,
+    },
+    "equip_best_roi": {
+        "title": "✨ これだよこれ！（ロイ）",
+        "desc": "ロイ に適正装備を装着させる",
+        "reward_rainbow": 500,
     },
     
     "eat_orihara": {
@@ -536,6 +581,11 @@ ACHIEVEMENTS = {
         "desc": "折原和也 に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    "equip_best_orihara": {
+        "title": "✨ これだよこれ！（折原さん）",
+        "desc": "折原和也 に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
     
     "eat_tatuya": {
         "title": "🍽️ 神明龍矢の嫌いなもの",
@@ -546,6 +596,11 @@ ACHIEVEMENTS = {
         "title": "🍽️ 神明龍矢の好きなもの",
         "desc": "神明龍矢 に好きなものを食べさせた",
         "reward_rainbow": 100,
+    },
+    "equip_best_tatuya": {
+        "title": "✨ これだよこれ！（神明龍矢）",
+        "desc": "神明龍矢 に適正装備を装着させる",
+        "reward_rainbow": 500,
     },
     
     "eat_sara": {
@@ -558,6 +613,11 @@ ACHIEVEMENTS = {
         "desc": "サラ に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    "equip_best_sara": {
+        "title": "✨ これだよこれ！（サラ）",
+        "desc": "サラ に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
     
     "eat_rider_reo": {
         "title": "🍽️ レオ(仮面ライダーパロ)の嫌いなもの",
@@ -568,6 +628,11 @@ ACHIEVEMENTS = {
         "title": "🍽️ レオ(仮面ライダーパロ)の好きなもの",
         "desc": "レオ(仮面ライダーパロ) に好きなものを食べさせた",
         "reward_rainbow": 100,
+    },
+    "equip_best_riderreo": {
+        "title": "✨ これだよこれ！（レオ(仮面ライダーパロ)）",
+        "desc": "レオ(仮面ライダーパロ) に適正装備を装着させる",
+        "reward_rainbow": 500,
     },
     
     "eat_trickcal_mukuro": {
@@ -580,6 +645,11 @@ ACHIEVEMENTS = {
         "desc": "ムクロ(トリッカルパロ) に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
+    "equip_best_trickcalmukuro": {
+        "title": "✨ これだよこれ！（ムクロ(トリッカルパロ)）",
+        "desc": "ムクロ(トリッカルパロ) に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
     
     "eat_rider_siera": {
         "title": "🍽️ しえら(仮面ライダーパロ)の嫌いなもの",
@@ -590,6 +660,11 @@ ACHIEVEMENTS = {
         "title": "🍽️ しえら(仮面ライダーパロ)の好きなもの",
         "desc": "しえら(仮面ライダーパロ) に好きなものを食べさせた",
         "reward_rainbow": 100,
+    },
+    "equip_best_ridersiera": {
+        "title": "✨ これだよこれ！（しえら(仮面ライダーパロ)）",
+        "desc": "しえら(仮面ライダーパロ) に適正装備を装着させる",
+        "reward_rainbow": 500,
     },
     
     "eat_trickcal_rucia": {
@@ -602,7 +677,11 @@ ACHIEVEMENTS = {
         "desc": "ルシア(トリッカルパロ) に好きなものを食べさせた",
         "reward_rainbow": 100,
     },
-
+    "equip_best_rucia": {
+        "title": "✨ これだよこれ！（ルシア(トリッカルパロ)）",
+        "desc": "ルシア(トリッカルパロ) に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
     
     # 怪しい肉
     "meat_akakun": {
@@ -631,87 +710,12 @@ ACHIEVEMENTS = {
         "reward_rainbow": 100,
     },
     # 🗡️ キャラ別の適正装備実績
-    
-    "equip_best_retya": {
-        "title": "✨ これだよこれ！（れーちゃん）",
-        "desc": "れーちゃん に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_reo": {
-        "title": "✨ これだよこれ！（レオ）",
-        "desc": "レオ に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_touwata": {
-        "title": "✨ これだよこれ！（唐綿さん）",
-        "desc": "Gerânio に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_skrei": {
-        "title": "✨ これだよこれ！（xX_神_Xx）",
-        "desc": "白黒レイ に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_marin": {
-        "title": "✨ これだよこれ！（茉鈴）",
-        "desc": "茉鈴 に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_syuuto": {
-        "title": "✨ これだよこれ！（柊人）",
-        "desc": "橘柊人 に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_mikan": {
-        "title": "✨ これだよこれ！（蜜柑）",
-        "desc": "河野蜜柑 に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_roi": {
-        "title": "✨ これだよこれ！（ロイ）",
-        "desc": "ロイ に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_orihara": {
-        "title": "✨ これだよこれ！（折原さん）",
-        "desc": "折原和也 に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_tatuya": {
-        "title": "✨ これだよこれ！（神明龍矢）",
-        "desc": "神明龍矢 に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_sara": {
-        "title": "✨ これだよこれ！（サラ）",
-        "desc": "サラ に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
     "equip_best_d2981": {
         "title": "✨ なんでこいつ適正装備あんの？",
         "desc": "D2981 に適正装備を装着させる",
         "reward_rainbow": 500,
     },
-    "equip_best_riderreo": {
-        "title": "✨ これだよこれ！（レオ(仮面ライダーパロ)）",
-        "desc": "レオ(仮面ライダーパロ) に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_trickcalmukuro": {
-        "title": "✨ これだよこれ！（ムクロ(トリッカルパロ)）",
-        "desc": "ムクロ(トリッカルパロ) に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_ridersiera": {
-        "title": "✨ これだよこれ！（しえら(仮面ライダーパロ)）",
-        "desc": "しえら(仮面ライダーパロ) に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
-    "equip_best_rucia": {
-        "title": "✨ これだよこれ！（ルシア(トリッカルパロ)）",
-        "desc": "ルシア(トリッカルパロ) に適正装備を装着させる",
-        "reward_rainbow": 500,
-    },
+
 }
 
 LOG_CHANNEL_ID = 1547122457062940712
@@ -805,6 +809,10 @@ BEST_EQUIP_CHAR_MAP = {
     "ムクロ(トリッカルパロ)": "equip_best_trickcalmukuro",
     "しえら(仮面ライダーパロ)": "equip_best_ridersiera",
     "ルシア(トリッカルパロ)": "equip_best_rucia",
+    "彼方(ハロウィン)": "equip_best_HWkanata",
+    "竜胆廉(ハロウィン)": "equip_best_HWrindouren",
+    "Branch Coral": "equip_best_akakun",
+    "Root Coral": "equip_best_sangokun",
 }
 
 
@@ -888,8 +896,7 @@ async def on_battle_win(interaction: discord.Interaction, u_data: dict):
 
     if {"ロイ", "折原和也", "神明龍矢"}.issubset(party_names_set):
         await check_and_unlock_achievement(
-            interaction, "win_roi_orihara_tatuya"
-        )
+            interaction, "win_roi_orihara_tatuya")
 
     if {"ロイ", "サラ", "神明龍矢"}.issubset(party_names_set):
         await check_and_unlock_achievement(interaction, "win_roi_sara_tatuya")
@@ -899,6 +906,10 @@ async def on_battle_win(interaction: discord.Interaction, u_data: dict):
 
     if {"神明龍矢", "彼方(ハロウィン)"}.issubset(party_names_set):
         await check_and_unlock_achievement(interaction, "win_tatuya_HWkanata")
+
+    if {"Branch Coral", "Root Coral"}.issubset(party_names_set):
+        await check_and_unlock_achievement(interaction, "win_Coral")
+
 
 
 # --------------------------------------------------
