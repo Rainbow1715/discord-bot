@@ -172,6 +172,11 @@ ACHIEVEMENTS = {
         "desc": "Branch Coral  Root Coral を編成してバトルに勝利する",
         "reward_rainbow": 500,
     },
+    "win_sara_reo_roi": {
+        "title": "😕 罵倒する人、傍観する人、なぜか罵倒されてる(この中だと)最年長",
+        "desc": "サラ レオ ロイ を編成してバトルに勝利する",
+        "reward_rainbow": 500,
+    },
     # 👤 特定キャラ入手実績
     "get_kami": {
         "title": "❔ なんで？",
@@ -274,6 +279,11 @@ ACHIEVEMENTS = {
     "total_lb_10": {
         "title": "🆙 限界突破マニア",
         "desc": "累計で 10回 限界突破を行った", # 👈 "description" から "desc" に修正！
+        "reward_rainbow": 50000,
+    },
+    "total_lb_20": {
+        "title": "🆙 まだ伸びますか？",
+        "desc": "累計で 20回 限界突破を行った", # 👈 "description" から "desc" に修正！
         "reward_rainbow": 50000,
     },
     # 👹 イベントボス撃破実績
@@ -910,6 +920,8 @@ async def on_battle_win(interaction: discord.Interaction, u_data: dict):
     if {"Branch Coral", "Root Coral"}.issubset(party_names_set):
         await check_and_unlock_achievement(interaction, "win_Coral")
 
+    if {"レオ", "サラ", "ロイ"}.issubset(party_names_set):
+        await check_and_unlock_achievement(interaction, "win_sara_reo_roi")
 
 
 # --------------------------------------------------
@@ -967,6 +979,7 @@ async def check_limit_break_achievements(
         (1, "total_lb_1"),
         (5, "total_lb_5"),
         (10, "total_lb_10"),
+        (20, "total_lb_20"),
     ]
     for target_count, ach_id in total_targets:
         if total_lb_count >= target_count:
