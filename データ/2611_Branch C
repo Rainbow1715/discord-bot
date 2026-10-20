@@ -1,7 +1,7 @@
 CHARACTER_DATA = {
 # --- 基本情報・設定 ---
 "name": "Branch Coral",
-"icon": "",
+"icon": "<:602511_branch:1476555662438699089>",
 "gender": "男",           # [文字列] 性別（"男", "女", "？"）
 "rarity": "★3",           # [文字列] レアリティ（"★2" 〜 "★5"）
 "element": "赤",          # [文字列] 属性（"赤", "青", "緑", "紫", "光"）
@@ -19,11 +19,11 @@ CHARACTER_DATA = {
 
 # --- スキル関連 ---
 "skill_name": "お前も俺を崇め讃えませんかァ？",       # [文字列] スキル名
-"skill_type": "",       # （"physical", "heal_all", "stun", "charm", "buff_all_atk", など）
-"skill_pow":        # [数値] スキル威力・倍率
+"skill_type": "charm_all",       # （"physical", "heal_all", "stun", "charm", "buff_all_atk", など）
+# "skill_pow": 
 "skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
 "skill_rate": 70,       # [数値] 発動成功率(%)（例: 95 = 95%）※一部キャラのみ
-"charm_target": "",     # [文字列] 魅了スキルの対象性別 ※一部キャラのみ
+"charm_target": "ALL",     # [文字列] 魅了スキルの対象性別 ※一部キャラのみ
 
 # --- 装備関連 ---
 "best_equip": "クソデカ十字架",       # [文字列] 相性の良いモチーフ装備名
