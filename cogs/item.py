@@ -43,6 +43,7 @@ class ItemView(discord.ui.View):
             items = self.u_data.get("items", {})
             rainbow = items.get("虹の欠片", 0)
             ticket = items.get("ガチャチケ", 0)  # 保存時のキー名に合わせて調整してください
+            soubi_ticket = item.get("装備ガチャチケ", 0)
 
             embed = discord.Embed(
                 title=f"🎒 {self.user.display_name} の所持アイテム (1/3)",
@@ -51,7 +52,8 @@ class ItemView(discord.ui.View):
             )
             embed.add_field(name="💰 ゴールド", value=f"**{gold:,}** G", inline=True)
             embed.add_field(name="💎 虹の欠片", value=f"**{rainbow:,}** 個", inline=True)
-            embed.add_field(name="🎫 ガチャチケ", value=f"**{ticket:,}** 枚", inline=False)
+            embed.add_field(name="🎫 ガチャチケ", value=f"**{ticket:,}** 枚", inline=True)
+            embed.add_field(name="🎟️ 装備ガチャチケ", value=f"**{soubi_ticket:,}** 枚", inline=False)
             embed.set_footer(text="ページ 1/3 | 下のボタンで切り替え")
 
         elif self.current_page == 2:
