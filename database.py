@@ -880,14 +880,16 @@ def _sync_save():
         print("⚠️ 【警告】sheetが初期化されていないため、保存をスキップしました。")
         return
     
-    # 🛡️ メモリー上のデータが空の時は上書き（消去）しない安全ガード
     if not user_data:
         print("⚠️ 【安全ガード】user_data が空のため、スプレッドシートの保存をスキップしました。")
         return
 
     try:
-        # ヘッダー（1行目）
-        rows = [["user_id", "gold", "u_level", "u_xp", "characters", "items", "equipments", "party_indices", "mails"]]
+        # ヘッダー（1行目）に項目を追加
+        rows = [[
+            "user_id", "gold", "u_level", "u_xp", "win_count", "gamble_win_count",
+            "unlocked_achievements", "characters", "items", "equipments", "party_indices", "mails"
+        ]]
         
         for u_id, data in user_data.items():
             rows.append([
@@ -895,6 +897,9 @@ def _sync_save():
                 data.get("gold", 1000),
                 data.get("u_level", 1),
                 data.get("u_xp", 0),
+                data.get("win_count", 0),
+                data.get("gamble_win_count", 0),
+                json.dumps(data.get("unlocked_achievements", []), ensure_ascii=False, default=default_converter),
                 json.dumps(data.get("characters", []), ensure_ascii=False, default=default_converter),
                 json.dumps(data.get("items", {}), ensure_ascii=False, default=default_converter),
                 json.dumps(data.get("equipments", []), ensure_ascii=False, default=default_converter),
@@ -904,7 +909,7 @@ def _sync_save():
         
         sheet.clear()
         sheet.update(range_name='A1', values=rows)
-        print("💾 スプレッドシートへ列分割データを保存しました。")
+        print("💾 スプレッドシートへ全データを列分割して保存しました。")
     except Exception as e:
         print(f"❌ データの保存エラー: {e}")
 
