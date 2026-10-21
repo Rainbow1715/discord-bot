@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from database import user_data, get_user_profile, 
+from database import user_data, get_user_profile
 # 装備マスターからレア度やアイコンを引くためにインポート
 from cogs.soubi import EQUIPMENT_MASTER
 
