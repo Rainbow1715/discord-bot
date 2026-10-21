@@ -136,23 +136,28 @@ class GachaView(discord.ui.View):
 
             existing_char = next((c for c in user_chars if c["name"] == template["name"]), None)
 
+            existing_char = next((c for c in user_chars if c["name"] == template["name"]), None)
+
             if existing_char:
-                current_count = existing_char.get("count", 1)
+                # 凸数（limit_break）を取得（なければ0）
+                lb_level = existing_char.get("limit_break", 0)
                 
-                # 💎 すでに+5（6体所持）以上の場合は輝石に自動分解！
-                if current_count >= 6:
+                # 🌟 すでに+5（完凸）に達している場合は輝石に自動分解！
+                if lb_level >= 5:
                     items["輝石"] = items.get("輝石", 0) + 1
                     status_note = "**[💎 輝石x1に分解!]**"
                 else:
-                    existing_char["count"] = current_count + 1
+                    # 凸用カウント（または凸数）を増やす
+                    existing_char["count"] = existing_char.get("count", 1) + 1
                     status_note = f"[所持数: {existing_char['count']}]"
             else:
-                # NEWキャラ獲得処理
+                # NEWキャラ獲得
                 new_char = {
                     "name": template["name"],
                     "rarity": template.get("rarity", "★3"),
                     "icon": template.get("icon"),
                     "count": 1,
+                    "limit_break": 0,  # 凸数初期化
                     "level": 1,
                     "exp": 0,
                     "max_hp": template.get("max_hp", template.get("hp", 100)),
