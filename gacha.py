@@ -299,7 +299,14 @@ class SoubiGachaView(discord.ui.View):
 
         # 4. 装備10連の実行
         drawn_equipments = draw_10_equipment_gacha()
-        user_equipments = u_data.setdefault("equipments", [])
+        
+        # 🛡️ ユーザーの所持装備辞書を取得（なければ初期化）
+        user_equipments = u_data.setdefault("equipments", {})
+        if not isinstance(user_equipments, dict):
+            # 万が一旧形式のリストになっていたら辞書に変換
+            from database import _normalize_equipments
+            user_equipments = _normalize_equipments(user_equipments)
+            u_data["equipments"] = user_equipments
 
         result_lines = []
         has_ur = False
@@ -330,17 +337,16 @@ class SoubiGachaView(discord.ui.View):
                 rarity_str = "⭐⭐⭐"
                 rarity_tag = "R"
 
-            # ユーザーの所持装備リストに追加
-            user_equipments.append({
-                "name": name,
-                "rarity": rarity,
-                "icon": icon,
-                "atk": equip.get("atk", 0),
-                "description": equip.get("description", ""),
-                # 必要に応じて level: 1 や exp: 0 などを初期化
-            })
+            # 📦 装備の所持数を +1 する（すでにあれば個数が加算、初獲得なら1個になる）
+            user_equipments[name] = user_equipments.get(name, 0) + 1
+            current_count = user_equipments[name]
 
-            result_lines.append(f"`{idx:2d}.` {icon} **[{rarity_str}] {name}** ({rarity_tag})")
+            if current_count > 1:
+                status_note = f"[所持数: {current_count}]"
+            else:
+                status_note = "**[✨NEW!✨]**"
+
+            result_lines.append(f"`{idx:2d}.` {pickup_marks}{icon} **[{rarity_str}] {name}** ({rarity_tag}) {status_note}")
 
         # 5. ガチャカウント加算・データ保存・実績呼び出し
         u_data["gacha_count"] = u_data.get("gacha_count", 0) + 1
