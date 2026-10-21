@@ -137,9 +137,17 @@ class GachaView(discord.ui.View):
             existing_char = next((c for c in user_chars if c["name"] == template["name"]), None)
 
             if existing_char:
-                existing_char["count"] = existing_char.get("count", 1) + 1
-                status_note = f"[所持数: {existing_char['count']}]"
+                current_count = existing_char.get("count", 1)
+                
+                # 💎 すでに+5（6体所持）以上の場合は輝石に自動分解！
+                if current_count >= 6:
+                    items["輝石"] = items.get("輝石", 0) + 1
+                    status_note = "**[💎 輝石x1に分解!]**"
+                else:
+                    existing_char["count"] = current_count + 1
+                    status_note = f"[所持数: {existing_char['count']}]"
             else:
+                # NEWキャラ獲得処理
                 new_char = {
                     "name": template["name"],
                     "rarity": template.get("rarity", "★3"),
