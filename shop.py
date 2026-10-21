@@ -176,29 +176,51 @@ class ShopView(discord.ui.View):
         embed.set_footer(text=f"残高: {user_info['gold']:,} G")
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    # 💎 輝石20個 ➔ かけら1個
-    @discord.ui.button(label="輝石20個 ➔ かけら1個", style=discord.ButtonStyle.primary, emoji="💎", row=4)
+    # 💎 レア度に応じた輝石でかけら1個と交換
+    @discord.ui.button(label="輝石でかけら交換", style=discord.ButtonStyle.primary, emoji="💎", row=4)
     async def buy_piece(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not self.selected_char_name:
             await interaction.response.send_message("⚠️ 下のドロップダウンから対象のキャラクターを選択してください！", ephemeral=True)
             return
 
+        # 1. 選択されたキャラクターのマスターデータを探してレア度を特定する
+        char_master = db.find_gacha_char(self.selected_char_name)
+        if not char_master:
+            await interaction.response.send_message("❌ キャラクター情報の取得に失敗しました。", ephemeral=True)
+            return
+
+        rarity = char_master.get("rarity", "★3")
+
+        # 2. レア度に応じた必要輝石数の設定
+        if rarity == "★5":
+            required_kiseki = 50
+        elif rarity == "★4":
+            required_kiseki = 30
+        else:  # ★3や★1・2などのフォールバック
+            required_kiseki = 20
+
         u_data = db.get_user_profile(self.user_id)
         items = u_data.setdefault("items", {})
         kiseki_count = items.get("輝石", 0)
 
-        if kiseki_count < 20:
-            await interaction.response.send_message(f"❌ 輝石が足りません！（所持: {kiseki_count}個 / 必要: 20個）", ephemeral=True)
+        # 3. 所持輝石のチェック
+        if kiseki_count < required_kiseki:
+            await interaction.response.send_message(
+                f"❌ 輝石が足りません！\n"
+                f"（選択キャラ: **[{rarity}] {self.selected_char_name}** / 必要輝石: **{required_kiseki}個** / 所持: {kiseki_count}個）",
+                ephemeral=True
+            )
             return
 
-        items["輝石"] -= 20
+        # 4. コスト消費と付与
+        items["輝石"] -= required_kiseki
         piece_name = f"{self.selected_char_name}のかけら"
         items[piece_name] = items.get(piece_name, 0) + 1
 
         db.save_data()
 
         await interaction.response.send_message(
-            f"✨ **輝石 20個** を消費して **[{piece_name}]** を1個獲得しました！\n"
+            f"✨ **輝石 {required_kiseki}個** を消費して **[{piece_name}]** を1個獲得しました！\n"
             f"（現在の所持数: {items[piece_name]} / 20個）",
             ephemeral=True,
         )
