@@ -116,8 +116,17 @@ class EquipmentZukanView(discord.ui.View):
         )
 
         for eq_name, eq_data in page_equips:
-            if eq_name in self.user_equip_names:
-                # 所持済みの場合：ステータス ＋ description（解説文）を表示
+            # 辞書から所持個数を取得（持っていなければ0個）
+            owned_count = self.user_equip_names.get(eq_name, 0)
+
+            if owned_count > 0:
+                # 🛡️ 既に他のキャラが装備している数を計算
+                equipped_count = sum(
+                    1 for c in user_chars_ref # ※ユーザーのキャラクターリスト
+                    if c.get("equip") == eq_name
+                )
+                available_stock = max(0, owned_count - equipped_count)
+
                 stats = []
                 if eq_data.get("atk", 0) > 0: stats.append(f"ATK +{eq_data['atk']}")
                 if eq_data.get("def", 0) > 0: stats.append(f"DEF +{eq_data['def']}")
@@ -127,10 +136,9 @@ class EquipmentZukanView(discord.ui.View):
                 stats_str = " | ".join(stats) if stats else "特殊効果なし"
                 desc_str = eq_data.get("description", "説明文はありません。")
                 
-                field_name = f"🗡️ {eq_name}"
+                field_name = f"🗡️ {eq_name} (所持: {owned_count}個 / ストック: {available_stock})"
                 field_value = f"**性能**: {stats_str}\n*{desc_str}*"
             else:
-                # 未所持の場合
                 field_name = "❓ ？？？"
                 field_value = "*（まだ手に入れたことがありません）*"
 
