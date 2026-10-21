@@ -1,7 +1,9 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from database import user_data, get_user_profile  # get_user_profileがなければ user_data.get(u_id, {}) でOK
+from database import user_data, get_user_profile, _normalize_emojis_if_needed  # 必要に応じて
+# 装備マスターからレア度やアイコンを引くためにインポート
+from cogs.soubi import EQUIPMENT_MASTER
 
 
 # --------------------------------------------------
@@ -17,7 +19,6 @@ class ItemView(discord.ui.View):
 
     def update_button_states(self):
         """現在のページに応じてボタンのラベルと有効/無効を設定"""
-        # self.children[0] は 前へボタン、self.children[1] は 次へボタン
         if self.current_page == 1:
             self.children[0].disabled = True
             self.children[0].label = "◀ 前へ"
@@ -42,8 +43,8 @@ class ItemView(discord.ui.View):
             gold = self.u_data.get("gold", 0)
             items = self.u_data.get("items", {})
             rainbow = items.get("虹の欠片", 0)
-            ticket = items.get("ガチャチケ", 0)  # 保存時のキー名に合わせて調整してください
-            soubi_ticket = item.get("装備ガチャチケ", 0)
+            ticket = items.get("ガチャチケ", 0)
+            soubi_ticket = items.get("装備ガチャチケ", 0)  # 👈 `item` から `items` に修正！
 
             embed = discord.Embed(
                 title=f"🎒 {self.user.display_name} の所持アイテム (1/3)",
@@ -63,7 +64,7 @@ class ItemView(discord.ui.View):
             items = self.u_data.get("items", {})
             
             # 通貨以外のアイテム（食べ物など）を抽出
-            exclude_keys = {"虹の欠片", "ガチャチケ"}
+            exclude_keys = {"虹の欠片", "ガチャチケ", "装備ガチャチケ"}
             food_items = {k: v for k, v in items.items() if k not in exclude_keys and v > 0}
 
             embed = discord.Embed(
@@ -76,16 +77,17 @@ class ItemView(discord.ui.View):
                 food_list_str = "\n".join([f"・**{name}**: {count} 個" for name, count in food_items.items()])
                 embed.add_field(name="🍔 食べ物・その他", value=food_list_str, inline=False)
             else:
-                embed.add_field(name="🍔 食べ物・その他", value="所持している食べ物はありあせん。", inline=False)
+                embed.add_field(name="🍔 食べ物・その他", value="所持している食べ物はありません。", inline=False)
 
             embed.set_footer(text="ページ 2/3 | 下のボタンで切り替え")
 
         else:
             # --------------------------------------------------
-            # 📄 ページ3: 所持装備品一覧（リスト形式の読み込み）
+            # 📄 ページ3: 所持装備品一覧（辞書型のストック管理に対応）
             # --------------------------------------------------
-            # equipments または user_equipments のどちらのキーでも取得できるように対応
-            user_equipments = self.u_data.get("equipments") or self.u_data.get("user_equipments", [])
+            from database import _normalize_equipments
+            raw_eq = self.u_data.get("equipments", {})
+            equip_dict = _normalize_equipments(raw_eq)  # {"装備名": 個数} の辞書に変換
 
             embed = discord.Embed(
                 title=f"🗡️ {self.user.display_name} の所持装備 (3/3)",
@@ -93,22 +95,23 @@ class ItemView(discord.ui.View):
                 color=0xE74C3C
             )
 
-            if user_equipments:
-                # リスト内の装備を集計（同じ名前・レア度の装備をカウント）
-                equip_counts = {}
-                for eq in user_equipments:
-                    name = eq.get("name", "不明な装備")
-                    rarity = eq.get("rarity", "")
-                    
-                    # レア度表記の整形（数値の場合は ★ を付与）
+            if equip_dict:
+                equip_lines = []
+                for eq_name, count in equip_dict.items():
+                    if count <= 0:
+                        continue
+                    # 装備マスターから情報を引く（アイコンやレア度）
+                    eq_master = EQUIPMENT_MASTER.get(eq_name, {})
+                    icon = eq_master.get("icon", "⚔️")
+                    rarity = eq_master.get("rarity", 3)
                     rarity_str = f"★{rarity}" if str(rarity).isdigit() else str(rarity)
-                    key = f"{name} [{rarity_str}]" if rarity_str else name
                     
-                    equip_counts[key] = equip_counts.get(key, 0) + 1
+                    equip_lines.append(f"・{icon} **{eq_name}** [{rarity_str}] ×{count}個")
 
-                # 集計結果をリスト表示用テキストに整形
-                equip_list_str = "\n".join([f"・**{display_name}** ×{count}" for display_name, count in equip_counts.items()])
-                embed.add_field(name="⚔️ 装備品", value=equip_list_str, inline=False)
+                if equip_lines:
+                    embed.add_field(name="⚔️ 装備品", value="\n".join(equip_lines), inline=False)
+                else:
+                    embed.add_field(name="⚔️ 装備品", value="所持している装備はありません。", inline=False)
             else:
                 embed.add_field(name="⚔️ 装備品", value="所持している装備はありません。", inline=False)
 
@@ -150,12 +153,12 @@ class ItemCog(commands.Cog):
 
     @app_commands.command(name="item", description="所持しているアイテムや通貨を確認します")
     async def item_cmd(self, interaction: discord.Interaction):
-        u_data = user_data.get(interaction.user.id, {})
+        # 確実に最新のプロフィールデータを取得するために get_user_profile を使用
+        u_data = get_user_profile(interaction.user.id)
         
         view = ItemView(interaction.user, u_data)
         embed = view.create_embed()
         
-        # 本人のみ見れるように ephemeral=True に設定（公開したい場合は除去）
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
