@@ -214,10 +214,32 @@ class ZukanCog(commands.Cog):
         # 2. 装備データ準備
         all_equipments = list(EQUIPMENT_MASTER.items())
         
-        # 所持品バッグ(items)または装備中の装備から所持済み装備名を取得
-        user_items = set(user_info.get("items", {}).keys())
-        user_equipped = {c.get("equip") for c in user_info.get("characters", []) if c.get("equip")}
-        user_equip_names = (user_items | user_equipped) & set(EQUIPMENT_MASTER.keys())
+        # 🛡️ ユーザーが持っている装備名をあらゆる可能性から徹底的に収集する
+        user_equip_names = set()
+
+        # A. items からキー（アイテム名）を回収
+        items_dict = user_info.get("items", {})
+        if isinstance(items_dict, dict):
+            user_equip_names.update(items_dict.keys())
+        elif isinstance(items_dict, list):
+            user_equip_names.update(items_dict)
+
+        # B. equipments リスト（文字列または辞書）から回収
+        eq_list = user_info.get("equipments", [])
+        for eq in eq_list:
+            if isinstance(eq, str):
+                user_equip_names.add(eq)
+            elif isinstance(eq, dict) and "name" in eq:
+                user_equip_names.add(eq["name"])
+
+        # C. キャラクターが装備中のものも回収
+        for c in user_info.get("characters", []):
+            eq_name = c.get("equip")
+            if eq_name:
+                user_equip_names.add(eq_name)
+
+        # 装備マスタに存在する名前だけに絞り込む
+        user_equip_names = user_equip_names & set(EQUIPMENT_MASTER.keys())
 
         # 3. メインビュー表示
         view = ZukanMainView(
