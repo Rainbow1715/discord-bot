@@ -807,6 +807,24 @@ def default_converter(o):
         return list(o)
     raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
 
+def _normalize_equipments(raw_eq):
+    """
+    旧形式（リスト型や辞書リスト型）の装備データを、
+    新形式（{"装備名": 所持個数} の辞書型）へ安全に変換するヘルパー関数
+    """
+    if isinstance(raw_eq, dict):
+        return raw_eq
+    
+    eq_dict = {}
+    if isinstance(raw_eq, list):
+        for item in raw_eq:
+            if isinstance(item, str):
+                eq_dict[item] = eq_dict.get(item, 0) + 1
+            elif isinstance(item, dict) and "name" in item:
+                eq_name = item["name"]
+                eq_dict[eq_name] = eq_dict.get(eq_name, 0) + 1
+    return eq_dict
+
 def load_data():
     global user_data
     if not sheet:
@@ -833,10 +851,11 @@ def load_data():
                 continue
 
             if is_old_format:
-                # 🔄 旧形式（A列: user_id, B列: data_json）の場合：すべての項目を漏れなく引き継ぐ！
+                # 🔄 旧形式（A列: user_id, B列: data_json）の場合
                 try:
                     data_json_str = row[1] if len(row) > 1 and row[1] else "{}"
                     u_info = json.loads(data_json_str)
+                    
                     user_data[u_id] = {
                         "gold": u_info.get("gold", 1000),
                         "u_level": u_info.get("u_level", 1),
@@ -846,7 +865,7 @@ def load_data():
                         "unlocked_achievements": u_info.get("unlocked_achievements", []),
                         "characters": u_info.get("characters", []),
                         "items": u_info.get("items", {}),
-                        "equipments": u_info.get("equipments", []),
+                        "equipments": _normalize_equipments(u_info.get("equipments", {})), # 👈 辞書型に自動正規化
                         "party_indices": u_info.get("party_indices", [0, 1, 2]),
                         "mails": u_info.get("mails", [])
                     }
@@ -855,6 +874,7 @@ def load_data():
             else:
                 # ✨ 新形式（列分けタイプ）の場合
                 try:
+                    raw_eq = json.loads(row[9]) if len(row) > 9 and row[9] else {}
                     user_data[u_id] = {
                         "gold": int(row[1]) if len(row) > 1 and row[1].isdigit() else 1000,
                         "u_level": int(row[2]) if len(row) > 2 and row[2].isdigit() else 1,
@@ -864,7 +884,7 @@ def load_data():
                         "unlocked_achievements": json.loads(row[6]) if len(row) > 6 and row[6] else [],
                         "characters": json.loads(row[7]) if len(row) > 7 and row[7] else [],
                         "items": json.loads(row[8]) if len(row) > 8 and row[8] else {},
-                        "equipments": json.loads(row[9]) if len(row) > 9 and row[9] else [],
+                        "equipments": _normalize_equipments(raw_eq), # 👈 リストで保存されていた場合も自動コンバート
                         "party_indices": json.loads(row[10]) if len(row) > 10 and row[10] else [0, 1, 2],
                         "mails": json.loads(row[11]) if len(row) > 11 and row[11] else []
                     }
@@ -885,7 +905,6 @@ def _sync_save():
         return
 
     try:
-        # ヘッダー（1行目）に項目を追加
         rows = [[
             "user_id", "gold", "u_level", "u_xp", "win_count", "gamble_win_count",
             "unlocked_achievements", "characters", "items", "equipments", "party_indices", "mails"
@@ -902,7 +921,7 @@ def _sync_save():
                 json.dumps(data.get("unlocked_achievements", []), ensure_ascii=False, default=default_converter),
                 json.dumps(data.get("characters", []), ensure_ascii=False, default=default_converter),
                 json.dumps(data.get("items", {}), ensure_ascii=False, default=default_converter),
-                json.dumps(data.get("equipments", []), ensure_ascii=False, default=default_converter),
+                json.dumps(data.get("equipments", {}), ensure_ascii=False, default=default_converter), # 👈 辞書型で保存
                 json.dumps(data.get("party_indices", [0, 1, 2]), ensure_ascii=False, default=default_converter),
                 json.dumps(data.get("mails", []), ensure_ascii=False, default=default_converter)
             ])
@@ -933,7 +952,7 @@ def get_user_profile(user_id):
             "gold": 1000,
             "items": {"虹の欠片": 100, "ガチャチケ": 100, "装備ガチャチケット": 10, "おにぎり": 5, "ショートケーキ": 2, "激辛ラーメン": 2},
             "characters": [copy.deepcopy(c) for c in DEFAULT_CHARACTERS if c],
-            "equipments": [],
+            "equipments": {}, # 👈 リスト [] から 辞書 {} に変更！
             "party_indices": [0, 1, 2],
             "mails": []
         }
@@ -941,13 +960,13 @@ def get_user_profile(user_id):
 
     u_info = user_data[user_id]
 
-    # ★既存ユーザー向けのデータ補完処理（データが無い場合に自動追加）
+    # ★既存ユーザー向けのデータ補完処理
     items = u_info.setdefault("items", {})
     if "装備ガチャチケット" not in items:
         items["装備ガチャチケット"] = 0
 
-    if "equipments" not in u_info:
-        u_info["equipments"] = []
+    # equipments がリスト型で残っている場合は辞書型に正規化
+    u_info["equipments"] = _normalize_equipments(u_info.get("equipments", {}))
 
     all_master_chars = {c["name"]: c for c in GACHA_POOL if c}
 
@@ -963,36 +982,38 @@ def get_user_profile(user_id):
             c["dislikes"] = master.get("dislikes", c.get("dislikes", {}))
             c["best_equip"] = master.get("best_equip", c.get("best_equip", None))
 
-        if "element" not in c:
-            c["element"] = master.get("element", "赤")
-        if "role" not in c:
-            c["role"] = master.get("role", "アタッカー")
-        if "atk_type" not in c:
-            c["atk_type"] = master.get("atk_type", "物理")
-        if "gender" not in c:
-            c["gender"] = master.get("gender", "？")
-        if "best_equip" not in c:
-            c["best_equip"] = master.get("best_equip", None)
-        if "equip" not in c:
-            c["equip"] = None
-        if "likes" not in c:
-            c["likes"] = master.get("likes", {})
-        if "dislikes" not in c:
-            c["dislikes"] = master.get("dislikes", {})
-        if "affection_level" not in c:
-            c["affection_level"] = 1
-        if "affection_exp" not in c:
-            c["affection_exp"] = 0
-        if "known_likes" not in c:
-            c["known_likes"] = []
-        if "known_dislikes" not in c:
-            c["known_dislikes"] = []
-        if "known_special" not in c:
-            c["known_special"] = []
-        if "eaten_foods" not in c:
-            c["eaten_foods"] = []
+        if "element" not in c: c["element"] = master.get("element", "赤")
+        if "role" not in c: c["role"] = master.get("role", "アタッカー")
+        if "atk_type" not in c: c["atk_type"] = master.get("atk_type", "物理")
+        if "gender" not in c: c["gender"] = master.get("gender", "？")
+        if "best_equip" not in c: c["best_equip"] = master.get("best_equip", None)
+        if "equip" not in c: c["equip"] = None
+        if "likes" not in c: c["likes"] = master.get("likes", {})
+        if "dislikes" not in c: c["dislikes"] = master.get("dislikes", {})
+        if "affection_level" not in c: c["affection_level"] = 1
+        if "affection_exp" not in c: c["affection_exp"] = 0
+        if "known_likes" not in c: c["known_likes"] = []
+        if "known_dislikes" not in c: c["known_dislikes"] = []
+        if "known_special" not in c: c["known_special"] = []
+        if "eaten_foods" not in c: c["eaten_foods"] = []
 
     return u_info
 
+# --------------------------------------------------
+# 🗡️ 装備用便利関数（ストック管理）
+# --------------------------------------------------
+def add_equipment(user_info: dict, eq_name: str, count: int = 1):
+    """ユーザーに指定の装備を追加（個数を加算）する"""
+    eq_dict = user_info.setdefault("equipments", {})
+    eq_dict[eq_name] = eq_dict.get(eq_name, 0) + count
+
+def get_available_equipment_count(user_info: dict, eq_name: str) -> int:
+    """指定の装備の「現在装備されていない余りストック数」を取得する"""
+    owned_count = user_info.get("equipments", {}).get(eq_name, 0)
+    equipped_count = sum(
+        1 for c in user_info.get("characters", [])
+        if c.get("equip") == eq_name
+    )
+    return max(0, owned_count - equipped_count)
 # 起動時の保存テスト
 save_data()
