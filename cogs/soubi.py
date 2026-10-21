@@ -1,7 +1,8 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from database import get_user_profile, save_data
+import database as db
+from database import get_user_profile, save_data, _normalize_equipments
 
 
 def get_equip_display(character_data: dict) -> str:
@@ -49,7 +50,6 @@ EQUIPMENT_MASTER = {
     "狐柄の毛布": {"icon": "", "rarity": 4, "def": 0.20, "description": "何回も洗濯したから少しボロボロ"},
     "牛のぬいぐるみ": {"icon": "", "rarity": 4, "atk": 0.20, "description": "ボコボコにする？"},
     "カボチャのバケツ": {"icon": "", "rarity": 4, "p_hp": 120, "description": "バケツいっぱいにお菓子をもらったらきっと幸せだね"},
-    
 }
 
 
@@ -69,16 +69,19 @@ class SoubiCog(commands.Cog):
     async def equip(self, interaction: discord.Interaction):
         u_data = get_user_profile(interaction.user.id)
         characters = u_data.get("characters", [])
-        raw_equipments = u_data.get("equipments", [])
-
+        
         if not characters:
             await interaction.response.send_message("❌ 所持しているキャラクターがいません。", ephemeral=True)
             return
 
-        user_equipments = list(set(
-            eq["name"] for eq in raw_equipments 
-            if isinstance(eq, dict) and eq.get("name") in EQUIPMENT_MASTER
-        ))
+        # 🔄 辞書型（または旧形式）の所持装備を正規化して、1個以上持っている装備名のリストを作る
+        raw_equipments = u_data.get("equipments", {})
+        equip_dict = _normalize_equipments(raw_equipments)
+        
+        user_equipments = [
+            eq_name for eq_name, count in equip_dict.items() 
+            if count > 0 and eq_name in EQUIPMENT_MASTER
+        ]
 
         view = EquipSelectView(user_id=interaction.user.id, characters=characters, user_equipments=user_equipments)
         
@@ -100,12 +103,12 @@ class EquipSelectView(discord.ui.View):
         self.selected_char_idx = None
         self.selected_equip = None
 
-        # ① キャラクター選択ドロップダウン（get_equip_display を使用して現在装備を表示）
+        # ① キャラクター選択ドロップダウン
         char_options = [
             discord.SelectOption(
                 label=f"{c.get('name', 'キャラ')} (現在: {get_equip_display(c)})",
                 value=str(i)
-            ) for i, c in enumerate(characters[:25]) # Selectの上限は25個
+            ) for i, c in enumerate(characters[:25])
         ]
         self.char_select = discord.ui.Select(placeholder="👤 キャラクターを選択", options=char_options, custom_id="select_char")
         self.char_select.callback = self.on_char_select
@@ -140,13 +143,33 @@ class EquipSelectView(discord.ui.View):
         u_data = get_user_profile(interaction.user.id)
         target_char = u_data["characters"][self.selected_char_idx]
 
-        # 装備の付け替え処理
+        # 装備を外す場合
         if self.selected_equip == "NONE":
             target_char["equip"] = None
             msg = f"🧹 **{target_char['name']}** の装備を外しました。"
         else:
+            # 🛡️ ストック数（余り）のチェック処理
+            equip_dict = _normalize_equipments(u_data.get("equipments", {}))
+            owned_count = equip_dict.get(self.selected_equip, 0)
+
+            # 既に他のキャラクターがこの装備をつけている数をカウントする
+            # （※ もし「今変更しようとしているキャラ自身」がすでに着けていた場合の重複計算を防ぐため、他キャラ分を数える）
+            equipped_count = sum(
+                1 for i, c in enumerate(u_data.get("characters", []))
+                if i != self.selected_char_idx and c.get("equip") == self.selected_equip
+            )
+
+            available_stock = owned_count - equipped_count
+
+            if available_stock <= 0:
+                await interaction.response.send_message(
+                    f"❌ **{self.selected_equip}** のストックがありません！\n（所持数: {owned_count}個 / 他のキャラクターが装備中です）",
+                    ephemeral=True
+                )
+                return
+
+            # 装備を適用
             target_char["equip"] = self.selected_equip
-            # 装備反映後の最新表示（✨含む）を取得
             display_name = get_equip_display(target_char)
             msg = f"⚔️ **{target_char['name']}** に **{display_name}** を装備させました！"
 
@@ -158,7 +181,6 @@ class EquipSelectView(discord.ui.View):
         # 🔻 🏆 キャラ別の適正装備装着の実績チェック 🔻
         if self.selected_equip != "NONE":
             try:
-                # ※ 実績処理を行うファイル名に合わせて変更してください（例: achievement）
                 from achievement import check_equip_best_achievement
                 await check_equip_best_achievement(interaction, target_char, self.selected_equip)
             except Exception as e:
