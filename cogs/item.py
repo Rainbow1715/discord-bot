@@ -7,7 +7,7 @@ from cogs.soubi import EQUIPMENT_MASTER
 
 
 # --------------------------------------------------
-# 📖 ページ切り替え用 View
+# 📖 ページ切り替え用 View (全4ページ対応)
 # --------------------------------------------------
 class ItemView(discord.ui.View):
     def __init__(self, user: discord.User, u_data: dict):
@@ -23,39 +23,46 @@ class ItemView(discord.ui.View):
             self.children[0].disabled = True
             self.children[0].label = "◀ 前へ"
             self.children[1].disabled = False
-            self.children[1].label = "2ページ目 (食べ物) ▶"
+            self.children[1].label = "2P (食べ物) ▶"
         elif self.current_page == 2:
             self.children[0].disabled = False
-            self.children[0].label = "◀ 1ページ目 (主要)"
+            self.children[0].label = "◀ 1P (主要)"
             self.children[1].disabled = False
-            self.children[1].label = "3ページ目 (装備) ▶"
+            self.children[1].label = "3P (装備) ▶"
         elif self.current_page == 3:
             self.children[0].disabled = False
-            self.children[0].label = "◀ 2ページ目 (食べ物)"
+            self.children[0].label = "◀ 2P (食べ物)"
+            self.children[1].disabled = False
+            self.children[1].label = "4P (かけら) ▶"
+        elif self.current_page == 4:
+            self.children[0].disabled = False
+            self.children[0].label = "◀ 3P (装備)"
             self.children[1].disabled = True
             self.children[1].label = "次へ ▶"
 
     def create_embed(self) -> discord.Embed:
         if self.current_page == 1:
             # --------------------------------------------------
-            # 📄 ページ1: 主要通貨・チケット
+            # 📄 ページ1: 主要通貨・チケット・輝石
             # --------------------------------------------------
             gold = self.u_data.get("gold", 0)
             items = self.u_data.get("items", {})
             rainbow = items.get("虹の欠片", 0)
             ticket = items.get("ガチャチケ", 0)
-            soubi_ticket = items.get("装備ガチャチケ", 0)  # 👈 `item` から `items` に修正！
+            soubi_ticket = items.get("装備ガチャチケ", 0)
+            kiseki = items.get("輝石", 0)
 
             embed = discord.Embed(
-                title=f"🎒 {self.user.display_name} の所持アイテム (1/3)",
-                description="現在の所持通貨・チケットです。",
+                title=f"🎒 {self.user.display_name} の所持アイテム (1/4)",
+                description="現在の所持通貨・チケット・輝石です。",
                 color=0x3498DB
             )
             embed.add_field(name="💰 ゴールド", value=f"**{gold:,}** G", inline=True)
             embed.add_field(name="💎 虹の欠片", value=f"**{rainbow:,}** 個", inline=True)
+            embed.add_field(name="✨ 輝石", value=f"**{kiseki:,}** 個", inline=True)
             embed.add_field(name="🎫 ガチャチケ", value=f"**{ticket:,}** 枚", inline=True)
-            embed.add_field(name="🎟️ 装備ガチャチケ", value=f"**{soubi_ticket:,}** 枚", inline=False)
-            embed.set_footer(text="ページ 1/3 | 下のボタンで切り替え")
+            embed.add_field(name="🎟️ 装備ガチャチケ", value=f"**{soubi_ticket:,}** 枚", inline=True)
+            embed.set_footer(text="ページ 1/4 | 下のボタンで切り替え")
 
         elif self.current_page == 2:
             # --------------------------------------------------
@@ -63,12 +70,12 @@ class ItemView(discord.ui.View):
             # --------------------------------------------------
             items = self.u_data.get("items", {})
             
-            # 通貨以外のアイテム（食べ物など）を抽出
-            exclude_keys = {"虹の欠片", "ガチャチケ", "装備ガチャチケ"}
+            # 通貨・チケット類・輝石以外の純粋な食べ物・消費アイテムを抽出
+            exclude_keys = {"虹の欠片", "ガチャチケ", "装備ガチャチケ", "輝石"}
             food_items = {k: v for k, v in items.items() if k not in exclude_keys and v > 0}
 
             embed = discord.Embed(
-                title=f"🍱 {self.user.display_name} の所持アイテム (2/3)",
+                title=f"🍱 {self.user.display_name} の所持アイテム (2/4)",
                 description="所持している食べ物・消費アイテム一覧です。",
                 color=0x2ECC71
             )
@@ -79,18 +86,18 @@ class ItemView(discord.ui.View):
             else:
                 embed.add_field(name="🍔 食べ物・その他", value="所持している食べ物はありません。", inline=False)
 
-            embed.set_footer(text="ページ 2/3 | 下のボタンで切り替え")
+            embed.set_footer(text="ページ 2/4 | 下のボタンで切り替え")
 
-        else:
+        elif self.current_page == 3:
             # --------------------------------------------------
-            # 📄 ページ3: 所持装備品一覧（辞書型のストック管理に対応）
+            # 📄 ページ3: 所持装備品一覧
             # --------------------------------------------------
             from database import _normalize_equipments
             raw_eq = self.u_data.get("equipments", {})
-            equip_dict = _normalize_equipments(raw_eq)  # {"装備名": 個数} の辞書に変換
+            equip_dict = _normalize_equipments(raw_eq)
 
             embed = discord.Embed(
-                title=f"🗡️ {self.user.display_name} の所持装備 (3/3)",
+                title=f"🗡️ {self.user.display_name} の所持装備 (3/4)",
                 description="所持している装備品一覧です。",
                 color=0xE74C3C
             )
@@ -100,7 +107,6 @@ class ItemView(discord.ui.View):
                 for eq_name, count in equip_dict.items():
                     if count <= 0:
                         continue
-                    # 装備マスターから情報を引く（アイコンやレア度）
                     eq_master = EQUIPMENT_MASTER.get(eq_name, {})
                     icon = eq_master.get("icon", "⚔️")
                     rarity = eq_master.get("rarity", 3)
@@ -115,7 +121,28 @@ class ItemView(discord.ui.View):
             else:
                 embed.add_field(name="⚔️ 装備品", value="所持している装備はありません。", inline=False)
 
-            embed.set_footer(text="ページ 3/3 | 下のボタンで切り替え")
+            embed.set_footer(text="ページ 3/4 | 下のボタンで切り替え")
+
+        else:
+            # --------------------------------------------------
+            # 📄 ページ4: キャラクターのかけら (専用領域 pieces から取得)
+            # --------------------------------------------------
+            pieces_dict = self.u_data.get("pieces", {})
+            active_pieces = {k: v for k, v in pieces_dict.items() if v > 0}
+
+            embed = discord.Embed(
+                title=f"🧩 {self.user.display_name} のキャラクターのかけら (4/4)",
+                description="所持しているキャラクターのかけら一覧です。（20個でキャラ解放）",
+                color=0x9B59B6
+            )
+
+            if active_pieces:
+                piece_lines = [f"・**{name}**: {count} / 20個" for name, count in active_pieces.items()]
+                embed.add_field(name="🧩 キャラのかけら", value="\n".join(piece_lines), inline=False)
+            else:
+                embed.add_field(name="🧩 キャラのかけら", value="所持しているかけらはありません。", inline=False)
+
+            embed.set_footer(text="ページ 4/4 | 下のボタンで切り替え")
 
         return embed
 
@@ -137,7 +164,7 @@ class ItemView(discord.ui.View):
             await interaction.response.send_message("❌ 他人のインベントリ操作はできません。", ephemeral=True)
             return
 
-        if self.current_page < 3:
+        if self.current_page < 4:
             self.current_page += 1
 
         self.update_button_states()
@@ -153,7 +180,6 @@ class ItemCog(commands.Cog):
 
     @app_commands.command(name="item", description="所持しているアイテムや通貨を確認します")
     async def item_cmd(self, interaction: discord.Interaction):
-        # 確実に最新のプロフィールデータを取得するために get_user_profile を使用
         u_data = get_user_profile(interaction.user.id)
         
         view = ItemView(interaction.user, u_data)
