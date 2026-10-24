@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 import database as db
 
-# 🗡️ 装備マスタをインポート（パスに合わせて調整してください）
+# 🗡️ 装備マスタをインポート
 from cogs.soubi import EQUIPMENT_MASTER
 
 
@@ -67,29 +67,32 @@ class CharacterZukanView(discord.ui.View):
         if interaction.user.id != self.user_id:
             await interaction.response.send_message("❌ 他の人の図鑑は操作できません。", ephemeral=True)
             return
+        await interaction.response.defer()
         self.current_page -= 1
         self.update_buttons()
-        await interaction.response.edit_message(embed=self.create_embed(), view=self)
+        await interaction.edit_original_response(embed=self.create_embed(), view=self)
 
     @discord.ui.button(label="次へ ▶", style=discord.ButtonStyle.secondary, custom_id="next_page_char")
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.user_id:
             await interaction.response.send_message("❌ 他の人の図鑑は操作できません。", ephemeral=True)
             return
+        await interaction.response.defer()
         self.current_page += 1
         self.update_buttons()
-        await interaction.response.edit_message(embed=self.create_embed(), view=self)
+        await interaction.edit_original_response(embed=self.create_embed(), view=self)
 
 
 # --------------------------------------------------
 # 🗡️ 装備図鑑 View（ページ切り替え対応）
 # --------------------------------------------------
 class EquipmentZukanView(discord.ui.View):
-    def __init__(self, user_id: int, all_equipments: list, user_equip_names: set):
+    def __init__(self, user_id: int, all_equipments: list, user_equip_dict: dict, user_chars: list):
         super().__init__(timeout=60)
         self.user_id = user_id
-        self.all_equipments = all_equipments  # [(eq_name, eq_data), ...] のリスト
-        self.user_equip_names = user_equip_names
+        self.all_equipments = all_equipments  # [(eq_name, eq_data), ...]
+        self.user_equip_dict = user_equip_dict  # {"装備名": 所持数}
+        self.user_chars = user_chars  # ユーザーのキャラクター一覧（装備中チェック用）
         self.current_page = 0
         self.per_page = 5
 
@@ -105,7 +108,8 @@ class EquipmentZukanView(discord.ui.View):
         end_idx = start_idx + self.per_page
         page_equips = self.all_equipments[start_idx:end_idx]
 
-        obtained_count = len(self.user_equip_names)
+        # 所持している装備の種類数（個数が1以上のもの）
+        obtained_count = sum(1 for name in self.user_equip_dict if self.user_equip_dict[name] > 0 and name in EQUIPMENT_MASTER)
         total_count = len(self.all_equipments)
         rate = int(obtained_count / total_count * 100) if total_count > 0 else 0
 
@@ -116,13 +120,12 @@ class EquipmentZukanView(discord.ui.View):
         )
 
         for eq_name, eq_data in page_equips:
-            # 辞書から所持個数を取得（持っていなければ0個）
-            owned_count = self.user_equip_names.get(eq_name, 0)
+            owned_count = self.user_equip_dict.get(eq_name, 0)
 
             if owned_count > 0:
-                # 🛡️ 既に他のキャラが装備している数を計算
+                # 🛡️ 既にキャラが装備している数を計算
                 equipped_count = sum(
-                    1 for c in user_chars_ref # ※ユーザーのキャラクターリスト
+                    1 for c in self.user_chars
                     if c.get("equip") == eq_name
                 )
                 available_stock = max(0, owned_count - equipped_count)
@@ -153,31 +156,34 @@ class EquipmentZukanView(discord.ui.View):
         if interaction.user.id != self.user_id:
             await interaction.response.send_message("❌ 他の人の図鑑は操作できません。", ephemeral=True)
             return
+        await interaction.response.defer()
         self.current_page -= 1
         self.update_buttons()
-        await interaction.response.edit_message(embed=self.create_embed(), view=self)
+        await interaction.edit_original_response(embed=self.create_embed(), view=self)
 
     @discord.ui.button(label="次へ ▶", style=discord.ButtonStyle.secondary, custom_id="next_page_eq")
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.user_id:
             await interaction.response.send_message("❌ 他の人の図鑑は操作できません。", ephemeral=True)
             return
+        await interaction.response.defer()
         self.current_page += 1
         self.update_buttons()
-        await interaction.response.edit_message(embed=self.create_embed(), view=self)
+        await interaction.edit_original_response(embed=self.create_embed(), view=self)
 
 
 # --------------------------------------------------
 # 📚 カテゴリ選択 View（最初の画面）
 # --------------------------------------------------
 class ZukanMainView(discord.ui.View):
-    def __init__(self, user_id: int, all_master_chars: list, user_char_names: set, all_equipments: list, user_equip_names: set):
+    def __init__(self, user_id: int, all_master_chars: list, user_char_names: set, all_equipments: list, user_equip_dict: dict, user_chars: list):
         super().__init__(timeout=60)
         self.user_id = user_id
         self.all_master_chars = all_master_chars
         self.user_char_names = user_char_names
         self.all_equipments = all_equipments
-        self.user_equip_names = user_equip_names
+        self.user_equip_dict = user_equip_dict
+        self.user_chars = user_chars
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.user_id:
@@ -187,13 +193,15 @@ class ZukanMainView(discord.ui.View):
 
     @discord.ui.button(label="👤 キャラクター図鑑", style=discord.ButtonStyle.primary)
     async def select_char(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
         view = CharacterZukanView(self.user_id, self.all_master_chars, self.user_char_names)
-        await interaction.response.edit_message(embed=view.create_embed(), view=view)
+        await interaction.edit_original_response(embed=view.create_embed(), view=view)
 
     @discord.ui.button(label="🗡️ 装備図鑑", style=discord.ButtonStyle.success)
     async def select_equip(self, interaction: discord.Interaction, button: discord.ui.Button):
-        view = EquipmentZukanView(self.user_id, self.all_equipments, self.user_equip_names)
-        await interaction.response.edit_message(embed=view.create_embed(), view=view)
+        await interaction.response.defer()
+        view = EquipmentZukanView(self.user_id, self.all_equipments, self.user_equip_dict, self.user_chars)
+        await interaction.edit_original_response(embed=view.create_embed(), view=view)
 
 
 # --------------------------------------------------
@@ -205,6 +213,9 @@ class ZukanCog(commands.Cog):
 
     @app_commands.command(name="zukan", description="大図鑑（キャラ・装備のコンプリート状況）を確認します")
     async def zukan(self, interaction: discord.Interaction):
+        # 3秒制限対策として先にdeferする
+        await interaction.response.defer(ephemeral=True)
+
         user_info = db.get_user_profile(interaction.user.id)
 
         # 1. キャラデータ準備
@@ -218,36 +229,24 @@ class ZukanCog(commands.Cog):
 
         all_master_chars.sort(key=lambda x: x.get("rarity", "★1"), reverse=True)
         user_char_names = {c["name"] for c in user_info.get("characters", []) if "name" in c}
+        user_chars = user_info.get("characters", [])
 
-        # 2. 装備データ準備
+        # 2. 装備データ準備（辞書型データベースに対応）
         all_equipments = list(EQUIPMENT_MASTER.items())
         
-        # 🛡️ ユーザーが持っている装備名をあらゆる可能性から徹底的に収集する
-        user_equip_names = set()
-
-        # A. items からキー（アイテム名）を回収
-        items_dict = user_info.get("items", {})
-        if isinstance(items_dict, dict):
-            user_equip_names.update(items_dict.keys())
-        elif isinstance(items_dict, list):
-            user_equip_names.update(items_dict)
-
-        # B. equipments リスト（文字列または辞書）から回収
-        eq_list = user_info.get("equipments", [])
-        for eq in eq_list:
-            if isinstance(eq, str):
-                user_equip_names.add(eq)
-            elif isinstance(eq, dict) and "name" in eq:
-                user_equip_names.add(eq["name"])
-
-        # C. キャラクターが装備中のものも回収
-        for c in user_info.get("characters", []):
-            eq_name = c.get("equip")
-            if eq_name:
-                user_equip_names.add(eq_name)
-
-        # 装備マスタに存在する名前だけに絞り込む
-        user_equip_names = user_equip_names & set(EQUIPMENT_MASTER.keys())
+        # 🛡️ ユーザーの所持装備を辞書（{"装備名": 個数}）として安全に取得する
+        user_equip_dict = {}
+        raw_eqs = user_info.get("equipments", {})
+        if isinstance(raw_eqs, dict):
+            user_equip_dict = raw_eqs
+        elif isinstance(raw_eqs, list):
+            # 万が一古いリスト形式が混ざっている場合のフォールバック
+            for eq in raw_eqs:
+                if isinstance(eq, str):
+                    user_equip_dict[eq] = user_equip_dict.get(eq, 0) + 1
+                elif isinstance(eq, dict) and "name" in eq:
+                    name = eq["name"]
+                    user_equip_dict[name] = user_equip_dict.get(name, 0) + 1
 
         # 3. メインビュー表示
         view = ZukanMainView(
@@ -255,7 +254,8 @@ class ZukanCog(commands.Cog):
             all_master_chars=all_master_chars,
             user_char_names=user_char_names,
             all_equipments=all_equipments,
-            user_equip_names=user_equip_names
+            user_equip_dict=user_equip_dict,
+            user_chars=user_chars
         )
 
         embed = discord.Embed(
@@ -264,7 +264,7 @@ class ZukanCog(commands.Cog):
             color=0xF1C40F
         )
 
-        await interaction.response.send_message(embed=embed, view=view)
+        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
 
 async def setup(bot):
