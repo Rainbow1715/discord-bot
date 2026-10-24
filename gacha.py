@@ -4,9 +4,9 @@ import discord
 from database import (
     GACHA_POOL, 
     RARITY_RATES, 
-    PICKUP_CHARACTERS,       # 🎂 バースデーピックアップ
-    NEW_PICKUP_CHARACTERS,   # 🆕 新実装ピックアップ
-    PICKUP_BOOST_RATE,       # フォールバック用
+    PICKUP_CHARACTERS,        # 🎂 バースデーピックアップ
+    NEW_PICKUP_CHARACTERS,    # 🆕 新実装ピックアップ
+    PICKUP_BOOST_RATE,        # フォールバック用
     get_user_profile, 
     save_data
 )
@@ -136,20 +136,10 @@ class GachaView(discord.ui.View):
 
             existing_char = next((c for c in user_chars if c["name"] == template["name"]), None)
 
-            existing_char = next((c for c in user_chars if c["name"] == template["name"]), None)
-
             if existing_char:
-                # 凸数（limit_break）を取得（なければ0）
-                lb_level = existing_char.get("limit_break", 0)
-                
-                # 🌟 すでに+5（完凸）に達している場合は輝石に自動分解！
-                if lb_level >= 5:
-                    items["輝石"] = items.get("輝石", 0) + 1
-                    status_note = "**[💎 輝石x1に分解!]**"
-                else:
-                    # 凸用カウント（または凸数）を増やす
-                    existing_char["count"] = existing_char.get("count", 1) + 1
-                    status_note = f"[所持数: {existing_char['count']}]"
+                # 🌟 自動分解を行わず、完凸後もそのまま count（所持ストック数）を増やす
+                existing_char["count"] = existing_char.get("count", 1) + 1
+                status_note = f"[所持数: {existing_char['count']}]"
             else:
                 # NEWキャラ獲得
                 new_char = {
@@ -229,8 +219,7 @@ def select_equipment_by_rarity_and_pickup():
 
     equip_names = list(EQUIPMENT_MASTER.keys())
     
-    # 1. レア度ごとの重み付け基本確率（★5:5%, ★4:25%, ★3:70% など）
-    # ※もし EQUIPMENT_MASTER 側にレア度がどう保持されているかに合わせて調整してください
+    # 1. レア度ごとの重み付け基本確率
     weights = []
     for name in equip_names:
         data = EQUIPMENT_MASTER[name]
@@ -316,7 +305,6 @@ class SoubiGachaView(discord.ui.View):
         # 🛡️ ユーザーの所持装備辞書を取得（なければ初期化）
         user_equipments = u_data.setdefault("equipments", {})
         if not isinstance(user_equipments, dict):
-            # 万が一旧形式のリストになっていたら辞書に変換
             from database import _normalize_equipments
             user_equipments = _normalize_equipments(user_equipments)
             u_data["equipments"] = user_equipments
@@ -350,7 +338,7 @@ class SoubiGachaView(discord.ui.View):
                 rarity_str = "⭐⭐⭐"
                 rarity_tag = "R"
 
-            # 📦 装備の所持数を +1 する（すでにあれば個数が加算、初獲得なら1個になる）
+            # 📦 装備の所持数を +1 する
             user_equipments[name] = user_equipments.get(name, 0) + 1
             current_count = user_equipments[name]
 
