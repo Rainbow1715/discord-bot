@@ -52,8 +52,8 @@ PICKUP_CHARACTERS = []
 PICKUP_BOOST_RATE = 0.60  # バースデーキャラ全体の排出補正率
 
 # 🆕 新キャラ実装・ピックアップ設定
-NEW_PICKUP_CHARACTERS = ["レオ(仮面ライダーパロ)", "ムクロ(トリッカルパロ)", "しえら(仮面ライダーパロ)", "ルシア(トリッカルパロ)",]  # 実装時に ["新キャラ名"] を指定
-NEW_PICKUP_BOOST_RATE = 0.50 # 新キャラ全体の排出補正率
+NEW_PICKUP_CHARACTERS = ["レオ(仮面ライダーパロ)", "ムクロ(トリッカルパロ)", "しえら(仮面ライダーパロ)", "ルシア(トリッカルパロ)",]
+NEW_PICKUP_BOOST_RATE = 0.50
 
 # 🎰 ガチャ排出キャラクタープール（兼マスターデータ）
 GACHA_POOL = [
@@ -234,7 +234,7 @@ GACHA_POOL = [
         "equip": None,
         "likes": {
             "コーンマヨピザ": "これおいしいねぇ！ と口いっぱいに頬張っていた。",
-            "オムライス": "口の周りをケチャップで汚しながら美味しそうに食べていた。",
+            "オムライス": "口の周りをケチャップで汚しながら美味しそうに食べていていた。",
         },
         "dislikes": {
             "激辛ラーメン": "一口食べて泣きそうな顔になっていた。",
@@ -428,7 +428,7 @@ GACHA_POOL = [
         "dislikes": {
             "ブロッコリー": "サラの前に茹どもしていない生のブロッコリーを出した。サラは正気を疑ってきた。",
             "ナスの肉味噌炒め": "騙されないぞ！ これナス入ってますよね？！ と言って逃げた。",
-            "きのこのバター醤油炒め": "どう見てもきのこ入ってるじゃないですかやだーっ！！ と喚いて逃げた。",
+            "きのこのバター醤油炒め": "どう見てもきのこ入ってるじゃないですかやだ-っ！！ と喚いて逃げた。",
             "カプレーゼ": "……………どう見てもトマトじゃないですかこれ。と言われた。サラはこれを食べなかった。",
             "ピーマンの肉詰め": "これを出すとサラは渋い顔をした。レオでも食べれるぞ、と言っても だから何なんですか？ と言って残した。",
         },
@@ -517,8 +517,8 @@ GACHA_POOL = [
         "skill_rate": 75,
         "best_equip": "苦いクッキー", 
         "equip": None,
-        "likes": {},   # 👈 setからdictに修正
-        "dislikes": {}, # 👈 setからdictに修正
+        "likes": {},
+        "dislikes": {},
         "affection_level": 1, 
         "affection_exp": 0, 
         "known_likes": [], 
@@ -527,27 +527,27 @@ GACHA_POOL = [
     {
         "name": "レオ(仮面ライダーパロ)",
         "icon": "<:704_reo:1555165068927311882>",
-        "gender": "男",           # [文字列] 性別（"男", "女", "？"）
-        "rarity": "★4",           # [文字列] レアリティ（"★2" 〜 "★5"）
-        "element": "赤",          # [文字列] 属性（"赤", "青", "紫", "光" など）
-        "role": "アタッカー",             # [文字列] 戦闘での役割（"アタッカー", "サポーター"）
+        "gender": "男",
+        "rarity": "★4",
+        "element": "赤",
+        "role": "アタッカー",
         "atk_type": "物理",
         "level": 1,
         "exp": 0,
-        "hp": 165,              # [数値] 現在のHP
-        "max_hp": 165,          # [数値] 最大HP
-        "atk": 37,             # [数値] 攻撃力
-        "spd": 24,             # [数値] 素早さ（行動順）
+        "hp": 165,
+        "max_hp": 165,
+        "atk": 37,
+        "spd": 24,
         "rec": 6,  
-        "skill_name": "ドラゴニックフィニッシュ",       # [文字列] スキル名
-        "skill_type": "physical",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
-        "skill_pow": 65,       # [数値] スキル威力・倍率
-        "skill_trigger": "interval_3",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
-        "skill_rate": 95,       # [数値] 発動成功率(%)（例: 95 = 95%）※一部キャラのみ
-        "best_equip": "ビートクローザー",       # [文字列] 相性の良いモチーフ装備名
+        "skill_name": "ドラゴニックフィニッシュ",
+        "skill_type": "physical",
+        "skill_pow": 65,
+        "skill_trigger": "interval_3",
+        "skill_rate": 95,
+        "best_equip": "ビートクローザー",
         "equip": None,
-        "likes": {"プロテインラーメン": "レオはこれを満足そうにガツガツと食べた。",},            # [辞書] 好きな食べ物とリアクション文 {"アイテム名": "テキスト"}
-        "dislikes": {},         # [辞書] 嫌いな食べ物とリアクション文 {"アイテム名": "テキスト"}
+        "likes": {"プロテインラーメン": "レオはこれを満足そうにガツガツと食べた。"},
+        "dislikes": {},
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
@@ -556,34 +556,35 @@ GACHA_POOL = [
     {
         "name": "ムクロ(トリッカルパロ)",
         "icon": "<:706_mukuro:1555165096819556453>",
-        "gender": "？",           # [文字列] 性別（"男", "女", "？"）
-        "rarity": "★4",           # [文字列] レアリティ（"★2" 〜 "★5"）
-        "element": "赤",          # [文字列] 属性（"赤", "青", "紫", "光" など）
-        "role": "アタッカー",             # [文字列] 戦闘での役割（"アタッカー", "サポーター"）
-        "atk_type": "物理",         # [文字列] 攻撃タイプ（"物理", 
+        "gender": "？",
+        "rarity": "★4",
+        "element": "赤",
+        "role": "アタッカー",
+        "atk_type": "物理",
         "level": 1,
         "exp": 0,
-        "hp": 100,              # [数値] 現在のHP
-        "max_hp": 100,          # [数値] 最大HP
-        "atk": 24,             # [数値] 攻撃力
-        "spd": 20,             # [数値] 素早さ（行動順）
-        "rec": 4,             # [数値] 回復力（回復スキル等の効果量）
-        "skill_name": "じゃーん、驚いたのだ？",       # [文字列] スキル名
-        "skill_type": "physical",       # [文字列] スキルの効果種別（"physical", "heal_all", "stun", "charm", "buff_all_atk" など）
-        "skill_pow": 40,       # [数値] スキル威力・倍率
-        "skill_trigger": "chance",    # [文字列] 発動条件（例: "interval_3" = 3ターン毎）※一部キャラのみ
-        "skill_rate": 78,       # [数値] 発動成功率(%)（例: 95 = 95%）※一部キャラのみ ---
-        "best_equip": "思い出の写真",       # [文字列] 相性の良いモチーフ装備名
+        "hp": 100,
+        "max_hp": 100,
+        "atk": 24,
+        "spd": 20,
+        "rec": 4,
+        "skill_name": "じゃーん、驚いたのだ？",
+        "skill_type": "physical",
+        "skill_pow": 40,
+        "skill_trigger": "chance",
+        "skill_rate": 78,
+        "best_equip": "思い出の写真",
         "equip": None,
-        "likes": {"ラムネ": "ムクロはラムネを飲まず、瓶だけ持ち帰ろうとした。"},            # [辞書] 好きな食べ物とリアクション文 {"アイテム名": "テキスト"}
-        "dislikes": {"アイスコーヒー": "ムクロはこれを一口飲んだが、露骨に嫌そうな顔をした。"},         # [辞書] 嫌いな食べ物とリアクション文 {"アイテム名": "テキスト"}
+        "likes": {"ラムネ": "ムクロはラムネを飲まず、瓶だけ持ち帰ろうとした。"},
+        "dislikes": {"アイスコーヒー": "ムクロはこれを一口飲んだが、露骨に嫌そうな顔をした。"},
         "affection_level": 1,
         "affection_exp": 0,
         "known_likes": [],
         "known_dislikes": [],
     },
 ]
-# 🔻 ここで「data」フォルダにある新しいキャラの .py ファイルを自動で読み込んで追加する！
+
+# 🔻 「データ」フォルダにある追加キャラデータの読み込み
 data_folder = "データ"
 if os.path.exists(data_folder):
     for filename in os.listdir(data_folder):
@@ -605,13 +606,10 @@ if os.path.exists(data_folder):
             except Exception as e:
                 print(f"⚠️ 追加キャラ読み込みエラー ({filename}): {e}")
 
-# --------------------------------------------------
-# 🔰 初期キャラクターデータ取得関数
-# --------------------------------------------------
 def find_gacha_char(name):
     for c in GACHA_POOL:
         if c["name"] == name:
-            return copy.deepcopy(c)  # 参照渡しを避けるためコピーを返す
+            return copy.deepcopy(c)
     return None
 
 DEFAULT_CHARACTERS = [
@@ -620,7 +618,6 @@ DEFAULT_CHARACTERS = [
     find_gacha_char("河野蜜柑")
 ]
 
-# 🍱 ご飯アイテムの定義
 FOOD_ITEMS = {
     "ショートケーキ": {"icon": "🍰"},
     "激辛ラーメン": {"icon": "🍜"},
@@ -655,14 +652,12 @@ FOOD_ITEMS = {
     "アイスコーヒー": {"icon": ""},
 }
 
-# 📈 なつき度の必要経験値計算
 def get_required_affection_exp(level):
     return level * 100
 
-# 🎁 なつき度レベルアップ判定と報酬（上限30レベル設定・経験値ストック対応）
 def check_affection_level_up(char_data, user_info):
     rewards = []
-    MAX_AFFECTION_LEVEL = 30  # 👈 なつき度の上限レベル
+    MAX_AFFECTION_LEVEL = 30
 
     while True:
         if char_data["affection_level"] >= MAX_AFFECTION_LEVEL:
@@ -675,7 +670,6 @@ def check_affection_level_up(char_data, user_info):
             char_data["affection_level"] += 1
             lvl = char_data["affection_level"]
             
-            # 報酬の付与判定
             if lvl % 5 == 0:
                 rewards.append("🎫 ガチャチケ x1")
                 user_info["items"]["ガチャチケ"] = user_info["items"].get("ガチャチケ", 0) + 1
@@ -690,34 +684,23 @@ def check_affection_level_up(char_data, user_info):
 
     return rewards
 
-# --------------------------------------------------
-# 🍺 お酒関連の設定
-# --------------------------------------------------
 ALCOHOL_ITEMS = ["酒", "ビール", "ワイン", "ウイスキー", "日本酒"]
-
 ADULT_CHARACTERS = [
     "折原和也", "橘柊人", "竹村しえら", "れーちゃん", "Gerânio", "レオ", "ロイ", 
     "白黒レイ", "神明龍矢", "サラ", "レオ(仮面ライダーパロ)", "彼方(ハロウィン)", "竜胆廉(ハロウィン)",
 ]
 
 def is_adult(char_name: str) -> bool:
-    """指定されたキャラクターが大人かどうかを判定する"""
     return char_name in ADULT_CHARACTERS
 
 def is_child(char_name: str) -> bool:
-    """子供（大人リストに含まれない）かどうか判定"""
     return not is_adult(char_name)
     
-# --------------------------------------------------
-# 🍖 怪しい肉関連の設定
-# --------------------------------------------------
 SUSPICIOUS_MEAT_ITEMS = ["怪しい肉"]
-
 SUSPICIOUS_MEAT_CHARACTERS = [
     "Branch Coral", "Root Coral", "ロイ", "折原和也", "サラ",
 ]
 
-# 🍱 ご飯をあげる処理
 def feed_character(user_info, char_data, food_name):
     char_name = char_data.get("name", "")
 
@@ -728,7 +711,6 @@ def feed_character(user_info, char_data, food_name):
             "message": f"❌ **{char_name}** はお酒を飲むことができません！"
         }
 
-    # 「怪しい肉」をあげる時の処理イメージ（完全拒否キャラ用の判定）
     if food_name in SUSPICIOUS_MEAT_ITEMS and char_name not in SUSPICIOUS_MEAT_CHARACTERS:
         master_char = find_gacha_char(char_name) or {}
         if food_name not in master_char.get("dislikes", {}):
@@ -738,47 +720,34 @@ def feed_character(user_info, char_data, food_name):
                 "message": f"❌ **{char_name}** にこんなものあげようとしないでください！"
             }
         
-    # GACHA_POOL から最新のマスターデータを取得
     master_char = find_gacha_char(char_name) or {}
     master_likes = master_char.get("likes", {})
     master_dislikes = master_char.get("dislikes", {})
 
-    if "known_likes" not in char_data:
-        char_data["known_likes"] = []
-    if "known_dislikes" not in char_data:
-        char_data["known_dislikes"] = []
-    if "known_special" not in char_data:
-        char_data["known_special"] = []
+    if "known_likes" not in char_data: char_data["known_likes"] = []
+    if "known_dislikes" not in char_data: char_data["known_dislikes"] = []
+    if "known_special" not in char_data: char_data["known_special"] = []
 
-    if food_name == "怪しい肉":
-        if "怪しい肉" not in char_data["known_special"]:
-            char_data["known_special"].append("怪しい肉")
+    if food_name == "怪しい肉" and "怪しい肉" not in char_data["known_special"]:
+        char_data["known_special"].append("怪しい肉")
 
-    # ⭕️ 食べたことのある全履歴リストを初期化
-    if "eaten_foods" not in char_data:
-        char_data["eaten_foods"] = []
+    if "eaten_foods" not in char_data: char_data["eaten_foods"] = []
 
-    # ⭕️ 「一度でも食べたことがあるか」で初めて判定を行う
     is_first_time = food_name not in char_data["eaten_foods"]
-
-    # ⭕️ 食べた履歴に保存（これで次回以降は False になる）
     if is_first_time:
         char_data["eaten_foods"].append(food_name)
     
-    # 辞書・リストのどちらの形式でも安全に判定
     is_like = food_name in master_likes
     is_dislike = food_name in master_dislikes
 
     if is_like:
         base_exp = 100
         taste_type = "like"
-        if food_name not in char_data["known_likes"]:
-            char_data["known_likes"].append(food_name)
+        if food_name not in char_data["known_likes"]: char_data["known_likes"].append(food_name)
     elif is_dislike:
         base_exp = 20
         taste_type = "dislike"
-        if food_name not in char_data["known_dislikes"]:
-            char_data["known_dislikes"].append(food_name)
+        if food_name not in char_data["known_dislikes"]: char_data["known_dislikes"].append(food_name)
     else:
         base_exp = 50
         taste_type = "normal"
@@ -799,22 +768,14 @@ def feed_character(user_info, char_data, food_name):
         "rewards": rewards
     }
 
-# --------------------------------------------------
-# 📊 セーブデータの読み込みと保存（非同期対応）
-# --------------------------------------------------
 def default_converter(o):
     if isinstance(o, set):
         return list(o)
     raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
 
 def _normalize_equipments(raw_eq):
-    """
-    旧形式（リスト型や辞書リスト型）の装備データを、
-    新形式（{"装備名": 所持個数} の辞書型）へ安全に変換するヘルパー関数
-    """
     if isinstance(raw_eq, dict):
         return raw_eq
-    
     eq_dict = {}
     if isinstance(raw_eq, list):
         for item in raw_eq:
@@ -835,7 +796,7 @@ def load_data():
         user_data.clear()
         
         if len(rows) <= 1:
-            print("📊 スプレッドシートにデータがありません（または空です）。")
+            print("📊 スプレッドシートにデータがありません。")
             return
 
         header = rows[0]
@@ -844,14 +805,12 @@ def load_data():
         for row in rows[1:]:
             if not row or not row[0]:
                 continue
-            
             try:
                 u_id = int(row[0])
             except ValueError:
                 continue
 
             if is_old_format:
-                # 🔄 旧形式（A列: user_id, B列: data_json）の場合
                 try:
                     data_json_str = row[1] if len(row) > 1 and row[1] else "{}"
                     u_info = json.loads(data_json_str)
@@ -865,14 +824,14 @@ def load_data():
                         "unlocked_achievements": u_info.get("unlocked_achievements", []),
                         "characters": u_info.get("characters", []),
                         "items": u_info.get("items", {}),
-                        "equipments": _normalize_equipments(u_info.get("equipments", {})), # 👈 辞書型に自動正規化
+                        "pieces": u_info.get("pieces", {}),  # 👈 かけら専用領域を追加
+                        "equipments": _normalize_equipments(u_info.get("equipments", {})),
                         "party_indices": u_info.get("party_indices", [0, 1, 2]),
                         "mails": u_info.get("mails", [])
                     }
                 except Exception as ex:
                     print(f"⚠️ ユーザーID {u_id} の旧データデコードエラー: {ex}")
             else:
-                # ✨ 新形式（列分けタイプ）の場合
                 try:
                     raw_eq = json.loads(row[9]) if len(row) > 9 and row[9] else {}
                     user_data[u_id] = {
@@ -884,7 +843,8 @@ def load_data():
                         "unlocked_achievements": json.loads(row[6]) if len(row) > 6 and row[6] else [],
                         "characters": json.loads(row[7]) if len(row) > 7 and row[7] else [],
                         "items": json.loads(row[8]) if len(row) > 8 and row[8] else {},
-                        "equipments": _normalize_equipments(raw_eq), # 👈 リストで保存されていた場合も自動コンバート
+                        "pieces": json.loads(row[12]) if len(row) > 12 and row[12] else {},  # 👈 新形式: 12列目にpieces
+                        "equipments": _normalize_equipments(raw_eq),
                         "party_indices": json.loads(row[10]) if len(row) > 10 and row[10] else [0, 1, 2],
                         "mails": json.loads(row[11]) if len(row) > 11 and row[11] else []
                     }
@@ -897,17 +857,14 @@ def load_data():
 
 def _sync_save():
     if not sheet:
-        print("⚠️ 【警告】sheetが初期化されていないため、保存をスキップしました。")
         return
-    
     if not user_data:
-        print("⚠️ 【安全ガード】user_data が空のため、スプレッドシートの保存をスキップしました。")
         return
 
     try:
         rows = [[
             "user_id", "gold", "u_level", "u_xp", "win_count", "gamble_win_count",
-            "unlocked_achievements", "characters", "items", "equipments", "party_indices", "mails"
+            "unlocked_achievements", "characters", "items", "equipments", "party_indices", "mails", "pieces"
         ]]
         
         for u_id, data in user_data.items():
@@ -921,9 +878,10 @@ def _sync_save():
                 json.dumps(data.get("unlocked_achievements", []), ensure_ascii=False, default=default_converter),
                 json.dumps(data.get("characters", []), ensure_ascii=False, default=default_converter),
                 json.dumps(data.get("items", {}), ensure_ascii=False, default=default_converter),
-                json.dumps(data.get("equipments", {}), ensure_ascii=False, default=default_converter), # 👈 辞書型で保存
+                json.dumps(data.get("equipments", {}), ensure_ascii=False, default=default_converter),
                 json.dumps(data.get("party_indices", [0, 1, 2]), ensure_ascii=False, default=default_converter),
-                json.dumps(data.get("mails", []), ensure_ascii=False, default=default_converter)
+                json.dumps(data.get("mails", []), ensure_ascii=False, default=default_converter),
+                json.dumps(data.get("pieces", {}), ensure_ascii=False, default=default_converter)  # 👈 保存対象に追加
             ])
         
         sheet.clear()
@@ -939,20 +897,17 @@ def save_data():
     except RuntimeError:
         _sync_save()
 
-# 起動時に読み込み
 load_data()
 
-# --------------------------------------------------
-# 👤 ユーザープロフィールの取得と補完
-# --------------------------------------------------
 def get_user_profile(user_id):
     user_id = int(user_id)
     if user_id not in user_data:
         user_data[user_id] = {
             "gold": 1000,
             "items": {"虹の欠片": 100, "ガチャチケ": 100, "装備ガチャチケット": 10, "おにぎり": 5, "ショートケーキ": 2, "激辛ラーメン": 2},
+            "pieces": {},  # 👈 新規ユーザー用のかけら専用枠
             "characters": [copy.deepcopy(c) for c in DEFAULT_CHARACTERS if c],
-            "equipments": {}, # 👈 リスト [] から 辞書 {} に変更！
+            "equipments": {},
             "party_indices": [0, 1, 2],
             "mails": []
         }
@@ -960,12 +915,12 @@ def get_user_profile(user_id):
 
     u_info = user_data[user_id]
 
-    # ★既存ユーザー向けのデータ補完処理
     items = u_info.setdefault("items", {})
     if "装備ガチャチケット" not in items:
         items["装備ガチャチケット"] = 0
+        
+    u_info.setdefault("pieces", {})  # 👈 既存ユーザー向けにかけら枠を補完
 
-    # equipments がリスト型で残っている場合は辞書型に正規化
     u_info["equipments"] = _normalize_equipments(u_info.get("equipments", {}))
 
     all_master_chars = {c["name"]: c for c in GACHA_POOL if c}
@@ -999,21 +954,16 @@ def get_user_profile(user_id):
 
     return u_info
 
-# --------------------------------------------------
-# 🗡️ 装備用便利関数（ストック管理）
-# --------------------------------------------------
 def add_equipment(user_info: dict, eq_name: str, count: int = 1):
-    """ユーザーに指定の装備を追加（個数を加算）する"""
     eq_dict = user_info.setdefault("equipments", {})
     eq_dict[eq_name] = eq_dict.get(eq_name, 0) + count
 
 def get_available_equipment_count(user_info: dict, eq_name: str) -> int:
-    """指定の装備の「現在装備されていない余りストック数」を取得する"""
     owned_count = user_info.get("equipments", {}).get(eq_name, 0)
     equipped_count = sum(
         1 for c in user_info.get("characters", [])
         if c.get("equip") == eq_name
     )
     return max(0, owned_count - equipped_count)
-# 起動時の保存テスト
+
 save_data()
