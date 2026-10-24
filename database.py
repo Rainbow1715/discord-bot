@@ -688,6 +688,7 @@ ALCOHOL_ITEMS = ["酒", "ビール", "ワイン", "ウイスキー", "日本酒"
 ADULT_CHARACTERS = [
     "折原和也", "橘柊人", "竹村しえら", "れーちゃん", "Gerânio", "レオ", "ロイ", 
     "白黒レイ", "神明龍矢", "サラ", "レオ(仮面ライダーパロ)", "彼方(ハロウィン)", "竜胆廉(ハロウィン)",
+    "Branch Coral", "Root Coral",
 ]
 
 def is_adult(char_name: str) -> bool:
