@@ -58,7 +58,7 @@ class CharacterConvertView(discord.ui.View):
                     self.selected_char_name = child.values[0]
         await interaction.response.defer()
 
-    @discord.ui.button(label="決定（輝石に変換）", style=discord.ButtonStyle.danger, emoji="♻️", row=1)
+    @discord.ui.button(label="決定（余剰分をすべて輝石に変換）", style=discord.ButtonStyle.danger, emoji="♻️", row=1)
     async def confirm_convert(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not self.selected_char_name:
             await interaction.response.send_message("⚠️ 変換するキャラクターを選択してください！", ephemeral=True)
@@ -74,9 +74,16 @@ class CharacterConvertView(discord.ui.View):
             await interaction.response.send_message("❌ 対象のキャラクターが見つからないか、完凸(+5以上)していません。", ephemeral=True)
             return
 
-        # 🔍 重複ストック（count）や余剰があるかチェック
-        # ※ もし count が設定されている場合（本体1 ＋ 余剰 とみなす）
         current_count = target_char.get("count", 1)
+        
+        # 本体（1体）を除いた余剰分を計算
+        surplus_count = current_count - 1
+
+        if surplus_count > 0:
+            # 本体1体を残して、余剰分をすべて輝石に変換
+            target_char["count"] = 1  5以上の完凸でも本体1体にするか、それとも limit_break 達成後さらに増えた分だけか？
+            # ※もし「完凸（limit_break >= 5）になったあとにガチャで引いた分」をすべて輝石にする場合は、
+            # カウント管理の仕様に合わせて調整します。
         
         # もし count が 1 より多い（余剰がある）場合、または個別に管理している場合
         if current_count > 1:
