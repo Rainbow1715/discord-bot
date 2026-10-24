@@ -86,6 +86,8 @@ class MyBot(commands.Bot):
             "cogs.birthday",
             "cogs.twitter_fix",
             "cogs.level_system",
+            "cogs.convert_char.py",
+
         ]
 
         for cog in cogs:
