@@ -234,22 +234,33 @@ class ShopView(discord.ui.View):
 
         u_data = db.get_user_profile(self.user_id)
         items = u_data.setdefault("items", {})
+        
+        required_pieces = 20
         piece_name = f"{self.selected_char_name}のかけら"
         piece_count = items.get(piece_name, 0)
 
-        if piece_count < 20:
-            await interaction.response.send_message(f"❌ かけらが足りません！（所持: {piece_count}個 / 必要: 20個）", ephemeral=True)
+        if piece_count < required_pieces:
+            await interaction.response.send_message(
+                f"❌ かけらが足りません！（所持: {piece_count}個 / 必要: {required_pieces}個）", ephemeral=True
+            )
             return
 
-        items[piece_name] -= 20
+        # かけらを消費
+        items[piece_name] -= required_pieces
+
         user_chars = u_data.setdefault("characters", [])
-        existing_char = next((c for c in user_chars if c["name"] == self.selected_char_name), None)
+        
+        # すでに所持しているかチェック
+        existing_char = next((c for c in user_chars if c.get("name") == self.selected_char_name), None)
 
         if existing_char:
-            # すでに所持している場合は限界突破（+1）または所持数を増加
-            existing_char["limit_break"] = existing_char.get("limit_break", 0) + 1
-            msg = f"🎉 **[{self.selected_char_name}]** を獲得し、限界突破数が **+{existing_char['limit_break']}** になりました！"
+            # 📌 【所持済みの場合】
+            # ※ 凸数は上げず、単に所持数(count)などを増やす、または「すでに持っています」とメッセージを出す形にします
+            # ここでは「所持数(count)」を+1してストック扱いにする例にしています（必要に応じて調整可能）
+            existing_char["count"] = existing_char.get("count", 1) + 1
+            msg = f"🎉 **[{self.selected_char_name}]** をかけらから交換しました！（所持数が1増えました。※凸数は上がりません）"
         else:
+            # 📌 【未所持の場合】新しくキャラクターを仲間として追加する（凸0）
             template = db.find_gacha_char(self.selected_char_name)
             if template:
                 new_char = {
@@ -257,7 +268,7 @@ class ShopView(discord.ui.View):
                     "rarity": template.get("rarity", "★3"),
                     "icon": template.get("icon"),
                     "count": 1,
-                    "limit_break": 0,
+                    "limit_break": 0,  # 凸数は 0 のまま！
                     "level": 1,
                     "exp": 0,
                     "max_hp": template.get("max_hp", template.get("hp", 100)),
@@ -267,11 +278,16 @@ class ShopView(discord.ui.View):
                     "rec": template.get("rec", 10),
                     "skill_name": template.get("skill_name", "通常攻撃"),
                     "skill_pow": template.get("skill_pow", 1.0),
+                    "equip": None,
                 }
                 user_chars.append(new_char)
-                msg = f"✨NEW!✨ **[{self.selected_char_name}]** を仲間として迎えました！"
+                msg = f"✨NEW!✨ **[{self.selected_char_name}]** をかけらから新しく仲間として迎えました！（凸0）"
             else:
-                msg = "❌ キャラクターデータの取得に失敗しました。"
+                # 取得失敗時はかけらを払い戻し
+                items[piece_name] += required_pieces
+                db.save_data()
+                await interaction.response.send_message("❌ キャラクターデータの取得に失敗しました（かけらを払い戻しました）。", ephemeral=True)
+                return
 
         db.save_data()
         await interaction.response.send_message(msg, ephemeral=True)
