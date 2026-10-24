@@ -8,7 +8,7 @@ class CharacterConvertView(discord.ui.View):
     def __init__(self, user_id: int, max_lb_chars: list):
         super().__init__(timeout=120)
         self.user_id = user_id
-        self.max_lb_chars = max_lb_chars  # 凸が+5以上のキャラクターのリスト
+        self.max_lb_chars = max_lb_chars  # 凸+5以上かつストックがあるキャラのリスト
         self.selected_char_name = None
 
         self.update_select()
@@ -24,11 +24,14 @@ class CharacterConvertView(discord.ui.View):
             name = c.get("name")
             rarity = c.get("rarity", "★3")
             lb = c.get("limit_break", 5)
+            count = c.get("count", 1)
+            surplus = count - 1  # 変換できる余剰数
+            
             options.append(
                 discord.SelectOption(
                     label=f"[{rarity}] {name} (凸+{lb})",
                     value=name,
-                    description="このキャラを輝石に変換します"
+                    description=f"余剰ストック: {surplus}体分を輝石に変換可能"
                 )
             )
 
@@ -75,43 +78,33 @@ class CharacterConvertView(discord.ui.View):
             return
 
         current_count = target_char.get("count", 1)
-        
-        # 本体（1体）を除いた余剰分を計算
-        surplus_count = current_count - 1
+        surplus_count = current_count - 1  # 本体1体を除いた余剰数
 
-        if surplus_count > 0:
-            # 本体1体を残して、余剰分をすべて輝石に変換
-            target_char["count"] = 1  5以上の完凸でも本体1体にするか、それとも limit_break 達成後さらに増えた分だけか？
-            # ※もし「完凸（limit_break >= 5）になったあとにガチャで引いた分」をすべて輝石にする場合は、
-            # カウント管理の仕様に合わせて調整します。
-        
-        # もし count が 1 より多い（余剰がある）場合、または個別に管理している場合
-        if current_count > 1:
-            # 余剰分から1つ減らす
-            target_char["count"] = current_count - 1
-            
-            # 輝石を付与
-            items = u_data.setdefault("items", {})
-            items["輝石"] = items.get("輝石", 0) + 1
-            db.save_data()
-
+        if surplus_count <= 0:
             await interaction.response.send_message(
-                f"♻️ **[{self.selected_char_name}]** の余剰分を1体変換し、**💎 輝石 x1** を獲得しました！\n"
-                f"（※本体1体は手元に残っています。残りストック: {target_char['count']}体）",
-                ephemeral=True
-            )
-        else:
-            # 万が一、本体しかいない（count == 1）のにリストに出てきてしまった場合のガード
-            await interaction.response.send_message(
-                "❌ このキャラクターは本体1体のみ所持しているため、変換できません（本体は残す仕様のため）。",
+                f"❌ **{self.selected_char_name}** は本体1体のみのため、変換できる余剰ストックがありません。（本体は残る仕様です）",
                 ephemeral=True
             )
             return
 
-        # 再度、変換可能なキャラリストを更新
+        # ♻️ 本体1体を残して、余剰分（surplus_count）をすべて輝石に変換！
+        target_char["count"] = 1  # countを1（本体のみ）に戻す
+
+        items = u_data.setdefault("items", {})
+        items["輝石"] = items.get("輝石", 0) + surplus_count
+
+        db.save_data()
+
+        await interaction.response.send_message(
+            f"♻️ **[{self.selected_char_name}]** の余剰分 **{surplus_count}体** をすべて輝石に変換しました！\n"
+            f"（💎 輝石 **+{surplus_count}個** 獲得！ ※本体1体は手元に残っています）",
+            ephemeral=True
+        )
+
+        # 変換可能なリスト（凸+5以上かつストックが2以上あるもの）を再取得して画面を更新
         self.max_lb_chars = [
             c for c in u_data.get("characters", [])
-            if c.get("limit_break", 0) >= 5 and c.get("count", 1) > 1  # 余剰があるものに限定
+            if c.get("limit_break", 0) >= 5 and c.get("count", 1) > 1
         ]
         
         if not self.max_lb_chars:
@@ -127,17 +120,20 @@ class ConvertCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="convert", description="完凸(+5)した重複キャラクターを輝石に変換します")
+    @app_commands.command(name="convert", description="完凸(+5)したキャラクターの余剰ストックを輝石に変換します")
     async def convert_cmd(self, interaction: discord.Interaction):
         u_data = db.get_user_profile(interaction.user.id)
         user_chars = u_data.get("characters", [])
 
-        # 凸が +5 以上のキャラクターだけを抽出
-        max_lb_chars = [c for c in user_chars if c.get("limit_break", 0) >= 5]
+        # 凸が +5 以上かつ、カウントが 2 以上（余剰がある）キャラクターだけを抽出
+        max_lb_chars = [
+            c for c in user_chars 
+            if c.get("limit_break", 0) >= 5 and c.get("count", 1) > 1
+        ]
 
         if not max_lb_chars:
             await interaction.response.send_message(
-                "❌ 輝石に変換できるキャラクター（凸+5以上の完凸キャラ）がいません。",
+                "❌ 輝石に変換できるキャラクター（凸+5以上で、かつ余剰ストックがあるキャラ）がいません。",
                 ephemeral=True
             )
             return
@@ -145,8 +141,9 @@ class ConvertCog(commands.Cog):
         embed = discord.Embed(
             title="♻️ キャラクター輝石変換所",
             description=(
-                "凸が **+5（完凸）** に達しているキャラクターを選択して、輝石に変換できます。\n\n"
-                "👇 下のメニューからキャラクターを選んで「決定」を押してください。"
+                "凸が **+5（完凸）** に達しており、余剰ストックがあるキャラクターを選択して輝石に変換できます。\n"
+                "*(※本体の1体は必ず手元に残ります)*\n\n"
+                "👇 下のメニューからキャラクターを選んでボタンを押してください。"
             ),
             color=0xE67E22
         )
