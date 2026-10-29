@@ -101,18 +101,14 @@ EMOJI_GROUPS = {
 
 # --------------------------------------------------
 # 🎪 企画組グループの自動作成
-# （「呪福」「断罪」の全員 ＋ 「他」から指定の4人を合成）
 # --------------------------------------------------
-# 「他」グループの中から追加したい4人の絵文字キーワード
 target_ta_names = ["momohane", "haruka", "mukuro", "commonrue"]
 
-# 「他」の絵文字リストから該当する4人だけを抽出
 selected_ta_emojis = [
     emoji for emoji in EMOJI_GROUPS.get("other", EMOJI_GROUPS.get("他", []))
     if any(name in emoji for name in target_ta_names)
 ]
 
-# 呪福 + 断罪 + 抽出した4人を合体させて「企画組」として追加
 EMOJI_GROUPS["企画組"] = (
     EMOJI_GROUPS.get("呪福", []) + 
     EMOJI_GROUPS.get("断罪", []) + 
@@ -136,17 +132,32 @@ GROUP_CHOICES = [
 ]
 
 # --------------------------------------------------
-# 3. スラッシュコマンド（/dice）の定義
+# 3. スラッシュコマンド（/dice, /dice cp など）の定義
 # --------------------------------------------------
 class DiceCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    # スラッシュコマンド用の共通ダイス処理関数
+    # 共通の絵文字リスト取得用ヘルパー
+    def get_target_emojis(self, selected_val: str) -> list:
+        if selected_val == "ALL":
+            all_set = set()
+            for key, emojis in EMOJI_GROUPS.items():
+                if key != "A":
+                    all_set.update(emojis)
+            return list(all_set)
+        elif selected_val == "AALL":
+            all_set = set()
+            for emojis in EMOJI_GROUPS.values():
+                all_set.update(emojis)
+            return list(all_set)
+        else:
+            return EMOJI_GROUPS.get(selected_val, [])
+
+    # スラッシュコマンド用の共通ダイス処理関数（1人選ぶ用）
     async def run_dice(self, interaction: discord.Interaction, group: app_commands.Choice[str]):
         selected_val = group.value
 
-        # 1. 権限チェック（"A"、"にょた組"、"AALL" を選んだ場合は制限する）
         restricted_groups = ["A", "にょた組", "AALL"]
         if selected_val in restricted_groups and interaction.user.id not in ALLOWED_USER_IDS:
             await interaction.response.send_message(
@@ -155,27 +166,8 @@ class DiceCog(commands.Cog):
             )
             return
 
-        # 2. 対象となる絵文字リストの組み立て
-        target_emojis = []
-        if selected_val == "ALL":
-            # Aグループ以外の全グループの絵文字を重複なくまとめる
-            all_set = set()
-            for key, emojis in EMOJI_GROUPS.items():
-                if key != "A":
-                    all_set.update(emojis)
-            target_emojis = list(all_set)
+        target_emojis = self.get_target_emojis(selected_val)
 
-        elif selected_val == "AALL":
-            # Aグループ含むすべての絵文字を重複なくまとめる
-            all_set = set()
-            for emojis in EMOJI_GROUPS.values():
-                all_set.update(emojis)
-            target_emojis = list(all_set)
-
-        else:
-            target_emojis = EMOJI_GROUPS.get(selected_val, [])
-
-        # 3. ダイス結果の出力（Embed化）
         if target_emojis:
             chosen_emoji = random.choice(target_emojis)
             
@@ -189,6 +181,49 @@ class DiceCog(commands.Cog):
             )
 
             await interaction.response.send_message(embed=embed)
+        else:
+            await interaction.response.send_message(
+                "絵文字リストが見つからないか、空です。", ephemeral=True
+            )
+
+    # --------------------------------------------------
+    # 👥 ペア（2人）を選ぶコマンド /dice cp の定義
+    # --------------------------------------------------
+    @app_commands.command(name="dice_cp", description="指定したグループの中からランダムでキャラクターを2人選びます")
+    @app_commands.choices(group=GROUP_CHOICES)
+    async def dice_cp(self, interaction: discord.Interaction, group: app_commands.Choice[str]):
+        selected_val = group.value
+
+        # 権限チェック
+        restricted_groups = ["A", "にょた組", "AALL"]
+        if selected_val in restricted_groups and interaction.user.id not in ALLOWED_USER_IDS:
+            await interaction.response.send_message(
+                f"⚠️ {group.name}のダイスを使用する権限がありません。",
+                ephemeral=True
+            )
+            return
+
+        target_emojis = self.get_target_emojis(selected_val)
+
+        # 2人選ぶため、グループに最低2人必要
+        if len(target_emojis) >= 2:
+            # 重複なしで2人ランダムに選出
+            chosen_emojis = random.sample(target_emojis, 2)
+            
+            embed = discord.Embed(
+                description=f"**{group.name} (CPペア)**\n{chosen_emojis[0]} 🤝 {chosen_emojis[1]}",
+                color=0xE91E63
+            )
+            embed.set_author(
+                name=f"{interaction.user.display_name} のCPダイス結果",
+                icon_url=interaction.user.display_avatar.url
+            )
+
+            await interaction.response.send_message(embed=embed)
+        elif len(target_emojis) == 1:
+            await interaction.response.send_message(
+                "⚠️ 選択したグループにキャラクターが1人しかいないため、ペアを組めません。", ephemeral=True
+            )
         else:
             await interaction.response.send_message(
                 "絵文字リストが見つからないか、空です。", ephemeral=True
@@ -221,11 +256,7 @@ class DiceCog(commands.Cog):
             return
 
         if message.content in ["うちの子ダイス", "うちのこダイス"]:
-            all_set = set()
-            for key, emojis in EMOJI_GROUPS.items():
-                if key != "A":
-                    all_set.update(emojis)
-            target_emojis = list(all_set)
+            target_emojis = self.get_target_emojis("ALL")
 
             if target_emojis:
                 chosen_emoji = random.choice(target_emojis)
