@@ -213,8 +213,8 @@ class ZukanCog(commands.Cog):
 
     @app_commands.command(name="zukan", description="大図鑑（キャラ・装備のコンプリート状況）を確認します")
     async def zukan(self, interaction: discord.Interaction):
-        # 3秒制限対策として先にdeferする
-        await interaction.response.defer(ephemeral=True)
+        # 3秒制限対策としてdeferする（ephemeral=Trueを外して全員に見えるようにする）
+        await interaction.response.defer()
 
         user_info = db.get_user_profile(interaction.user.id)
 
@@ -240,7 +240,6 @@ class ZukanCog(commands.Cog):
         if isinstance(raw_eqs, dict):
             user_equip_dict = raw_eqs
         elif isinstance(raw_eqs, list):
-            # 万が一古いリスト形式が混ざっている場合のフォールバック
             for eq in raw_eqs:
                 if isinstance(eq, str):
                     user_equip_dict[eq] = user_equip_dict.get(eq, 0) + 1
@@ -264,7 +263,8 @@ class ZukanCog(commands.Cog):
             color=0xF1C40F
         )
 
-        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+        # followup.send から ephemeral=True を削除して全体公開にする
+        await interaction.followup.send(embed=embed, view=view)
 
 
 async def setup(bot):
