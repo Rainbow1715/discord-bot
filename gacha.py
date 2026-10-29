@@ -347,7 +347,7 @@ class SoubiGachaView(discord.ui.View):
             else:
                 status_note = "**[✨NEW!✨]**"
 
-            result_lines.append(f"`{idx:2d}.` {pickup_marks}{icon} **[{rarity_str}] {name}** ({rarity_tag}) {status_note}")
+            result_lines.append(f"{idx}. {pickup_marks}{icon} **[{rarity_str}] {name}** ({rarity_tag}) {status_note}")
 
         # 5. ガチャカウント加算・データ保存・実績呼び出し
         u_data["gacha_count"] = u_data.get("gacha_count", 0) + 1
