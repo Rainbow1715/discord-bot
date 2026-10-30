@@ -20,7 +20,7 @@ def get_equip_display(character_data: dict) -> str:
     return current_equip
 
 # ⚔️ 装備のピックアップ設定
-NEW_PICKUP_EQUIPMENTS = ["ビリーザロッド", "大きなハサミ", "ビートクローザー", "思い出の写真"]    # 新しく実装された装備
+NEW_PICKUP_EQUIPMENTS = ["狐柄の毛布", "牛のぬいぐるみ", "カボチャのバケツ"]    # 新しく実装された装備
 BIRTHDAY_PICKUP_EQUIPMENTS = [] # 誕生月などのピックアップ装備
 EQUIP_PICKUP_BOOST_RATE = 0.50              # ピックアップ全体の補正率
 EQUIP_BIRTHDAY_PICKUP_BOOST_RATE = 0.60     # 誕生月ピックアップ全体の補正率
@@ -49,7 +49,8 @@ EQUIPMENT_MASTER = {
     "大きなハサミ": {"icon": "", "rarity": 4, "atk": 60, "description": "このハサミで切られても血は出ない"},
     "狐柄の毛布": {"icon": "", "rarity": 4, "def": 0.20, "description": "何回も洗濯したから少しボロボロ"},
     "牛のぬいぐるみ": {"icon": "", "rarity": 4, "atk": 0.20, "description": "ボコボコにする？"},
-    "カボチャのバケツ": {"icon": "", "rarity": 4, "p_hp": 120, "description": "バケツいっぱいにお菓子をもらったらきっと幸せだね"},
+    "カボチャのバケツ": {"icon": "", "rarity": 4, "p_hp": 120, "description": "バケツいっぱいにお菓子をもらったら、きっと幸せだね"},
+    
 }
 
 
