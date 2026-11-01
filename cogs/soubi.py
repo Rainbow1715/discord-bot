@@ -13,8 +13,17 @@ def get_equip_display(character_data: dict) -> str:
     if not current_equip:
         return "なし"
 
-    # 現在の装備とベスト装備が一致している場合は ✨ を先頭に付与
-    if best_equip and current_equip == best_equip:
+    # best_equip がリスト（複数）の場合と文字列（単体）の場合の両方に対応して判定
+    is_best = False
+    if isinstance(best_equip, list):
+        if current_equip in best_equip:
+            is_best = True
+    elif isinstance(best_equip, str):
+        if current_equip == best_equip:
+            is_best = True
+
+    # 一致している場合は ✨ を先頭に付与
+    if is_best:
         return f"✨{current_equip}"
 
     return current_equip
