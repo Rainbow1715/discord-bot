@@ -11,7 +11,12 @@ from database import (
     save_data
 )
 from achievement import on_gacha_draw, check_character_achievements
-from cogs.soubi import EQUIPMENT_MASTER
+from cogs.soubi import (
+    EQUIPMENT_MASTER,
+    BIRTHDAY_PICKUP_EQUIPMENTS, # 🎂 装備のバースデーピックアップ 👈 追加！
+    EQUIP_PICKUP_BOOST_RATE,    # 👈 追加！
+    EQUIP_BIRTHDAY_PICKUP_BOOST_RATE,
+)
 
 # --------------------------------------------------
 # ⚙️ ピックアップ率の設定（database.py側に定義があればそちらを優先）
