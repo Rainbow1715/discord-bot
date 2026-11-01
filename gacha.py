@@ -198,9 +198,9 @@ class GachaView(discord.ui.View):
 # 🗡️ 装備ガチャ用処理（※単発なし・10連のみ）
 # --------------------------------------------------
 
-# ⚙️ 装備ピックアップ率の設定（database.py側に定義があればそちらを優先、なければデフォルト値）
+# ⚙️ 装備ピックアップ設定（cogs.soubi から正しく読み込む）
 try:
-    from database import NEW_PICKUP_EQUIPMENTS, BIRTHDAY_PICKUP_EQUIPMENTS
+    from cogs.soubi import NEW_PICKUP_EQUIPMENTS, BIRTHDAY_PICKUP_EQUIPMENTS
 except ImportError:
     NEW_PICKUP_EQUIPMENTS = []
     BIRTHDAY_PICKUP_EQUIPMENTS = []
