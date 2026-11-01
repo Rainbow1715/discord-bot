@@ -48,12 +48,12 @@ RARITY_RATES = {
 }
 
 # 🎂 今月のバースデー・ピックアップ設定
-PICKUP_CHARACTERS = []
+PICKUP_CHARACTERS = ["橘柊人",]
 PICKUP_BOOST_RATE = 0.60  # バースデーキャラ全体の排出補正率
 
 # 🆕 新キャラ実装・ピックアップ設定
-NEW_PICKUP_CHARACTERS = ["彼方(ハロウィン)", "竜胆廉(ハロウィン)",]
-NEW_PICKUP_BOOST_RATE = 0.60
+NEW_PICKUP_CHARACTERS = ["Branch Coral", "Root Coral", ]
+NEW_PICKUP_BOOST_RATE = 0.50
 
 # 🎰 ガチャ排出キャラクタープール（兼マスターデータ）
 GACHA_POOL = [
