@@ -13,6 +13,7 @@ from database import (
 from achievement import on_gacha_draw, check_character_achievements
 from cogs.soubi import (
     EQUIPMENT_MASTER,
+    NEW_PICKUP_EQUIPMENTS,
     BIRTHDAY_PICKUP_EQUIPMENTS, # 🎂 装備のバースデーピックアップ 👈 追加！
     EQUIP_PICKUP_BOOST_RATE,    # 👈 追加！
     EQUIP_BIRTHDAY_PICKUP_BOOST_RATE,
