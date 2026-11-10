@@ -31,7 +31,7 @@ async def start_dummy_server():
 
 
 # --------------------------------------------------
-# 🗡️ 装備表示補助用関数（修正版）
+# 🗡️ 装備表示補助用関数（リスト対応版）
 # --------------------------------------------------
 def get_equip_display(character_data: dict) -> str:
     """キャラの現在装備を取得し、ベスト装備と一致していれば ✨ を付けて返す"""
@@ -43,10 +43,26 @@ def get_equip_display(character_data: dict) -> str:
 
     # 装備が辞書型(dict)の場合は名前(name)を取り出し、文字列の場合はそのまま使う
     current_name = current_equip.get("name") if isinstance(current_equip, dict) else current_equip
-    best_name = best_equip.get("name") if isinstance(best_equip, dict) else best_equip
 
-    # 現在の装備とベスト装備の名前が一致している場合は ✨ を付与
-    if best_name and current_name == best_name:
+    # 🎯 best_equip がリスト、辞書、文字列のいずれであっても正しく判定
+    is_best = False
+    if current_name:
+        if isinstance(best_equip, list):
+            for b in best_equip:
+                b_name = b.get("name") if isinstance(b, dict) else b
+                if b_name and current_name == b_name:
+                    is_best = True
+                    break
+        elif isinstance(best_equip, dict):
+            best_name = best_equip.get("name")
+            if best_name and current_name == best_name:
+                is_best = True
+        elif isinstance(best_equip, str):
+            if current_name == best_equip:
+                is_best = True
+
+    # 一致している場合は ✨ を付与
+    if is_best:
         return f"✨{current_name}"
 
     return str(current_name)
