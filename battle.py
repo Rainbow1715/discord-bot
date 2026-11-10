@@ -145,7 +145,7 @@ EVENT_BOSS_MASTER = {
         "skill_pow": 200,
         "skill_type": "conditional_support",
         "skill_trigger": "chance",
-        "skill_rate": 30,
+        "skill_rate": 70,
         "support_target": "赤くん(反転)", 
     },
 }
