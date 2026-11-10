@@ -112,6 +112,24 @@ OUR_CHILDREN = [
         "birthday": "04-16",
         "address": "創作",
     },
+    {
+        "name": "リア",
+        "icon": "<:602611_ria:1563503728911188079>",
+        "birthday": "08-04",
+        "address": "断罪",
+    },
+    {
+        "name": "ケートス",
+        "icon": "<:602611_cetus:1563503936734761031>",
+        "birthday": "03-26",
+        "address": "断罪",
+    },
+    {
+        "name": "竜胆拓",
+        "icon": "<:602611_rindoutaku:1563504993171017818>",
+        "birthday": "04-06",
+        "address": "断罪",
+    },
 ]
 
 def get_today_birthday_children():
