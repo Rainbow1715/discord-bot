@@ -273,11 +273,11 @@ class Character:
             # 💖 10. 敵全体を魅了（charm_all）
             elif self.skill_type == "charm_all":
                 charmed_names = []
-                alive_enemies = [e for e in party_or_enemies if e not in party and e.hp > 0] if all_states else []
                 
                 # 敵チームの生存者全員に対して魅了判定
                 if all_states:
                     for unit, state in all_states.items():
+                        # 自分と同じパーティ（味方）ではなく、かつ生存しているユニットを対象にする
                         if unit not in party and unit.hp > 0:
                             # 性別チェック（ALL、またはターゲットの性別が一致する場合）
                             if self.charm_target == "ALL" or unit.gender == self.charm_target:
