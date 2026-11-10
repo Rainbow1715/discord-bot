@@ -512,7 +512,21 @@ class Character:
                         healed = rand_target.hp - old_hp
                         return f"💫 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ （対象が不在のため） **{rand_target.name}** のHPを **{healed}** 回復した！"
                     return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし効果がなかった！"
-            
+                    
+            # 💚 自己回復スキル（self_heal）
+            elif self.skill_type == "self_heal":
+                # skill_pow が 0.5 のように比率なら最大HPの割合回復、100等の数値なら固定回復
+                if isinstance(self.skill_pow, float) and self.skill_pow <= 1.0:
+                    heal_amount = int(self.max_hp * self.skill_pow)
+                else:
+                    heal_amount = int(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 50
+                
+                old_hp = self.hp
+                self.hp = min(self.max_hp, self.hp + heal_amount)
+                actual_healed = self.hp - old_hp
+                
+                return f"💚 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ 自分のHPを **{actual_healed}** 回復した！（残HP: {self.hp}/{self.max_hp}）"
+                
             # 9. その他のデフォルトスキル
             else:
                 pow_val = float(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 15.0
