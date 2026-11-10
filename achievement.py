@@ -692,6 +692,70 @@ ACHIEVEMENTS = {
         "desc": "ルシア(トリッカルパロ) に適正装備を装着させる",
         "reward_rainbow": 500,
     },
+
+    "eat_HWkanata": {
+        "title": "🍽️ 彼方(ハロウィン)の嫌いなもの",
+        "desc": "彼方(ハロウィン) に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_HWkanata": {
+        "title": "🍽️ 彼方(ハロウィン)の好きなもの",
+        "desc": "彼方(ハロウィン) に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "equip_best_HWkanata": {
+        "title": "✨ これだよこれ！（彼方(ハロウィン)）",
+        "desc": "彼方(ハロウィン) に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+
+    "eat_HWrindouren": {
+        "title": "🍽️ 竜胆廉(ハロウィン)の嫌いなもの",
+        "desc": "竜胆廉(ハロウィン) に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_HWrindouren": {
+        "title": "🍽️ 竜胆廉(ハロウィン)の好きなもの",
+        "desc": "竜胆廉(ハロウィン) に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "equip_best_HWrindouren": {
+        "title": "✨ これだよこれ！（竜胆廉(ハロウィン)）",
+        "desc": "竜胆廉(ハロウィン) に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+
+    "eat_BC": {
+        "title": "🍽️ 赤くんの嫌いなもの",
+        "desc": "Branch Coral に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_BC": {
+        "title": "🍽️ 赤くんの好きなもの",
+        "desc": "Branch Coral に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "equip_best_BC": {
+        "title": "✨ これだよこれ！（赤くん）",
+        "desc": "Branch Coral に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
+
+    "eat_RC": {
+        "title": "🍽️ 珊瑚くんの嫌いなもの",
+        "desc": "Root Coral に嫌いなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "eatlike_RC": {
+        "title": "🍽️ 珊瑚くんの好きなもの",
+        "desc": "Root Coral に好きなものを食べさせた",
+        "reward_rainbow": 100,
+    },
+    "equip_best_RC": {
+        "title": "✨ これだよこれ！（珊瑚くん）",
+        "desc": "Root Coral に適正装備を装着させる",
+        "reward_rainbow": 500,
+    },
     
     # 怪しい肉
     "meat_akakun": {
@@ -821,8 +885,8 @@ BEST_EQUIP_CHAR_MAP = {
     "ルシア(トリッカルパロ)": "equip_best_rucia",
     "彼方(ハロウィン)": "equip_best_HWkanata",
     "竜胆廉(ハロウィン)": "equip_best_HWrindouren",
-    "Branch Coral": "equip_best_akakun",
-    "Root Coral": "equip_best_sangokun",
+    "Branch Coral": "equip_best_BC",
+    "Root Coral": "equip_best_RC",
 }
 
 
