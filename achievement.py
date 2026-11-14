@@ -1146,6 +1146,35 @@ async def check_boss_kill_achievements(
     if party_names:
         party_set = set(party_names)
 
+        # ① 蜂蜜酒 を 橘柊人 で撃破
+        if any("蜂蜜酒" in name for name in defeated_enemy_names):
+            if "橘柊人" in party_set:
+                await check_and_unlock_achievement(interaction, "kill_hatimitu_by_syuuto")
+
+        # ② 神明父(強化) を いずれかの彼方 で撃破
+        if any("神明父(強化)" in name for name in defeated_enemy_names):
+            if any("彼方" in p_name for p_name in party_set):
+                await check_and_unlock_achievement(interaction, "kill_Ktatuya_by_kanata")
+
+        # ③ 黄色いなよなよおっさん を いずれかの竜胆廉 で撃破
+        if any("黄色いなよなよおっさん" in name for name in defeated_enemy_names):
+            if any("竜胆廉" in p_name for p_name in party_set):
+                await check_and_unlock_achievement(interaction, "kill_kiiro_by_rindouren")
+
+        # ④ 赤くん(反転) を Branch Coral / Root Coral で撃破
+        if any("赤くん(反転)" in name for name in defeated_enemy_names):
+            if "Branch Coral" in party_set:
+                await check_and_unlock_achievement(interaction, "kill_HTakakun_by_akakun")
+            if "Root Coral" in party_set:
+                await check_and_unlock_achievement(interaction, "kill_HTakakun_by_sango")
+
+        # ⑤ 珊瑚くん(反転) を Branch Coral / Root Coral で撃破
+        if any("珊瑚くん(反転)" in name for name in defeated_enemy_names):
+            if "Branch Coral" in party_set:
+                await check_and_unlock_achievement(interaction, "kill_HTsango_by_akakun")
+            if "Root Coral" in party_set:
+                await check_and_unlock_achievement(interaction, "kill_HTsango_by_sango")
+
 # --------------------------------------------------
 # 🎰 ガチャ実行時の自動実績チェック
 # --------------------------------------------------
