@@ -1120,7 +1120,7 @@ async def check_limit_break_achievements(
 # 👹 イベントボス撃破時の自動実績チェック
 # --------------------------------------------------
 async def check_boss_kill_achievements(
-    interaction: discord.Interaction, defeated_enemy_names: list
+    interaction: discord.Interaction, defeated_enemy_names: list, party_names: list = None
 ):
     boss_mapping = {
         "ロイ": "kill_roi",
@@ -1141,7 +1141,10 @@ async def check_boss_kill_achievements(
     for boss_name, ach_id in boss_mapping.items():
         if any(boss_name in enemy_name for enemy_name in defeated_enemy_names):
             await check_and_unlock_achievement(interaction, ach_id)
-
+            
+    # 2. 💡「特定キャラで特定のボスを倒す」専用の判定
+    if party_names:
+        party_set = set(party_names)
 
 # --------------------------------------------------
 # 🎰 ガチャ実行時の自動実績チェック
