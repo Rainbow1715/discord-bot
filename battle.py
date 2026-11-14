@@ -223,6 +223,7 @@ class Character:
         self.charm_target = data_dict.get("charm_target") or master_data.get("charm_target", "ALL")
         self.skill_trigger = data_dict.get("skill_trigger") or master_data.get("skill_trigger", "chance")
         self.skill_rate = data_dict.get("skill_rate") if "skill_rate" in data_dict else master_data.get("skill_rate", 35)
+        self.support_target = data_dict.get("support_target") or master_data.get("support_target")
 
         self.is_boss = is_boss
         self.buffs = []
@@ -478,7 +479,7 @@ class Character:
             # 🎯 条件分岐サポート・回復スキル (conditional_support)
             elif self.skill_type == "conditional_support":
                 # 設定から「特定の人物の名前」や「回復量」「確率」などを取得する想定
-                target_char_name = self.data.get("support_target", "特定のキャラ名") 
+                target_char_name = self.support_target or "特定のキャラ名"
                 heal_amount = int(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 50
                 support_rate = int(self.skill_rate) if self.skill_rate else 100
 
@@ -655,6 +656,7 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
                 "charm_target": candidate.get("charm_target", "ALL"),
                 "skill_trigger": candidate.get("skill_trigger", "chance"),
                 "skill_rate": candidate.get("skill_rate", 35),
+                "support_target": candidate.get("support_target"),
             }
             enemies.append(Character(boss_data, is_boss=True))
 
