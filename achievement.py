@@ -317,6 +317,37 @@ ACHIEVEMENTS = {
         "desc": "イベント戦で 日暮考(プトティラコンボ) を撃破する",
         "reward_rainbow": 1000,
     },
+    
+    "kill_hatimitu": {
+        "title": "⚔️ これはマジで何？",
+        "desc": "イベント戦で 蜂蜜酒 を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_Ktatuya": {
+        "title": "⚔️ 変なの。",
+        "desc": "イベント戦で 神明父(強化) を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_kiiro": {
+        "title": "⚔️ なんだかものすごく殺意",
+        "desc": "イベント戦で 黄色いなよなよおっさん を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_akaozi": {
+        "title": "⚔️ 他のカスのせいでマシに見えるカス",
+        "desc": "イベント戦で 赤髪のおじさん を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_HTakakun": {
+        "title": "⚔️ 激ヤバ宗教の青い方",
+        "desc": "イベント戦で 赤くん(反転) を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_HTsango": {
+        "title": "⚔️ 激ヤバ宗教の赤い方",
+        "desc": "イベント戦で 珊瑚くん(反転) を撃破する",
+        "reward_rainbow": 1000,
+    },
     # 🎰 ギャンブル実績
     "win_gamble_1": {
         "title": "🔰 ギャンカスの一歩",
