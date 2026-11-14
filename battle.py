@@ -482,7 +482,7 @@ class Character:
                 heal_amount = int(self.skill_pow) if isinstance(self.skill_pow, (int, float)) else 50
                 support_rate = int(self.skill_rate) if self.skill_rate else 100
 
-                # パーティ内に特定の人物が存在するか探す
+                # パーティ内に特定の人物が存在するか探す（raw_name または name で一致確認）
                 target_member = next((p for p in party if p.raw_name == target_char_name or p.name == target_char_name), None)
 
                 if target_member:
@@ -502,7 +502,7 @@ class Character:
                         else:
                             return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし今回はタイミングが合わなかった……"
                 
-                # 3. 特定の人物が編成されていない場合（ランダムな味方HP25回復）
+                # 3. 特定の人物がパーティ内に編成されていない場合（ランダムな味方HP25回復）
                 else:
                     alive_party = [p for p in party if p.hp > 0]
                     if alive_party:
@@ -511,7 +511,8 @@ class Character:
                         rand_target.hp = min(rand_target.max_hp, rand_target.hp + 25)
                         healed = rand_target.hp - old_hp
                         return f"💫 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ （対象が不在のため） **{rand_target.name}** のHPを **{healed}** 回復した！"
-                    return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし効果がなかった！"
+                    else:
+                        return f"✨ {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし効果がなかった！"
                     
             # 💚 自己回復スキル（self_heal）
             elif self.skill_type == "self_heal":
