@@ -112,7 +112,7 @@ class EquipSelectView(discord.ui.View):
         self.char_page = 0
         self.equip_page = 0
 
-        self.selected_char_idx = None
+        self.selected_char_idx = None  # ここにはキャラリスト全体の本当のインデックス（0〜）を保持する
         self.selected_equip = None
 
         self.update_components()
@@ -125,13 +125,18 @@ class EquipSelectView(discord.ui.View):
         char_end = char_start + 25
         current_chars = list(enumerate(self.characters))[char_start:char_end]
 
-        char_options = [
-            discord.SelectOption(
-                label=f"{c.get('name', 'キャラ')} (現在: {get_equip_display(c)})",
-                value=str(i),
-                default=(self.selected_char_idx == i)
-            ) for i, c in current_chars
-        ]
+        char_options = []
+        for i, c in current_chars:
+            # リスト全体のインデックス (i) と 現在選択中のインデックスが一致しているか判定
+            is_selected = (self.selected_char_idx == i)
+            char_options.append(
+                discord.SelectOption(
+                    label=f"{c.get('name', 'キャラ')} (現在: {get_equip_display(c)})",
+                    value=str(i),  # 👈 ここに全体の本当のインデックスを保持させる！
+                    default=is_selected
+                )
+            )
+
         if not char_options:
             char_options.append(discord.SelectOption(label="キャラクターなし", value="NONE"))
 
@@ -144,7 +149,7 @@ class EquipSelectView(discord.ui.View):
         self.char_select.callback = self.on_char_select
         self.add_item(self.char_select)
 
-        # --- キャラクターページ送りボタン（25件以上いる場合のみ） ---
+        # --- キャラクターページ送りボタン ---
         if len(self.characters) > 25:
             max_char_page = (len(self.characters) - 1) // 25
             prev_char_btn = discord.ui.Button(label="◀ キャラ前へ", style=discord.ButtonStyle.secondary, disabled=(self.char_page == 0), row=1)
@@ -199,7 +204,7 @@ class EquipSelectView(discord.ui.View):
         self.equip_select.callback = self.on_equip_select
         self.add_item(self.equip_select)
 
-        # --- 装備ページ送りボタン（24件以上ある場合のみ） ---
+        # --- 装備ページ送りボタン ---
         if len(self.user_equipments) > 24:
             max_equip_page = (len(self.user_equipments) - 1) // 24
             prev_equip_btn = discord.ui.Button(label="◀ 装備前へ", style=discord.ButtonStyle.secondary, disabled=(self.equip_page == 0), row=3)
@@ -265,7 +270,7 @@ class EquipSelectView(discord.ui.View):
         self.update_components()
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
-    async def confirm(self, interaction: discord.Interaction):  # 👈 button 引数を削除！
+    async def confirm(self, interaction: discord.Interaction):
         if self.selected_char_idx is None or self.selected_equip is None:
             await interaction.response.send_message("⚠️ キャラクターと装備品の両方を選択してください！", ephemeral=True)
             return
@@ -314,7 +319,6 @@ class EquipSelectView(discord.ui.View):
                 await check_equip_best_achievement(interaction, target_char, self.selected_equip)
             except Exception as e:
                 print(f"実績判定エラー: {e}")
-
 
 async def setup(bot):
     await bot.add_cog(SoubiCog(bot))
