@@ -265,7 +265,7 @@ class EquipSelectView(discord.ui.View):
         self.update_components()
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
-    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def confirm(self, interaction: discord.Interaction):  # 👈 button 引数を削除！
         if self.selected_char_idx is None or self.selected_equip is None:
             await interaction.response.send_message("⚠️ キャラクターと装備品の両方を選択してください！", ephemeral=True)
             return
