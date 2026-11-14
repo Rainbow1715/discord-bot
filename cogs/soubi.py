@@ -60,8 +60,7 @@ EQUIPMENT_MASTER = {
     "牛のぬいぐるみ": {"icon": "", "rarity": 4, "atk": 0.20, "description": "ボコボコにする？"},
     "カボチャのバケツ": {"icon": "", "rarity": 4, "p_hp": 120, "description": "バケツいっぱいにお菓子をもらったら、きっと幸せだね"},
     "クソデカ十字架": {"icon": "", "rarity": 3, "atk": 0.60, "description": "ぶん回す"},
-    "Branchの上着": {"icon": "", "rarity": 3, "p_hp": 84, "description": "え？　お前それ盗って行ったの？　ないわー"},
-    
+    "Branchの上着": {"icon": "", "rarity": 3, "p_hp": 84, "description": "え？ お前それ盗って行ったの？ ないわー"},
 }
 
 
@@ -96,57 +95,176 @@ class SoubiCog(commands.Cog):
         ]
 
         view = EquipSelectView(user_id=interaction.user.id, characters=characters, user_equipments=user_equipments)
-        
-        embed = discord.Embed(
-            title="🗡️ 装備変更",
-            description="装備を変更したい **キャラクター** と **装備品** を選択してください。\n（「装備を外す」を選ぶことも可能です）",
-            color=0x3498DB
-        )
+        embed = view.create_embed()
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
 # --------------------------------------------------
-# 🗡️ 装備選択用の Select / View
+# 🗡️ 装備選択用の ページ送り対応 View
 # --------------------------------------------------
 class EquipSelectView(discord.ui.View):
     def __init__(self, user_id: int, characters: list, user_equipments: list):
         super().__init__(timeout=60)
         self.user_id = user_id
+        self.characters = characters
+        self.user_equipments = user_equipments
+
+        self.char_page = 0
+        self.equip_page = 0
+
         self.selected_char_idx = None
         self.selected_equip = None
 
-        # ① キャラクター選択ドロップダウン
+        self.update_components()
+
+    def update_components(self):
+        self.clear_items()
+
+        # --- ① キャラクター選択用セレクト（最大25件表示） ---
+        char_start = self.char_page * 25
+        char_end = char_start + 25
+        current_chars = list(enumerate(self.characters))[char_start:char_end]
+
         char_options = [
             discord.SelectOption(
                 label=f"{c.get('name', 'キャラ')} (現在: {get_equip_display(c)})",
-                value=str(i)
-            ) for i, c in enumerate(characters[:25])
+                value=str(i),
+                default=(self.selected_char_idx == i)
+            ) for i, c in current_chars
         ]
-        self.char_select = discord.ui.Select(placeholder="👤 キャラクターを選択", options=char_options, custom_id="select_char")
+        if not char_options:
+            char_options.append(discord.SelectOption(label="キャラクターなし", value="NONE"))
+
+        self.char_select = discord.ui.Select(
+            placeholder=f"👤 キャラ選択 (ページ {self.char_page + 1})",
+            options=char_options,
+            custom_id="select_char",
+            row=0
+        )
         self.char_select.callback = self.on_char_select
         self.add_item(self.char_select)
 
-        # ② 装備品選択ドロップダウン
-        equip_options = [discord.SelectOption(label="❌ 装備を外す", value="NONE")]
-        for eq in user_equipments[:24]:
-            equip_options.append(discord.SelectOption(label=f"🗡️ {eq}", value=eq))
+        # --- キャラクターページ送りボタン（25件以上いる場合のみ） ---
+        if len(self.characters) > 25:
+            max_char_page = (len(self.characters) - 1) // 25
+            prev_char_btn = discord.ui.Button(label="◀ キャラ前へ", style=discord.ButtonStyle.secondary, disabled=(self.char_page == 0), row=1)
+            next_char_btn = discord.ui.Button(label="キャラ次へ ▶", style=discord.ButtonStyle.secondary, disabled=(self.char_page >= max_char_page), row=1)
 
-        self.equip_select = discord.ui.Select(placeholder="🗡️ 装備品を選択", options=equip_options, custom_id="select_equip")
+            async def prev_char_cb(interaction: discord.Interaction):
+                if interaction.user.id != self.user_id:
+                    return await interaction.response.send_message("❌ 他人の操作です。", ephemeral=True)
+                self.char_page -= 1
+                self.update_components()
+                await interaction.response.edit_message(embed=self.create_embed(), view=self)
+
+            async def next_char_cb(interaction: discord.Interaction):
+                if interaction.user.id != self.user_id:
+                    return await interaction.response.send_message("❌ 他人の操作です。", ephemeral=True)
+                self.char_page += 1
+                self.update_components()
+                await interaction.response.edit_message(embed=self.create_embed(), view=self)
+
+            prev_char_btn.callback = prev_char_cb
+            next_char_btn.callback = next_char_cb
+            self.add_item(prev_char_btn)
+            self.add_item(next_char_btn)
+
+        # --- ② 装備品選択用セレクト（最大24件 + 外す） ---
+        equip_start = self.equip_page * 24
+        equip_end = equip_start + 24
+        current_equips = self.user_equipments[equip_start:equip_end]
+
+        equip_options = [
+            discord.SelectOption(
+                label="❌ 装備を外す",
+                value="NONE",
+                default=(self.selected_equip == "NONE")
+            )
+        ]
+        for eq in current_equips:
+            equip_options.append(
+                discord.SelectOption(
+                    label=f"🗡️ {eq}",
+                    value=eq,
+                    default=(self.selected_equip == eq)
+                )
+            )
+
+        self.equip_select = discord.ui.Select(
+            placeholder=f"🗡️ 装備選択 (ページ {self.equip_page + 1})",
+            options=equip_options,
+            custom_id="select_equip",
+            row=2
+        )
         self.equip_select.callback = self.on_equip_select
         self.add_item(self.equip_select)
+
+        # --- 装備ページ送りボタン（24件以上ある場合のみ） ---
+        if len(self.user_equipments) > 24:
+            max_equip_page = (len(self.user_equipments) - 1) // 24
+            prev_equip_btn = discord.ui.Button(label="◀ 装備前へ", style=discord.ButtonStyle.secondary, disabled=(self.equip_page == 0), row=3)
+            next_equip_btn = discord.ui.Button(label="装備次へ ▶", style=discord.ButtonStyle.secondary, disabled=(self.equip_page >= max_equip_page), row=3)
+
+            async def prev_equip_cb(interaction: discord.Interaction):
+                if interaction.user.id != self.user_id:
+                    return await interaction.response.send_message("❌ 他人の操作です。", ephemeral=True)
+                self.equip_page -= 1
+                self.update_components()
+                await interaction.response.edit_message(embed=self.create_embed(), view=self)
+
+            async def next_equip_cb(interaction: discord.Interaction):
+                if interaction.user.id != self.user_id:
+                    return await interaction.response.send_message("❌ 他人の操作です。", ephemeral=True)
+                self.equip_page += 1
+                self.update_components()
+                await interaction.response.edit_message(embed=self.create_embed(), view=self)
+
+            prev_equip_btn.callback = prev_equip_cb
+            next_equip_btn.callback = next_equip_cb
+            self.add_item(prev_equip_btn)
+            self.add_item(next_equip_btn)
+
+        # --- ③ 決定ボタン ---
+        confirm_btn = discord.ui.Button(label="決定", style=discord.ButtonStyle.success, row=4)
+        confirm_btn.callback = self.confirm
+        self.add_item(confirm_btn)
+
+    def create_embed(self) -> discord.Embed:
+        selected_char_name = "未選択"
+        if self.selected_char_idx is not None and self.selected_char_idx < len(self.characters):
+            selected_char_name = self.characters[self.selected_char_idx].get("name", "不明")
+
+        selected_eq_name = "未選択"
+        if self.selected_equip == "NONE":
+            selected_eq_name = "装備を外す"
+        elif self.selected_equip is not None:
+            selected_eq_name = self.selected_equip
+
+        embed = discord.Embed(
+            title="🗡️ 装備変更",
+            description=(
+                "装備を変更したい **キャラクター** と **装備品** を選択してください。\n"
+                "（25体以上いる場合は下のボタンでページを切り替えられます）\n\n"
+                f"👤 **選択中キャラ**: **{selected_char_name}**\n"
+                f"🗡️ **選択中装備**: **{selected_eq_name}**"
+            ),
+            color=0x3498DB
+        )
+        return embed
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user.id == self.user_id
 
     async def on_char_select(self, interaction: discord.Interaction):
         self.selected_char_idx = int(self.char_select.values[0])
-        await interaction.response.defer()
+        self.update_components()
+        await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
     async def on_equip_select(self, interaction: discord.Interaction):
         self.selected_equip = self.equip_select.values[0]
-        await interaction.response.defer()
+        self.update_components()
+        await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
-    @discord.ui.button(label="決定", style=discord.ButtonStyle.success)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.selected_char_idx is None or self.selected_equip is None:
             await interaction.response.send_message("⚠️ キャラクターと装備品の両方を選択してください！", ephemeral=True)
@@ -165,7 +283,6 @@ class EquipSelectView(discord.ui.View):
             owned_count = equip_dict.get(self.selected_equip, 0)
 
             # 既に他のキャラクターがこの装備をつけている数をカウントする
-            # （※ もし「今変更しようとしているキャラ自身」がすでに着けていた場合の重複計算を防ぐため、他キャラ分を数える）
             equipped_count = sum(
                 1 for i, c in enumerate(u_data.get("characters", []))
                 if i != self.selected_char_idx and c.get("equip") == self.selected_equip
