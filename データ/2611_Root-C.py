@@ -26,7 +26,7 @@ CHARACTER_DATA = {
 "support_target": "Branch Coral",     
 
 # --- 装備関連 ---
-"best_equip": "Branchくんの上着",       # [文字列] 相性の良いモチーフ装備名
+"best_equip": "Branchの上着",       # [文字列] 相性の良いモチーフ装備名
 "equip": None,
 
 # --- 好感度・交流システム ---
