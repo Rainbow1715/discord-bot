@@ -323,14 +323,29 @@ ACHIEVEMENTS = {
         "desc": "イベント戦で 蜂蜜酒 を撃破する",
         "reward_rainbow": 1000,
     },
+    "kill_hatimitu_by_syuuto": {
+        "title": "⚔️ うわー！！！！！！！！！教祖様の身に危険が危ない",
+        "desc": "イベント戦で 橘柊人 を編成して 蜂蜜酒 を撃破する",
+        "reward_rainbow": 1000,
+    },
     "kill_Ktatuya": {
         "title": "⚔️ 変なの。",
         "desc": "イベント戦で 神明父(強化) を撃破する",
         "reward_rainbow": 1000,
     },
+    "kill_Ktatuya_by_kanata": {
+        "title": "⚔️ マジで反抗していいと思うよ君。しろよ。",
+        "desc": "イベント戦でいずれかの 彼方 を編成して 神明父(強化) を撃破する",
+        "reward_rainbow": 1000,
+    },
     "kill_kiiro": {
         "title": "⚔️ なんだかものすごく殺意",
         "desc": "イベント戦で 黄色いなよなよおっさん を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_kiiro_by_rindouren": {
+        "title": "⚔️ なんだかものすごく殺意殺意〜^",
+        "desc": "イベント戦でいずれかの 竜胆廉 を編成して 黄色いなよなよおっさん を撃破する",
         "reward_rainbow": 1000,
     },
     "kill_akaozi": {
@@ -343,9 +358,29 @@ ACHIEVEMENTS = {
         "desc": "イベント戦で 赤くん(反転) を撃破する",
         "reward_rainbow": 1000,
     },
+    "kill_HTakakun_by_akakun": {
+        "title": "⚔️ 啜る〜！　殺すぞ〜〜〜！",
+        "desc": "イベント戦で Branch Coral を編成して　赤くん(反転) を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_HTakakun_by_sango": {
+        "title": "⚔️ そんなBranchくんも素敵だと思うな",
+        "desc": "イベント戦で Root Coral を編成して　赤くん(反転) を撃破する",
+        "reward_rainbow": 1000,
+    },
     "kill_HTsango": {
         "title": "⚔️ 激ヤバ宗教の赤い方",
         "desc": "イベント戦で 珊瑚くん(反転) を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_HTsango_by_akakun": {
+        "title": "⚔️ 流石のBranchも厨房に入って行ってしまいました",
+        "desc": "イベント戦で Branch Coral　を編成して　珊瑚くん(反転) を撃破する",
+        "reward_rainbow": 1000,
+    },
+    "kill_HTsango_by_sango": {
+        "title": "⚔️ (解釈違いに悶える音)",
+        "desc": "イベント戦で Root Coral　を編成して　珊瑚くん(反転) を撃破する",
         "reward_rainbow": 1000,
     },
     # 🎰 ギャンブル実績
