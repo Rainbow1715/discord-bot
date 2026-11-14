@@ -836,7 +836,8 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
             
             # 自爆以外の撃破ボスが存在する場合のみ実績チェックを実行
             if defeated_names:
-                await check_boss_kill_achievements(interaction, defeated_names)
+                current_party_names = [p.raw_name for p in party]
+                await check_boss_kill_achievements(interaction, defeated_names, current_party_names)
 
         MAX_LEVEL = 99
         lvl_up_msgs = []
