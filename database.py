@@ -48,7 +48,7 @@ RARITY_RATES = {
 }
 
 # 🎂 今月のバースデー・ピックアップ設定
-PICKUP_CHARACTERS = ["橘柊人",]
+PICKUP_CHARACTERS = ["橘柊人", "白黒レイ"]
 PICKUP_BOOST_RATE = 0.60  # バースデーキャラ全体の排出補正率
 
 # 🆕 新キャラ実装・ピックアップ設定
