@@ -1094,6 +1094,13 @@ async def check_boss_kill_achievements(
         "サラ": "kill_sara",
         "アリア(仮面ライダーパロ)": "kill_rider_aria",
         "日暮考(プトティラコンボ)": "kill_rider_ptkou",
+        "蜂蜜酒": "kill_hatimitu",
+        "神明父(強化)": "kill_Ktatuya",
+        "黄色いなよなよおっさん": "kill_kiiro",
+        "赤髪のおじさん": "kill_akaozi",
+        "赤くん(反転)": "kill_HTakakun",
+        "珊瑚くん(反転)": "kill_HTsango",
+
     }
 
     for boss_name, ach_id in boss_mapping.items():
