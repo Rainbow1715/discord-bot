@@ -224,7 +224,10 @@ class Character:
         self.skill_trigger = data_dict.get("skill_trigger") or master_data.get("skill_trigger", "chance")
         self.skill_rate = data_dict.get("skill_rate") if "skill_rate" in data_dict else master_data.get("skill_rate", 35)
         self.support_target = data_dict.get("support_target") or master_data.get("support_target")
-
+        self.heal_ratio = self.heal_ratio = data_dict.get("heal_ratio") or master_data.get("heal_ratio")
+        self.execute_rate = self.execute_rate = data_dict.get("execute_rate") or master_data.get("execute_rate")
+        self.execute_count = self.execute_count = data_dict.get("execute_count") or master_data.get("execute_count")
+        
         self.is_boss = is_boss
         self.buffs = []
 
@@ -391,7 +394,51 @@ class Character:
                 if charmed_names:
                     return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ **{', '.join(charmed_names)}** は魅了されて **3ターン行動不能** になった！"
                 return f"💖 {self.icon} **{self.name}** のスキル【{self.skill_name}】！ しかし誰も魅了されなかった……"
-            
+                
+
+            # 💥 全体回復 ＋ 確率で敵をまとめて撃破 (heal_and_execute)
+            elif self.skill_type == "heal_and_execute":
+                # キャラごとの設定値を取得（未設定時は 40% / 40% / 1体 をデフォルトにする）
+                raw_data = getattr(self, "raw_data", {}) or {}
+                heal_ratio = getattr(self, "heal_ratio", raw_data.get("heal_ratio", 0.40))
+                execute_rate = getattr(self, "execute_rate", raw_data.get("execute_rate", 40))
+                execute_count = max(1, int(getattr(self, "execute_count", raw_data.get("execute_count", 1))))
+
+                heal_percent_label = int(round(heal_ratio * 100))
+
+                # 1. 生きている味方全員の最大HPの heal_ratio 分を回復
+                alive_allies = [p for p in party if p.hp > 0]
+                healed_texts = []
+                for ally in alive_allies:
+                    old_hp = ally.hp
+                    heal_val = max(1, int(ally.max_hp * heal_ratio))
+                    ally.hp = min(ally.max_hp, ally.hp + heal_val)
+                    actual_healed = ally.hp - old_hp
+                    healed_texts.append(f"{ally.name}(+{actual_healed})")
+
+                heal_summary = "、".join(healed_texts) if healed_texts else "対象なし"
+
+                # 2. まとめて確率抽選し、成功したら最大 execute_count 体を一撃で倒す
+                alive_enemies = [e for e in enemies if e.hp > 0]
+                ko_targets = []
+                if alive_enemies and random.randint(1, 100) <= execute_rate:
+                    pick_count = min(execute_count, len(alive_enemies))
+                    candidates = random.sample(alive_enemies, k=pick_count)
+                    for target in candidates:
+                        target.hp = 0
+                        ko_targets.append(target.name)
+
+                if ko_targets:
+                    ko_names_str = "、".join(f"**{name}**" for name in ko_targets)
+                    ko_text = f"\n💀 さらに {ko_names_str} を一撃で倒した！"
+                else:
+                    ko_text = "\n✨ 追撃の撃破は不発に終わった……"
+
+                return (
+                    f"💚 {self.icon} **{self.name}** のスキル【{self.skill_name}】！\n"
+                    f"味方全員のHPを{heal_percent_label}%回復した！（{heal_summary}）"
+                    f"{ko_text}"
+                )
             # --- ここから下は単体対象スキルなので、ターゲット不在なら中断 ---
             elif not target:
                 return f"❓ {self.icon} **{self.name}** は攻撃しようとしたが、対象がいなかった！"
