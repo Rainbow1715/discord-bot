@@ -224,9 +224,9 @@ class Character:
         self.skill_trigger = data_dict.get("skill_trigger") or master_data.get("skill_trigger", "chance")
         self.skill_rate = data_dict.get("skill_rate") if "skill_rate" in data_dict else master_data.get("skill_rate", 35)
         self.support_target = data_dict.get("support_target") or master_data.get("support_target")
-        self.heal_ratio = self.heal_ratio = data_dict.get("heal_ratio") or master_data.get("heal_ratio")
-        self.execute_rate = self.execute_rate = data_dict.get("execute_rate") or master_data.get("execute_rate")
-        self.execute_count = self.execute_count = data_dict.get("execute_count") or master_data.get("execute_count")
+        self.heal_ratio = data_dict.get("heal_ratio") if "heal_ratio" in data_dict else master_data.get("heal_ratio")
+        self.execute_rate = data_dict.get("execute_rate") if "execute_rate" in data_dict else master_data.get("execute_rate")
+        self.execute_count = data_dict.get("execute_count") if "execute_count" in data_dict else master_data.get("execute_count")
         
         self.is_boss = is_boss
         self.buffs = []
@@ -399,10 +399,9 @@ class Character:
             # 💥 全体回復 ＋ 確率で敵をまとめて撃破 (heal_and_execute)
             elif self.skill_type == "heal_and_execute":
                 # キャラごとの設定値を取得（未設定時は 40% / 40% / 1体 をデフォルトにする）
-                raw_data = getattr(self, "raw_data", {}) or {}
-                heal_ratio = getattr(self, "heal_ratio", raw_data.get("heal_ratio", 0.40))
-                execute_rate = getattr(self, "execute_rate", raw_data.get("execute_rate", 40))
-                execute_count = max(1, int(getattr(self, "execute_count", raw_data.get("execute_count", 1))))
+                heal_ratio = self.heal_ratio if self.heal_ratio is not None else 0.40
+                execute_rate = self.execute_rate if self.execute_rate is not None else 40
+                execute_count = max(1, int(self.execute_count if self.execute_count is not None else 1))
 
                 heal_percent_label = int(round(heal_ratio * 100))
 
@@ -418,15 +417,21 @@ class Character:
 
                 heal_summary = "、".join(healed_texts) if healed_texts else "対象なし"
 
-                # 2. まとめて確率抽選し、成功したら最大 execute_count 体を一撃で倒す
-                alive_enemies = [e for e in enemies if e.hp > 0]
+                # 2. 生きている敵ユニットを all_states から取得し、まとめて確率抽選して撃破
+                alive_enemies = []
+                if all_states:
+                    alive_enemies = [
+                        unit for unit in all_states.keys()
+                        if unit not in party and unit.hp > 0
+                    ]
+
                 ko_targets = []
                 if alive_enemies and random.randint(1, 100) <= execute_rate:
                     pick_count = min(execute_count, len(alive_enemies))
                     candidates = random.sample(alive_enemies, k=pick_count)
-                    for target in candidates:
-                        target.hp = 0
-                        ko_targets.append(target.name)
+                    for ko_unit in candidates:
+                        ko_unit.hp = 0
+                        ko_targets.append(ko_unit.name)
 
                 if ko_targets:
                     ko_names_str = "、".join(f"**{name}**" for name in ko_targets)
@@ -704,6 +709,9 @@ async def execute_battle(interaction: discord.Interaction, is_event: bool = Fals
                 "skill_trigger": candidate.get("skill_trigger", "chance"),
                 "skill_rate": candidate.get("skill_rate", 35),
                 "support_target": candidate.get("support_target"),
+                "heal_ratio": candidate.get("heal_ratio"),
+                "execute_rate": candidate.get("execute_rate"),
+                "execute_count": candidate.get("execute_count"),
             }
             enemies.append(Character(boss_data, is_boss=True))
 
