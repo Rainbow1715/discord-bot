@@ -21,6 +21,10 @@ EAT_ACHIEVEMENT_MAP = {
     "ムクロ(トリッカルパロ)": "eat_trickcal_mukuro",
     "しえら(仮面ライダーパロ)": "eat_rider_siera",
     "ルシア(トリッカルパロ)": "eat_trickcal_rucia",
+    "彼方(ハロウィン)": "eat_HWkanata",
+    "竜胆廉(ハロウィン)": "eat_HWrindouren",
+    "Branch Coral": "eat_BC",
+    "Root Coral": "eat_RC",
 }
 
 # --------------------------------------------------
